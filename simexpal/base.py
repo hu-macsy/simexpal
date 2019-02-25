@@ -74,6 +74,9 @@ class MatrixScope:
 			self.num_repetitions = item_yml['repeat']
 
 class Config:
+	'''
+	Represents the entire configuration.
+	'''
 	def __init__(self, basedir, yml):
 		assert os.path.isabs(basedir)
 		self.basedir = basedir
@@ -116,6 +119,8 @@ class Config:
 				self._exp_infos[exp_yml['name']] = ExperimentInfo(self, exp_yml)
 
 	def instance_dir(self):
+		"""	Path of the directory that stores all the instances.
+		"""
 		return os.path.join(self.basedir, self.yml['instdir'])
 
 	def all_instance_ids(self):
