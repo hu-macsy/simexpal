@@ -1,0 +1,448 @@
+#!/usr/bin/python3
+# PYTHON_ARGCOMPLETE_OK
+
+# Note that PYTHON_ARGCOMPLETE_OK enables "global completion" from the argcomplete package.
+
+import argparse
+import os
+import argcomplete
+import sys
+
+import simexpal as extl
+import simexpal.build
+import simexpal.launch.fork
+import simexpal.launch.queue
+import simexpal.launch.sge
+import simexpal.util as util
+import yaml
+
+colors = {
+	'red': '\x1b[31m',
+	'green': '\x1b[32m',
+	'yellow': '\x1b[33m',
+	'reset': '\x1b[0m',
+}
+
+# Disable escape sequence emission if the output is not a TTY.
+if not os.isatty(sys.stdout.fileno()):
+	for c in colors:
+		colors[c] = ''
+
+run_selection_parser = argparse.ArgumentParser(add_help=False)
+run_selection_parser.add_argument('--instset', type=str)
+run_selection_parser.add_argument('--experiment', type=str)
+run_selection_parser.add_argument('--revision', type=str)
+run_selection_parser.add_argument('--run', type=str)
+run_selection_parser.add_argument('--all', action='store_true')
+run_selection_parser.add_argument('--failed', action='store_true')
+run_selection_parser.add_argument('--unfinished', action='store_true')
+
+def do_main():
+	args = do_main.parser.parse_args()
+	if args.main_subcmd == 'instances':
+		do_instances(args)
+	elif args.main_subcmd == 'builds':
+		do_builds(args)
+	elif args.main_subcmd == 'experiments':
+		do_experiments(args)
+	elif args.main_subcmd == 'invoke':
+		do_invoke(args, basedir=args.C)
+	elif args.main_subcmd == 'queue':
+		do_queue(args)
+	else:
+		assert args.main_subcmd == 'archive'
+		do_archive(args)
+
+do_main.parser = argparse.ArgumentParser()
+do_main.parser.add_argument('-C', type=str)
+do_main.subcmds = do_main.parser.add_subparsers(dest='main_subcmd')
+
+def select_runs_from_cli(cfg, args, default_all=True):
+	if args.experiment is not None:
+		for run in cfg.discover_all_runs():
+			if args.experiment == run.experiment.name:
+				yield run
+	elif args.revision is not None:
+		for run in cfg.discover_all_runs():
+			if run.experiment.revision is None:
+				continue
+			if args.revision == run.experiment.revision.name:
+				yield run
+	elif args.instset is not None:
+		for run in cfg.discover_all_runs():
+			if args.instset in run.instance.instsets:
+				yield run
+	elif args.run is not None:
+		for run in cfg.discover_all_runs():
+			if args.run == run.experiment.name + '/' + run.instance.filename:
+				yield run
+	elif args.all:
+		yield from cfg.discover_all_runs()
+	elif args.failed:
+		for run in cfg.discover_all_runs():
+			if not os.access(run.aux_file_path('lock'), os.F_OK):
+				continue
+			finished = os.access(run.output_file_path('status'), os.F_OK)
+			if finished:
+				with open(run.output_file_path('status'), "r") as f:
+					status_dict = yaml.load(f)
+
+			if finished and status_dict['timeout']:
+				yield run
+			elif finished and status_dict['signal']:
+				yield run
+			elif finished and status_dict['status'] > 0:
+				yield run
+	elif args.unfinished:
+		for run in cfg.discover_all_runs():
+			if not os.access(run.aux_file_path('lock'), os.F_OK):
+				continue
+			if os.access(run.output_file_path('status'), os.F_OK):
+				continue
+			yield run
+	else:
+		if default_all:
+			yield from cfg.discover_all_runs()
+
+def do_instances(args):
+	if not args.instances_subcmd or args.instances_subcmd == 'list':
+		do_instances_list(args)
+	elif args.instances_subcmd == 'install':
+		do_instances_install(args)
+	elif args.instances_subcmd == 'process':
+		cfg = extl.base.config_for_dir()
+
+		for inst in cfg.all_instances():
+			if not inst.check_available():
+				print("Skipping unavailable instance '{}'".format(inst.shortname))
+				continue
+			if os.access(os.path.join(cfg.instance_dir(), inst.shortname + '.info'), os.F_OK):
+				continue
+
+			print("Processing instance '{}'".format(inst.shortname))
+			with open(os.path.join(cfg.instance_dir(), inst.shortname + '.info.tmp'), 'w') as f:
+				extl.util.compute_network_size(os.path.join(cfg.instance_dir(), inst.filename), f)
+			os.rename(os.path.join(cfg.instance_dir(), inst.shortname + '.info.tmp'),
+					os.path.join(cfg.instance_dir(), inst.shortname + '.info'))
+	else:
+		assert args.instances_subcmd == 'run-transform'
+		do_instances_run_transform(args)
+
+do_instances.parser = do_main.subcmds.add_parser('instances')
+do_instances.subcmds = do_instances.parser.add_subparsers(dest='instances_subcmd')
+do_instances.subcmds.add_parser('process')
+
+def do_instances_list(args):
+	cfg = extl.base.config_for_dir()
+
+	for instance in cfg.all_instances():
+		if instance.check_available():
+			print(colors['green'], end='')
+		else:
+			print(colors['red'], end='')
+		print(instance.filename, end='')
+		print(colors['reset'])
+
+do_instances_list.parser = do_instances.subcmds.add_parser('list')
+
+def do_instances_install(args):
+	cfg = extl.base.config_for_dir()
+
+	for instance in cfg.all_instances():
+		if args.overwrite:
+			util.try_rmfile(os.path.join(cfg.instance_dir(), instance.shortname))
+		instance.install()
+
+do_instances_install.parser = do_instances.subcmds.add_parser('install')
+do_instances_install.parser.add_argument('--overwrite', action='store_true')
+
+def do_instances_run_transform(args):
+	cfg = extl.base.config_for_dir()
+
+	for instance in cfg.all_instances():
+		if instance.shortname != args.instname:
+			continue
+		instance.run_transform(args.transform, args.output)
+
+do_instances_run_transform.parser = do_instances.subcmds.add_parser('run-transform')
+do_instances_run_transform.parser.add_argument('--transform', type=str, required=True)
+do_instances_run_transform.parser.add_argument('--output', type=str, required=True)
+do_instances_run_transform.parser.add_argument('instname', type=str)
+
+# ---------------------------------------------------------------------------------------
+
+def do_builds(args):
+	assert args.builds_subcmd == 'make'
+	do_builds_build(args)
+
+do_builds.parser = do_main.subcmds.add_parser('builds')
+do_builds.subcmds = do_builds.parser.add_subparsers(dest='builds_subcmd')
+do_builds.subcmds.add_parser('make')
+
+def do_builds_build(args):
+	cfg = extl.base.config_for_dir()
+
+	for revision in cfg.all_revisions():
+		simexpal.build.make_builds(cfg, revision,
+				[build.info for build in cfg.all_builds_for_revision(revision)])
+
+do_builds_build.parser = do_builds.subcmds.add_parser('make')
+
+# ---------------------------------------------------------------------------------------
+
+def do_experiments(args):
+	if not args.experiments_subcmd:
+		do_experiments_list(args, True)
+	elif args.experiments_subcmd == 'list':
+		do_experiments_list(args, False)
+	elif args.experiments_subcmd == 'launch':
+		do_experiments_launch(args)
+	else:
+		assert args.experiments_subcmd == 'purge'
+		do_experiments_purge(args)
+
+do_experiments.parser = do_main.subcmds.add_parser('experiments')
+do_experiments.subcmds = do_experiments.parser.add_subparsers(dest='experiments_subcmd')
+
+def do_experiments_list(args, as_default_subcmd):
+	cfg = extl.base.config_for_dir()
+
+	if as_default_subcmd:
+		selection = cfg.discover_all_runs()
+	else:
+		selection = select_runs_from_cli(cfg, args)
+
+	listing = [ ]
+	for run in selection:
+		(exp, instance) = (run.experiment, run.instance.filename)
+		started = os.access(run.output_file_path('out'), os.F_OK)
+		finished = os.access(run.output_file_path('status'), os.F_OK)
+		if finished:
+			with open(run.output_file_path('status'), "r") as f:
+				status_dict = yaml.load(f)
+
+		status = ''
+		if finished and status_dict['timeout']:
+			status = 'timeout'
+		elif finished and status_dict['signal']:
+			status = 'killed'
+		elif finished and status_dict['status'] > 0:
+			status = 'failed'
+		elif finished:
+			status = 'finished'
+		elif started:
+			status = 'started'
+		listing.append((run, status))
+
+	print('{:45.45} {:35.35} {}'.format('Experiment', 'Instance', 'Status'))
+	print('{:45.45} {:35.35} {}'.format('----------', '--------', '------'))
+	for (run, status) in listing:
+		(exp, instance) = (run.experiment, run.instance.filename)
+		if status == 'started':
+			print(colors['yellow'], end='')
+		elif status == 'finished':
+			print(colors['green'], end='')
+		elif status == 'timeout' or status == 'killed' or status == 'failed':
+			print(colors['red'], end='')
+		name = exp.name
+		if exp.variation:
+			name += ' ~ ' + ', '.join([variant.name for variant in exp.variation])
+		if exp.revision:
+			name += ' @ ' + exp.revision.name
+		print('{:45.45} {:35.35} [{}] {}'.format(name, instance, run.repetition, status))
+		print(colors['reset'], end='')
+
+do_experiments_list.parser = do_experiments.subcmds.add_parser('list',
+		parents=[run_selection_parser])
+
+def do_experiments_launch(args):
+	cfg = extl.base.config_for_dir()
+
+	sel = [ ]
+	for run in select_runs_from_cli(cfg, args):
+		if not run.instance.check_available():
+			print("Skipping run {}/{}[{}] as instance is not available".format(
+					run.experiment.name, run.instance.filename, run.repetition))
+			continue
+		sel.append(run)
+
+	if args.launcher == 'sge':
+		launcher = extl.launch.sge.SgeLauncher(args.queue)
+	elif args.launcher == 'queue':
+		launcher = extl.launch.queue.QueueLauncher()
+	else:
+		assert args.launcher == 'fork'
+		launcher = extl.launch.fork.ForkLauncher()
+
+	# If the launcher supports submit_multiple, we prefer that.
+	try:
+		submit_to_launcher = launcher.submit_multiple
+	except AttributeError:
+		def submit_to_launcher(config, runs):
+			for run in runs:
+				launcher.submit(config, run)
+
+	submit_to_launcher(cfg, sel)
+
+do_experiments_launch.parser = do_experiments.subcmds.add_parser('launch',
+		parents=[run_selection_parser])
+do_experiments_launch.parser.add_argument('--launcher', choices=['fork', 'queue', 'sge'],
+		default='fork')
+do_experiments_launch.parser.add_argument('--queue', type=str)
+
+def do_experiments_purge(args):
+	cfg = extl.base.config_for_dir()
+
+	for run in select_runs_from_cli(cfg, args, default_all=False):
+		(exp, instance) = (run.experiment, run.instance.filename)
+
+		if args.f:
+			print("Purging experiment '{}', instance '{}' [{}]".format(
+					exp.name, instance, run.repetition))
+			try:
+				os.unlink(run.aux_file_path('lock'))
+			except FileNotFoundError:
+				pass
+			try:
+				os.unlink(run.aux_file_path('run'))
+			except FileNotFoundError:
+				pass
+			try:
+				os.unlink(run.aux_file_path('run.tmp'))
+			except FileNotFoundError:
+				pass
+			try:
+				os.unlink(run.output_file_path('out'))
+			except FileNotFoundError:
+				pass
+			try:
+				os.unlink(run.output_file_path('status'))
+			except FileNotFoundError:
+				pass
+			try:
+				os.unlink(run.output_file_path('status.tmp'))
+			except FileNotFoundError:
+				pass
+		else:
+			print("This would purge experiment '{}', instance '{}' [{}]".format(
+					exp.name, instance, run.repetition))
+
+do_experiments_purge.parser = do_experiments.subcmds.add_parser('purge',
+		parents=[run_selection_parser])
+do_experiments_purge.parser.add_argument('-f', action='store_true')
+
+def do_invoke(args, basedir=None):
+	cfg = extl.base.config_for_dir(basedir=basedir)
+
+	sel = [ ]
+	for run in cfg.discover_all_runs():
+		if args.specfile is not None:
+			with open(args.specfile, 'r') as f:
+				spec_yml = yaml.load(f)
+
+			assert args.sge_index
+			index = int(os.environ['SGE_TASK_ID'])
+			ent_yml = spec_yml['array'][index]
+
+			if run.experiment.name != ent_yml['experiment']:
+				continue
+			if run.instance.filename != ent_yml['instance']:
+				continue
+			if run.repetition != ent_yml['repetition']:
+				continue
+		else:
+			if run.experiment.name != args.experiment:
+				continue
+			if run.instance.filename != args.instance:
+				continue
+			if run.repetition != args.repetition:
+				continue
+		sel.append(run)
+
+	for run in sel:
+		if args.n:
+			print("Would launch {}/{}[{}]".format(run.experiment.name, run.instance.filename,
+					run.repetition))
+		else:
+			extl.launch.common.invoke_run(run)
+
+do_invoke.parser = do_main.subcmds.add_parser('invoke')
+do_invoke.parser.add_argument('-n', action='store_true')
+do_invoke.parser.add_argument('--specfile', type=str)
+do_invoke.parser.add_argument('--sge-index', action='store_true')
+do_invoke.parser.add_argument('--experiment', type=str)
+do_invoke.parser.add_argument('--instance', type=str)
+do_invoke.parser.add_argument('--repetition', type=int)
+
+def do_queue(args):
+	import asyncio
+	import json
+	import socket
+
+	q = asyncio.Queue()
+
+	async def run_queue():
+		while True:
+			it = await q.get()
+
+			cfg = extl.base.config_for_dir(basedir=it['basedir'])
+
+			for run in cfg.discover_all_runs():
+				if run.experiment.name != it['experiment']:
+					continue
+				if run.instance.filename != it['instance']:
+					continue
+				if run.repetition != it['repetition']:
+					continue
+
+				print("Processing experiment '{}', instance '{}'".format(
+						run.experiment.name, run.instance.filename))
+				extl.launch.common.invoke_run(run)
+
+	async def handle_echo(reader, writer):
+		bits = await reader.readline()
+		m = json.loads(bits.decode())
+		q.put_nowait(m)
+
+	sockpath = os.path.expanduser('~/.extlq.sock')
+	if args.sockfd is not None:
+		sock = socket.socket(fileno=args.sockfd)
+	else:
+		sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+		sock.bind(sockpath)
+
+	loop = asyncio.get_event_loop()
+	loop.create_task(run_queue())
+	server = loop.run_until_complete(asyncio.start_server(handle_echo, sock=sock, loop=loop))
+
+	# Serve requests until Ctrl+C is pressed
+	print('Serving on {}'.format(server.sockets[0].getsockname()))
+	try:
+		loop.run_forever()
+	except KeyboardInterrupt:
+		pass
+
+	# Close the server
+	server.close()
+	loop.run_until_complete(server.wait_closed())
+	loop.close()
+
+	if args.sockfd is None:
+		os.unlink(sockpath)
+
+do_queue.parser = do_main.subcmds.add_parser('queue')
+do_queue.parser.add_argument('--sockfd', type=int)
+
+def do_archive(args):
+	import tarfile
+
+	tar = tarfile.open('data.tar.gz', 'w:gz')
+	tar.add('experiments.yml')
+	tar.add('output/')
+	tar.close()
+
+do_archive.parser = do_main.subcmds.add_parser('archive')
+
+argcomplete.autocomplete(do_main.parser)
+do_main()
+
