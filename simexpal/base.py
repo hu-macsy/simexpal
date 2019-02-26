@@ -74,9 +74,8 @@ class MatrixScope:
 			self.num_repetitions = item_yml['repeat']
 
 class Config:
-	'''
-	Represents the entire configuration.
-	'''
+	"""Represents the entire configuration (i.e., an experiments.yml file)."""
+
 	def __init__(self, basedir, yml):
 		assert os.path.isabs(basedir)
 		self.basedir = basedir
@@ -119,8 +118,7 @@ class Config:
 				self._exp_infos[exp_yml['name']] = ExperimentInfo(self, exp_yml)
 
 	def instance_dir(self):
-		"""	Path of the directory that stores all the instances.
-		"""
+		"""Path of the directory that stores all the instances."""
 		return os.path.join(self.basedir, self.yml['instdir'])
 
 	def all_instance_ids(self):
@@ -314,6 +312,14 @@ class Config:
 		return sorted(expansion)
 
 	def collect_successful_results(self, parse_fn):
+		"""
+		Collects all success runs and parses their output.
+
+		:param: parse_fn: Function to parse the output. Takes two parameters
+			(run, f) where run is a :class:`simexpal.base.Run` object and f
+			is a Python file object.
+		"""
+
 		res = [ ]
 		for run in self.discover_all_runs():
 			exp = run.experiment
@@ -335,6 +341,8 @@ class Config:
 		return res
 
 class Instance:
+	"""Represents a single instance"""
+
 	def __init__(self, cfg, filename, inst_yml):
 		self._cfg = cfg
 		self.filename = filename
@@ -527,6 +535,16 @@ class ExperimentInfo:
 				yield name
 
 class Experiment:
+	"""
+	Represents an experiment (see below).
+	
+	An experiment is defined as a combination of command line arguments
+	and environment
+	(from the experiment stanza in a experiments.yml file),
+	a revision that is used to build the experiment's program
+	and a set of variants (from the variants stanza in a experiments.yml file).
+	"""
+
 	def __init__(self, cfg, info, revision, variation):
 		self._cfg = cfg
 		self.info = info
