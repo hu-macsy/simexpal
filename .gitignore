@@ -3,5 +3,5 @@ simexpal.egg-info/
 *_build/
 *output
 *aux
-*graphs/*
+*graphs/
 
