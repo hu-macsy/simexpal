@@ -20,5 +20,4 @@ language = None
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 pygments_style = None
 html_theme = 'sphinx_rtd_theme'
-html_static_path = ['_static']
 htmlhelp_basename = 'simexpaldoc'
