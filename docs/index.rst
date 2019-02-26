@@ -7,7 +7,6 @@ Welcome to simexpal's documentation!
 ====================================
 
 .. toctree::
-   :maxdepth: 2
    :caption: Contents:
 
    Usage Guide <user_guide>
