@@ -36,9 +36,6 @@ At this point, your "project" directory looks like this:
        └── random_500.list
 
 After having completed this steps, you can start using simexpal to run your experiments.
-
-Listing Experiments
--------------------
 A complete list of experiments and their status can be seen by:
 ::
 
@@ -51,8 +48,6 @@ The color of each line represents the status of the experiment:
 - Red: failed
 - Default: not executed
 
-Running Experiments
--------------------
 Experiments can be launched with:
 ::
 
