@@ -16,14 +16,16 @@ Now you can run a sorting algorithm on a specific instance with:
 To keep the example simple, we assume that instances are lists of integers.
 
 You can now start to configure simexpal to automatize your experimental pipeline.
-First, you need to create a new "experiments.yml" file within the "project" directory
-structured as below:
+First, you need to create a new "experiments.yml" file within the "project" directory.
+This is a configuration file that is read by simexpal to run the experiments on the
+desired instances and it is structured as below:
 
 .. literalinclude:: ./example/experiments.yml
    :linenos:
    :language: yaml
    :caption: Example of experiments.yml file
 
+The structure of this file will be better explained later in the guide.
 At this point, your "project" directory looks like this:
 ::
 
@@ -33,6 +35,7 @@ At this point, your "project" directory looks like this:
    └── instances
        └── random_500.list
 
+After having completed this steps, you can start using simexpal to run your experiments.
 
 Listing Experiments
 -------------------
