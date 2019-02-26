@@ -1,4 +1,4 @@
-The simexpal API reference
+Python API reference
 ==========================
 
 .. automodule:: simexpal

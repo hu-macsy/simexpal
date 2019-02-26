@@ -12,7 +12,7 @@ Welcome to simexpal's documentation!
    Usage Guide <user_guide>
    Reference for experiments.yml file <experiments_reference>
    Command-line Reference <command_line_reference>
-   Python API <api>
+   Python API <python_api>
 
 
 Indices and tables
