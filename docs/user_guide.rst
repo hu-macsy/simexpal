@@ -88,5 +88,40 @@ it is possible to let simexpal pull your programs from some VCS
 Automated builds are controlled by the ``builds`` and ``revisions`` stanzas
 in ``experiments.yml``.
 
+In the remainder of this section, we will reconsider the sorting example from
+TODO. Instead of using a Python implementation of the algorithms,
+we will work with a C implementation and use simexpal's automated build support to compile it.
+In the simexpal repository, sample C code for the problem can be found
+in `TODO`. In this example, simexpal will invoke a CMake build system to build the program;
+however, simexpal is independent of the particular build system in use.
+
+To enable automated builds, we need to add ``builds`` and ``revisions``
+stanzas to ``experiments.yml``. In our example, these look like:
+
+.. code-block:: YAML
+
+	builds:
+	  - name: networkit
+		git: 'https://github.com/hu-macsy/simexpal.git'
+		configure:
+		  - args:
+			  - 'cmake'
+			  - '-DCMAKE_INSTALL_PREFIX=@THIS_PREFIX_DIR@'
+			  - '-DCMAKE_BUILD_TYPE=RelWithDebInfo'
+			  - '@THIS_CLONE_DIR@/TODO'
+		compile:
+		  - args: ['make', '-j@PARALLELISM@']
+		install:
+		  - args: ['make', 'install']
+
+After ``experiments.yml`` has been adopted, we can run the automated build
+using
+
+.. code-block:: bash
+
+	simex builds make
+
+Once the build process is finished, the experiments can be started as usual.
+
 .. TODO: Give example: how to pull code from this repo, build it and run it.
 
