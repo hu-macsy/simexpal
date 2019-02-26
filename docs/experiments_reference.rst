@@ -43,5 +43,6 @@ The resulting data will be outputted to the standard output.
 
 .. literalinclude:: ./experiments.yml.example
    :linenos:
+   :lines: 8-
    :language: yaml
-   :caption: Complete experiments.yml file.
+   :caption: How to list experiments in the experiments.yml file.

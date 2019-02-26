@@ -1,0 +1,14 @@
+instances:
+  - repo: local
+    items:
+      - random_500.list
+
+instdir: "./instances"
+
+experiments:
+  - name: insertion-sort
+    args: ['python3', 'sort.py', '--algo=insertion-sort', '@INSTANCE@']
+    output: stdout
+  - name: bubble-sort
+    args: ['python3', 'sort.py', '--algo=bubble-sort', '@INSTANCE@']
+    output: stdout

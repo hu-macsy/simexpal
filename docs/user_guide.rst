@@ -1,6 +1,39 @@
 Usage Guide
 ===========
 
+Imagine that you want to compare insertion sort and bubble sort on a set of instances.
+To this purpose, you create a new "project" directory write a short Python script
+demo.py where you implemented the two algorithms and save it into "project".
+demo.py accepts two arguments: the algorithm name (i.e. insertion-sort or bubble-sort)
+and the path to the instance.
+Then, you generated a bunch of instances and placed them in a directory called "instances"
+within "project" (in this example we just deal with a single instance named "random_500.list").
+Now you can run a sorting algorithm on a specific instance with:
+::
+
+   python3 demo.py --algo=insertion-sort ./instances/random_500.list
+
+To keep the example simple, we assume that instances are lists of integers.
+
+You can now start to configure simexpal to automatize your experimental pipeline.
+First, you need to create a new "experiments.yml" file within the "project" directory
+structured as below:
+
+.. literalinclude:: ./example/experiments.yml
+   :linenos:
+   :language: yaml
+   :caption: Example of experiments.yml file
+
+At this point, your "project" directory looks like this:
+::
+
+   project
+   ├── sort.py
+   ├── experiments.yml
+   └── instances
+       └── random_500.list
+
+
 Listing Experiments
 -------------------
 A complete list of experiments and their status can be seen by:

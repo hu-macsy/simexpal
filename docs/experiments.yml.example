@@ -8,8 +8,8 @@ instdir: "<path_to_instances_directory>"
 
 experiments:
   - name: insertion-sort
-    args: ['./demo.py', '--algo=insertion_sort', '@INSTANCE@']
+    args: ['./sort.py', '--algo=insertion_sort', '@INSTANCE@']
     output: stdout
   - name: bubble-sort
-    args: ['./demo.py', '--algo=bubble_sort', '@INSTANCE@']
+    args: ['./sort.py', '--algo=bubble_sort', '@INSTANCE@']
     output: stdout
