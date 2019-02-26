@@ -38,8 +38,15 @@ If instances are taken from a public repository, they can be downloaded with:
 
    simexpal instances install
 
-Automated Builds
-----------------
+Automated Builds and Revision Support
+-------------------------------------
 
-Dealing with Revisions
-----------------------
+To make sure that experiments are always run from exactly the same binaries,
+it is possible to let simexpal pull your programs from some VCS
+(as of version 0.1, only Git is supported) and build them automatically.
+
+Automated builds are controlled by the ``builds`` and ``revisions`` stanzas
+in ``experiments.yml``.
+
+.. TODO: Give example: how to pull code from this repo, build it and run it.
+
