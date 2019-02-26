@@ -1,6 +1,9 @@
 Usage Guide
 ===========
 
+Running Experiments
+-------------------
+
 Imagine that you want to compare insertion sort and bubble sort on a set of instances.
 To this purpose, you create a new "project" directory write a short Python script
 demo.py where you implemented the two algorithms and save it into "project".
