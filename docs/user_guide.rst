@@ -39,7 +39,7 @@ After having completed this steps, you can start using simexpal to run your expe
 A complete list of experiments and their status can be seen by:
 ::
 
-   simexpal experiments list
+   simex experiments list
 
 The color of each line represents the status of the experiment:
 
@@ -51,7 +51,7 @@ The color of each line represents the status of the experiment:
 Experiments can be launched with:
 ::
 
-   simexpal experiments launch
+   simex experiments launch
 
 This instruction will launch the non executed experiments on the local machine.
 
@@ -61,7 +61,7 @@ Before launching the experiments, make sure that all your instances are availabl
 Instances can be checked with:
 ::
 
-   simexpal instances list
+   simex instances list
 
 Unavailable instances will be shown in red, otherwise they will be shown in green.
 If instances are taken from a public repository, they can be downloaded automatically.
@@ -76,7 +76,7 @@ and `SNAP <https://snap.stanford.edu/data/>`_.
 All the listed instances can be downloaded within the "./graphs" directory with:
 ::
 
-   simexpal instances install
+   simex instances install
 
 Automated Builds and Revision Support
 -------------------------------------
