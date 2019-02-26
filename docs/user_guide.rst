@@ -1,6 +1,14 @@
 Usage Guide
 ===========
 
+Installation
+------------
+
+Simexpal requires Python 3 and can be installed via pip3:
+::
+
+   pip3 install simexpal
+
 Running Experiments
 -------------------
 

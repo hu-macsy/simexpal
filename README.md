@@ -13,25 +13,8 @@ the Python package can be employed when more extensive customization is necessar
 
 <!-- Write about reproducibility issues -->
 
-## Installation
+## Documentation
 
-## Getting started
-
-**Step 1: experiments.yml** Create a YAML file to describe your algorithmic experiments.
-
-```yaml
-instances:
-  - repo: local
-    items:
-      - random_500.list
-      - partially_sorted_500.list
-
-experiments:
-  - name: insertion-sort
-    args: ['./demo.py', '--algo=insertion_sort', '@INSTANCE@']
-  - name: bubble-sort
-    args: ['./demo.py', '--algo=bubble_sort', '@INSTANCE@']
-    output: stdout
-```
-
+Please refer to the [user guide](https://simexpal.readthedocs.io/en/latest/user_guide.html) for further information about
+how to install and use simexpal.
 
