@@ -9,8 +9,11 @@ Welcome to simexpal's documentation!
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
-   
-   API <api>
+
+   Usage Guide <user_guide>
+   Reference for experiments.yml file <experiments_reference>
+   Command-line Reference <command_line_reference>
+   Python API <api>
 
 
 Indices and tables
