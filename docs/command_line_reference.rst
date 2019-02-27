@@ -41,7 +41,7 @@ Supported selection options are:
 :``all``: selects all the experiments.
 :``failed``: selects all the failed experiments.
 :``unfinished``: selects all the unfinished experiments.
-:``experiment <e>``: selects the experiment named `exp`.
+:``experiment <e>``: selects the experiment named `e`.
 
 builds
 ------
