@@ -1,6 +1,8 @@
 simexpal.egg-info/
 *__pycache__/
 *_build/
+*build/
+*dist/
 *output
 *aux
 *graphs/
