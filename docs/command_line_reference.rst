@@ -30,12 +30,18 @@ It supports the following actions:
    Executed experiments are shown in green, failed ones are shown in red, running ones in
    yellow, and the non executed ones in the default command-line color.
 :launch: launches all the non executed experiments.
-:purge: removes the experimental data according to the `selection option`.
-   ``--all`` removes all experiments, ``--todo`` removes all failed experiments, ``--todo``
-   removes all completed experiments, ``--experiment <name>`` removes the experiment named
-   `name`.
+:purge: removes the experimental data.
    To actually delete experimental data, this instruction needs a further option ``-f``.
    Otherwise it will just perform a dry run.
+
+All the above actions can be applied to a subset of experiments according to a `selection option`,
+which can be specified as an additional argument ``--[selection option]``.
+Supported selection options are:
+
+:``all``: selects all the experiments.
+:``failed``: selects all the failed experiments.
+:``unfinished``: selects all the unfinished experiments.
+:``experiment <e>``: selects the experiment named `exp`.
 
 builds
 ------
