@@ -66,6 +66,11 @@ Experiments can be launched with:
 
 This instruction will launch the non executed experiments on the local machine.
 
+Evaluating Results
+------------------
+
+TODO
+
 Managing Instances
 ------------------
 Before launching the experiments, make sure that all your instances are available.
@@ -88,6 +93,11 @@ All the listed instances can be downloaded within the "./graphs" directory with:
 ::
 
    simex instances install
+
+Dealing with Parameters and Variants of an Algorithm
+----------------------------------------------------
+
+TODO
 
 Automated Builds and Revision Support
 -------------------------------------
