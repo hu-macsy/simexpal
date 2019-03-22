@@ -85,7 +85,7 @@ def select_runs_from_cli(cfg, args, default_all=True):
 			finished = os.access(run.output_file_path('status'), os.F_OK)
 			if finished:
 				with open(run.output_file_path('status'), "r") as f:
-					status_dict = yaml.load(f)
+					status_dict = yaml.load(f, Loader=yaml.Loader)
 
 			if finished and status_dict['timeout']:
 				yield run
@@ -219,7 +219,7 @@ def do_experiments_list(args, as_default_subcmd):
 		finished = os.access(run.output_file_path('status'), os.F_OK)
 		if finished:
 			with open(run.output_file_path('status'), "r") as f:
-				status_dict = yaml.load(f)
+				status_dict = yaml.load(f, Loader=yaml.Loader)
 
 		status = ''
 		if finished and status_dict['timeout']:
@@ -338,7 +338,7 @@ def do_invoke(args, basedir=None):
 	for run in cfg.discover_all_runs():
 		if args.specfile is not None:
 			with open(args.specfile, 'r') as f:
-				spec_yml = yaml.load(f)
+				spec_yml = yaml.load(f, Loader=yaml.Loader)
 
 			assert args.sge_index
 			index = int(os.environ['SGE_TASK_ID'])

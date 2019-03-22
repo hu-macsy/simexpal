@@ -330,7 +330,7 @@ class Config:
 				continue
 
 			with open(run.output_file_path('status'), "r") as f:
-				status_dict = yaml.load(f)
+				status_dict = yaml.load(f, Loader=yaml.Loader)
 			if status_dict['timeout'] or status_dict['signal'] or status_dict['status'] > 0:
 				print("Skipping failed run {}/{}[{}]".format(run.experiment.name,
 						run.instance.shortname, run.repetition))
@@ -537,7 +537,7 @@ class ExperimentInfo:
 class Experiment:
 	"""
 	Represents an experiment (see below).
-	
+
 	An experiment is defined as a combination of command line arguments
 	and environment
 	(from the experiment stanza in a experiments.yml file),
