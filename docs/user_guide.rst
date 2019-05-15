@@ -109,7 +109,44 @@ All the listed instances can be downloaded within the "./graphs" directory with:
 Dealing with Parameters and Variants of an Algorithm
 ----------------------------------------------------
 
-TODO
+When benchmarking algorithms, it is often useful to compare different
+variants or parameter configurations of the same algorithm.
+simexpal can manage those variants without requiring you to duplicate
+the ``experiments`` stanza multiple times.
+
+As an example, imagine that you want to benchmark the running time of
+merge sort using different minimum block sizes, as well as
+its running time depending on different algorithms for minimal blocks.
+This example is implemented in directory TODO of the simexpal repository.
+
+Those variants can be handled by simexpal using the following stanzas:
+
+.. code-block:: YAML
+
+    experiments:
+      - name: 'merge-sort'
+        output: stdout
+        args: ['python3', 'sort.py', '--algo=insertion-sort', '@EXTRA_ARGS@', '@INSTANCE@']
+
+    variants:
+      - axis: 'block-size'
+        items:
+          - name: 'bbs1'
+            extra_args: ['--base-block-size=1']
+          - name: 'bbs10'
+            extra_args: ['--base-block-size=10']
+          - name: 'bbs50'
+            extra_args: ['--base-block-size=50']
+      - axis: 'block-algo'
+        items:
+          - name: 'bba-insertion'
+            extra_args: ['--base-block-algorithm=insertion-sort']
+          - name: 'bba-selection'
+            extra_args: ['--base-block-algorithm=selection-sort']
+
+simexpal will duplicate the experiment for each possible combination
+of variants. Such a combination will consist of exactly one variant
+for every ``axis`` property.
 
 Automated Builds and Revision Support
 -------------------------------------
