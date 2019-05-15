@@ -5,9 +5,10 @@ Installation
 ------------
 
 Simexpal requires Python 3 and can be installed via pip3:
-::
 
-   pip3 install simexpal
+.. code-block:: bash
+
+   $ pip3 install simexpal
 
 Running Experiments
 -------------------
@@ -48,9 +49,10 @@ At this point, your "project" directory looks like this:
 
 After having completed this steps, you can start using simexpal to run your experiments.
 A complete list of experiments and their status can be seen by:
-::
 
-   simex experiments list
+.. code-block:: bash
+
+   $ simex experiments list
 
 The color of each line represents the status of the experiment:
 
@@ -60,9 +62,10 @@ The color of each line represents the status of the experiment:
 - Default: not executed
 
 Experiments can be launched with:
-::
 
-   simex experiments launch
+.. code-block:: bash
+
+   $ simex experiments launch
 
 This instruction will launch the non executed experiments on the local machine.
 
@@ -82,9 +85,10 @@ Managing Instances
 ------------------
 Before launching the experiments, make sure that all your instances are available.
 Instances can be checked with:
-::
 
-   simex instances list
+.. code-block:: bash
+
+   $ simex instances list
 
 Unavailable instances will be shown in red, otherwise they will be shown in green.
 If instances are taken from a public repository, they can be downloaded automatically.
@@ -97,9 +101,10 @@ and `SNAP <https://snap.stanford.edu/data/>`_.
    :caption: experiments.yml with instances from public repositories.
 
 All the listed instances can be downloaded within the "./graphs" directory with:
-::
 
-   simex instances install
+.. code-block:: bash
+
+   $ simex instances install
 
 Dealing with Parameters and Variants of an Algorithm
 ----------------------------------------------------
@@ -147,7 +152,7 @@ using
 
 .. code-block:: bash
 
-	simex builds make
+	$ simex builds make
 
 Once the build process is finished, the experiments can be started as usual.
 
