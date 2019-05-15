@@ -5,9 +5,10 @@ Installation
 ------------
 
 Simexpal requires Python 3 and can be installed via pip3:
-::
 
-   pip3 install simexpal
+.. code-block:: bash
+
+   $ pip3 install simexpal
 
 Running Experiments
 -------------------
@@ -49,9 +50,10 @@ At this point, your "project" directory looks like this:
 
 After having completed this steps, you can start using simexpal to run your experiments.
 A complete list of experiments and their status can be seen by:
-::
 
-   simex experiments list
+.. code-block:: bash
+
+   $ simex experiments list
 
 The color of each line represents the status of the experiment:
 
@@ -61,24 +63,33 @@ The color of each line represents the status of the experiment:
 - Default: not executed
 
 Experiments can be launched with:
-::
 
-   simex experiments launch
+.. code-block:: bash
+
+   $ simex experiments launch
 
 This instruction will launch the non executed experiments on the local machine.
 
 Evaluating Results
 ------------------
 
-TODO
+After experiments have been run, simexpal can assist with locating and collecting output data.
+To do this, simexpal can be imported as a Python package. As simexpal is output format
+and algorithm agnostic,
+you need to provide functionality to parse output files and evaluate results.
+Parsing output files can usually be greatly simplified by using standardized
+formats and appropriate libraries.
+
+TODO: Example
 
 Managing Instances
 ------------------
 Before launching the experiments, make sure that all your instances are available.
 Instances can be checked with:
-::
 
-   simex instances list
+.. code-block:: bash
+
+   $ simex instances list
 
 Unavailable instances will be shown in red, otherwise they will be shown in green.
 If instances are taken from a public repository, they can be downloaded automatically.
@@ -91,14 +102,52 @@ and `SNAP <https://snap.stanford.edu/data/>`_.
    :caption: experiments.yml with instances from public repositories.
 
 All the listed instances can be downloaded within the "./graphs" directory with:
-::
 
-   simex instances install
+.. code-block:: bash
+
+   $ simex instances install
 
 Dealing with Parameters and Variants of an Algorithm
 ----------------------------------------------------
 
-TODO
+When benchmarking algorithms, it is often useful to compare different
+variants or parameter configurations of the same algorithm.
+simexpal can manage those variants without requiring you to duplicate
+the ``experiments`` stanza multiple times.
+
+As an example, imagine that you want to benchmark the running time of
+merge sort using different minimum block sizes, as well as
+its running time depending on different algorithms for minimal blocks.
+This example is implemented in directory TODO of the simexpal repository.
+
+Those variants can be handled by simexpal using the following stanzas:
+
+.. code-block:: YAML
+
+    experiments:
+      - name: 'merge-sort'
+        output: stdout
+        args: ['python3', 'sort.py', '--algo=insertion-sort', '@EXTRA_ARGS@', '@INSTANCE@']
+
+    variants:
+      - axis: 'block-size'
+        items:
+          - name: 'bbs1'
+            extra_args: ['--base-block-size=1']
+          - name: 'bbs10'
+            extra_args: ['--base-block-size=10']
+          - name: 'bbs50'
+            extra_args: ['--base-block-size=50']
+      - axis: 'block-algo'
+        items:
+          - name: 'bba-insertion'
+            extra_args: ['--base-block-algorithm=insertion-sort']
+          - name: 'bba-selection'
+            extra_args: ['--base-block-algorithm=selection-sort']
+
+simexpal will duplicate the experiment for each possible combination
+of variants. Such a combination will consist of exactly one variant
+for every ``axis`` property.
 
 Automated Builds and Revision Support
 -------------------------------------
@@ -141,7 +190,7 @@ using
 
 .. code-block:: bash
 
-	simex builds make
+	$ simex builds make
 
 Once the build process is finished, the experiments can be started as usual.
 
