@@ -69,7 +69,14 @@ This instruction will launch the non executed experiments on the local machine.
 Evaluating Results
 ------------------
 
-TODO
+After experiments have been run, simexpal can assist with locating and collecting output data.
+To do this, simexpal can be imported as a Python package. As simexpal is output format
+and algorithm agnostic,
+you need to provide functionality to parse output files and evaluate results.
+Parsing output files can usually be greatly simplified by using standardized
+formats and appropriate libraries.
+
+TODO: Example
 
 Managing Instances
 ------------------
