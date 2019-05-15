@@ -12,7 +12,8 @@ Simexpal requires Python 3 and can be installed via pip3:
 Running Experiments
 -------------------
 
-Imagine that you want to compare insertion sort and bubble sort on a set of instances.
+As a simple example, we compare Insertion Sort and Bubble Sort on a set of instances;
+such an example is available in the :doc:`../examples/` directory, within examples.
 To this purpose, you create a new "project" directory write a short Python script
 demo.py where you implemented the two algorithms and save it into "project".
 demo.py accepts two arguments: the algorithm name (i.e. insertion-sort or bubble-sort)
@@ -31,7 +32,7 @@ First, you need to create a new "experiments.yml" file within the "project" dire
 This is a configuration file that is read by simexpal to run the experiments on the
 desired instances and it is structured as below:
 
-.. literalinclude:: ./example/experiments.yml
+.. literalinclude:: ../examples/sorting/experiments.yml
    :linenos:
    :language: yaml
    :caption: Example of experiments.yml file
@@ -84,7 +85,7 @@ If instances are taken from a public repository, they can be downloaded automati
 We configured the YAML file below to use instances from `Konect <http://konect.cc/networks/>`_
 and `SNAP <https://snap.stanford.edu/data/>`_.
 
-.. literalinclude:: ./graph_example/experiments.yml
+.. literalinclude:: ../examples/download_instances/experiments.yml
    :linenos:
    :language: yaml
    :caption: experiments.yml with instances from public repositories.
