@@ -13,23 +13,32 @@ Simexpal requires Python 3 and can be installed via pip3:
 Running Experiments
 -------------------
 
-As a simple example, we compare Insertion Sort and Bubble Sort on a set of instances;
-such an example is available in the :doc:`../examples/` directory, within examples.
-To this purpose, you create a new "project" directory write a short Python script
-demo.py where you implemented the two algorithms and save it into "project".
-demo.py accepts two arguments: the algorithm name (i.e. insertion-sort or bubble-sort)
+As a simple example, we compare Insertion Sort and Bubble Sort on a set of instances
+(such an example is available in the  within `examples
+<https://github.com/hu-macsy/simexpal/tree/master/examples>`_).
+To this purpose, we created a new `sorting
+<https://github.com/hu-macsy/simexpal/tree/master/examples/sorting>`_
+directory, and wrote a short Python script
+`sort.py
+<https://github.com/hu-macsy/simexpal/blob/master/examples/sorting/sort.py>`_
+where we implemented the two algorithms.
+``sort.py`` accepts two arguments: the algorithm name (i.e. insertion-sort or bubble-sort)
 and the path to the instance.
 Then, you generated a bunch of instances and placed them in a directory called "instances"
-within "project" (in this example we just deal with a single instance named "random_500.list").
-Now you can run a sorting algorithm on a specific instance with:
+within "project" (in this example we just deal with a single instance
+`random_500.list
+<https://github.com/hu-macsy/simexpal/blob/master/examples/sorting/instances/random_500.list>`_).
+Now we can run a sorting algorithm on a specific instance with:
 ::
 
-   python3 demo.py --algo=insertion-sort ./instances/random_500.list
+   python3 sort.py --algo=insertion-sort ./instances/random_500.list
 
 To keep the example simple, we assume that instances are lists of integers.
 
-You can now start to configure simexpal to automatize your experimental pipeline.
-First, you need to create a new "experiments.yml" file within the "project" directory.
+We can now start to configure simexpal to automatize the experimental pipeline.
+First, we need to create a new `experiments.yml
+<https://github.com/hu-macsy/simexpal/blob/master/examples/sorting/experiments.yml>`_
+file within the ``sorting`` directory.
 This is a configuration file that is read by simexpal to run the experiments on the
 desired instances and it is structured as below:
 
@@ -39,16 +48,16 @@ desired instances and it is structured as below:
    :caption: Example of experiments.yml file
 
 The structure of this file will be better explained later in the guide.
-At this point, your "project" directory looks like this:
+At this point, our ``sorting`` directory looks like this:
 ::
 
-   project
+   sorting
    ├── sort.py
    ├── experiments.yml
    └── instances
        └── random_500.list
 
-After having completed this steps, you can start using simexpal to run your experiments.
+After having completed this steps, we can start using simexpal to run our experiments.
 A complete list of experiments and their status can be seen by:
 
 .. code-block:: bash
