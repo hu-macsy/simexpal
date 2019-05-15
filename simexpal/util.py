@@ -57,7 +57,7 @@ def touch(path):
 
 def read_setup_file(setup_file):
 	with open(setup_file, 'r') as f:
-		setup_dict = yaml.load(f, Loader=yaml.Loader)
+		setup_dict = yaml.load(f, Loader=yaml.BaseLoader)
 	return setup_dict
 
 def validate_setup_file(setup_file):
