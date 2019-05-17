@@ -1,6 +1,8 @@
 Usage Guide
 ===========
 
+.. highlight:: none
+
 Installation
 ------------
 
@@ -9,6 +11,75 @@ Simexpal requires Python 3 and can be installed via pip3:
 .. code-block:: bash
 
    $ pip3 install simexpal
+
+Quick Example
+-------------
+
+The simexpal repository contains a small example that you can try out to quickly get to know the tool.
+
+1.  Install simexpal as detailed above.
+
+2.  Clone the simexpal repository and navigate to the `examples/sorting/` directory:
+
+    .. code-block:: bash
+
+        $ git clone https://github.com/hu-macsy/simexpal.git
+        $ cd simexpal/examples/sorting/
+
+3.  Generate some instances for the benchmark:
+
+    .. code-block:: bash
+
+        # List the instances declared in experiments.yml.
+        # Note that missing instances will appear in red.
+        $ simex instances
+
+    ::
+
+        uniform-n1000-s1
+        uniform-n1000-s2
+        uniform-n1000-s3
+
+    .. code-block:: bash
+
+        $ simex instances install # Generate missing instance files.
+
+4.  Launch the algorithms on all instances:
+
+    .. code-block:: bash
+
+        $ simex experiments # List experiment configurations from experiments.yml.
+
+    ::
+
+        Experiment                           Instance                            Status
+        ----------                           --------                            ------
+        bubble-sort                          uniform-n1000-s1                    [0] 
+        bubble-sort                          uniform-n1000-s2                    [0] 
+        bubble-sort                          uniform-n1000-s3                    [0] 
+        insertion-sort                       uniform-n1000-s1                    [0] 
+        insertion-sort                       uniform-n1000-s2                    [0] 
+        insertion-sort                       uniform-n1000-s3                    [0] 
+
+    .. code-block:: bash
+
+        $ simex experiments launch # Launch all configurations locally.
+    
+    .. code-block:: bash
+
+        $ simex experiments # Review the status of the experiments.
+
+    ::
+
+        Experiment                           Instance                            Status
+        ----------                           --------                            ------
+        bubble-sort                          uniform-n1000-s1                    [0] finished
+        bubble-sort                          uniform-n1000-s2                    [0] finished
+        bubble-sort                          uniform-n1000-s3                    [0] finished
+        insertion-sort                       uniform-n1000-s1                    [0] finished
+        insertion-sort                       uniform-n1000-s2                    [0] finished
+        insertion-sort                       uniform-n1000-s3                    [0] finished
+
 
 Running Experiments
 -------------------
