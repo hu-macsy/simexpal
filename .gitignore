@@ -3,7 +3,7 @@ simexpal.egg-info/
 *_build/
 *build/
 *dist/
-*output
-*aux
-*graphs/
+*output/
+*aux/
+*instances/
 
