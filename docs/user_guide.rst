@@ -80,6 +80,19 @@ The simexpal repository contains a small example that you can try out to quickly
         insertion-sort                       uniform-n1000-s2                    [0] finished
         insertion-sort                       uniform-n1000-s3                    [0] finished
 
+5.  Evaluate the results:
+    
+    .. code-block:: bash
+
+        # Here, we use the popular pandas package to aggregate the results.
+        # Make sure that pandas is installed on your machine (pip3 install pandas).
+        $ ./eval.py
+
+    ::
+        
+        experiment      comparisons          swaps      time
+        bubble-sort        499500.0  253437.333333  0.091776
+        insertion-sort     241891.0  257609.000000  0.039501
 
 Running Experiments
 -------------------
