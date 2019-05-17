@@ -6,6 +6,9 @@ import sys
 from time import time
 import yaml
 
+n_comparisons = 0
+n_swaps = 0
+
 def insertion_sort(array):
 	sorted_array = [array.pop(0)]
 	while len(array) > 0:
@@ -15,17 +18,24 @@ def insertion_sort(array):
 	return sorted_array
 
 def bubble_sort(array):
+	global n_comparisons
+	global n_swaps
+
 	for i in range(len(array)):
 		for j in reversed(range(i + 1, len(array))):
 			if array[j] < array[j - 1]:
 				array[j], array[j - 1] = array[j - 1], array[j]
+				n_swaps += 1
+			n_comparisons += 1
 	return array
 
 def write_result(algo, sorted_array, t):
 	result_dict = {
-			'algo' : algo,
-			'result' : sorted_array,
-			'time' : t
+		'algo' : algo,
+		'result' : sorted_array,
+		'comparisons': n_comparisons,
+		'swaps': n_swaps,
+		'time' : t
 	}
 	print(yaml.dump(result_dict, default_flow_style=False))
 
