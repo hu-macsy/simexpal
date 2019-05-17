@@ -382,6 +382,8 @@ class Instance:
 		if self.check_available():
 			return
 
+		util.try_mkdir(self._cfg.instance_dir())
+
 		if 'repo' in self._inst_yml:
 			if self._inst_yml['repo'] == 'local':
 				return
