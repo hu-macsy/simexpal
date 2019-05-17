@@ -14,8 +14,8 @@ instances:
 
 experiments:
   - name: insertion-sort
-    args: ['sort.py', '--algo=insertion-sort', '@INSTANCE@']
+    args: ['./sort.py', '--algo=insertion-sort', '@INSTANCE@']
     output: stdout
   - name: bubble-sort
-    args: ['sort.py', '--algo=bubble-sort', '@INSTANCE@']
+    args: ['./sort.py', '--algo=bubble-sort', '@INSTANCE@']
     output: stdout
