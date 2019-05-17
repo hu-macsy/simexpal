@@ -15,16 +15,30 @@ Simexpal requires Python 3 and can be installed via pip3:
 Quick Example
 -------------
 
-The simexpal repository contains a small example that you can try out to quickly get to know the tool.
+The simexpal repository contains a small example that you can try out to quickly get to know
+the tool. In this example, we compare different (inefficient) sorting algorithms
+on multiple inputs.
+
+.. note::
+    While this constitutes a toy example, more complex examples
+    can be handled using the same workflow. Indeed, simexpal has successfully been
+    used to manage benchmarks that are published in algorithmic research papers.
+    TODO: Add page about papers, link to it.
 
 1.  Install simexpal as detailed above.
 
-2.  Clone the simexpal repository and navigate to the `examples/sorting/` directory:
+2.  Clone the simexpal repository and navigate to the ``examples/sorting/`` directory:
 
     .. code-block:: bash
 
         $ git clone https://github.com/hu-macsy/simexpal.git
         $ cd simexpal/examples/sorting/
+
+    This directory contains an ``experiments.yml`` file that stores the configuration
+    of all instances and experiments and some scripts:
+    ``generate.py`` is used to generate random instances,
+    the ``sort.py`` executes all algorithms and ``eval.py`` is a script that uses
+    simexpal's Python interface to evaluate benchmarking results.
 
 3.  Generate some instances for the benchmark:
 
@@ -43,6 +57,10 @@ The simexpal repository contains a small example that you can try out to quickly
     .. code-block:: bash
 
         $ simex instances install # Generate missing instance files.
+
+    In the ``experiments.yml`` the instances are declared as part of the
+    ``instances`` stanza. This stanza also declares how to invoke the
+    generator script ``generate.py``.
 
 4.  Launch the algorithms on all instances:
 
@@ -80,6 +98,10 @@ The simexpal repository contains a small example that you can try out to quickly
         insertion-sort                       uniform-n1000-s2                    [0] finished
         insertion-sort                       uniform-n1000-s3                    [0] finished
 
+    In the ``experiments.yml`` file, all experiment configurations
+    (including the invocation of ``sort.py``) are declared
+    as part of the ``experiments`` stanza.
+
 5.  Evaluate the results:
     
     .. code-block:: bash
@@ -93,6 +115,11 @@ The simexpal repository contains a small example that you can try out to quickly
         experiment      comparisons          swaps      time
         bubble-sort        499500.0  253437.333333  0.091776
         insertion-sort     241891.0  257609.000000  0.039501
+
+    ``eval.py`` is a simple 20 line script that uses the simexpal Python interface
+    (i.e., the function ``collect_successful_results()``) to gather all
+    results. It uses ``pandas`` to aggregate statistics
+    over all experiments.
 
 Running Experiments
 -------------------
