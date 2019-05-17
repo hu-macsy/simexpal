@@ -1,14 +1,21 @@
 instances:
-  - repo: local
+  - generator:
+      args: ['./generate.py', '--seed=1', '1000']
     items:
-      - random.list
-
-instdir: "./instances"
+      - uniform-n1000-s1
+  - generator:
+      args: ['./generate.py', '--seed=2', '1000']
+    items:
+      - uniform-n1000-s2
+  - generator:
+      args: ['./generate.py', '--seed=3', '1000']
+    items:
+      - uniform-n1000-s3
 
 experiments:
   - name: insertion-sort
-    args: ['python3', 'sort.py', '--algo=insertion-sort', '@INSTANCE@']
+    args: ['sort.py', '--algo=insertion-sort', '@INSTANCE@']
     output: stdout
   - name: bubble-sort
-    args: ['python3', 'sort.py', '--algo=bubble-sort', '@INSTANCE@']
+    args: ['sort.py', '--algo=bubble-sort', '@INSTANCE@']
     output: stdout
