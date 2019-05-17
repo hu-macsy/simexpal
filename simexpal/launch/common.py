@@ -153,7 +153,7 @@ def invoke_run(run):
 			break
 
 		elapsed = time.perf_counter() - start
-		if 'timeout' in exp.info._exp_yml and elapsed > exp.info._exp_yml['timeout']:
+		if 'timeout' in exp.info._exp_yml and elapsed > float(exp.info._exp_yml['timeout']):
 			child.send_signal(signal.SIGXCPU)
 
 		# Consume any output that might be ready.
