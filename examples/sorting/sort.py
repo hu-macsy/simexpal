@@ -10,12 +10,20 @@ n_comparisons = 0
 n_swaps = 0
 
 def insertion_sort(array):
-	sorted_array = [array.pop(0)]
-	while len(array) > 0:
-		x = array.pop(0)
-		j = bisect.bisect_left(sorted_array, x)
-		sorted_array.insert(j, x)
-	return sorted_array
+	global n_comparisons
+	global n_swaps
+
+	for i in range(1, len(array)):
+		elem = array[i]
+		for k in range(i):
+			n_comparisons += 1
+			if array[k] > elem:
+				break
+		for j in reversed(range(k + 1, i)):
+			n_swaps += 1
+			array[j + 1] = array[j]
+		array[k] = elem
+	return array
 
 def bubble_sort(array):
 	global n_comparisons
@@ -23,10 +31,10 @@ def bubble_sort(array):
 
 	for i in range(len(array)):
 		for j in reversed(range(i + 1, len(array))):
-			if array[j] < array[j - 1]:
-				array[j], array[j - 1] = array[j - 1], array[j]
-				n_swaps += 1
 			n_comparisons += 1
+			if array[j] < array[j - 1]:
+				n_swaps += 1
+				array[j], array[j - 1] = array[j - 1], array[j]
 	return array
 
 def write_result(algo, sorted_array, t):
