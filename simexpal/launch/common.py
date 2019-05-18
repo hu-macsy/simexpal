@@ -180,7 +180,7 @@ def invoke_run(run):
 		sigcode = signal.Signals(-child.returncode).name
 	else:
 		status = child.returncode
-	timeout = 'timeout' in exp.info._exp_yml and runtime > exp.info._exp_yml['timeout']
+	timeout = 'timeout' in exp.info._exp_yml and runtime > float(exp.info._exp_yml['timeout'])
 
 	# Create the status file to signal that we are finished.
 	status_dict = {'timeout': timeout, 'walltime': runtime,
