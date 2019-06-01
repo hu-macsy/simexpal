@@ -4,7 +4,7 @@ Command-line Reference
 Simexpal instructions are written as:
 ::
 
-   simex <instruction> [action] [selection option] [*args]
+   simex <instruction> [action] [selection option] [args...]
 
 In the following, we list all simexpal instructions and their arguments.
 
@@ -18,8 +18,8 @@ It supports the following actions:
 :install: downloads all the missing instances if they are taken from a public repository.
    With the argument ``--overwrite`` it will also download the available instances and
    overwrite them.
-:process: ``TODO``
-:run-transform: ``TODO``
+:process: caches information about instances.
+:run-transform: manually runs a transformation on instance files.
 
 experiment
 ----------
@@ -43,9 +43,10 @@ Supported selection options are:
 :``unfinished``: selects all the unfinished experiments.
 :``experiment <e>``: selects the experiment named `e`.
 
-builds
-------
-TODO
+..
+    builds
+    ------
+    TODO
 
 archive
 -------
