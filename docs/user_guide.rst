@@ -12,6 +12,8 @@ Simexpal requires Python 3 and can be installed via pip3:
 
    $ pip3 install simexpal
 
+.. _sortingExample:
+
 Quick Example
 -------------
 
@@ -23,6 +25,8 @@ on multiple inputs.
     While this constitutes a toy example, more complex examples
     can be handled using the same workflow. Indeed, simexpal has successfully been
     used to manage benchmarks that are published in algorithmic research papers.
+
+..
     TODO: Add page about papers, link to it.
 
 1.  Install simexpal as detailed above.
@@ -200,7 +204,27 @@ you need to provide functionality to parse output files and evaluate results.
 Parsing output files can usually be greatly simplified by using standardized
 formats and appropriate libraries.
 
-TODO: Example
+The example below (i.e., ``eval.py`` from ``examples/sorting/``)
+demonstrates this concept. It uses the simexpal Python package
+to obtain all output files and meta data about them. In particular,
+it uses the function ``collect_successful_results()`` for this purpose.
+A user-supplied parsing function is employed to parse the output files.
+
+.. code-block:: python
+
+    def parse(run, f):
+        output = yaml.load(f, Loader=yaml.Loader)
+        return {
+            'experiment': run.experiment.name,
+            'instance': run.instance.shortname,
+            'comparisons': output['comparisons'],
+            'swaps': output['swaps'],
+            'time': output['time']
+        }
+
+    cfg = simexpal.config_for_dir()
+    df = pandas.DataFrame(cfg.collect_successful_results(parse))
+    print(df.groupby('experiment').agg('mean'))
 
 Managing Instances
 ------------------
@@ -238,7 +262,9 @@ the ``experiments`` stanza multiple times.
 As an example, imagine that you want to benchmark the running time of
 merge sort using different minimum block sizes, as well as
 its running time depending on different algorithms for minimal blocks.
-This example is implemented in directory TODO of the simexpal repository.
+
+..
+    TODO: This example is implemented in directory TODO of the simexpal repository.
 
 Those variants can be handled by simexpal using the following stanzas:
 
@@ -279,12 +305,15 @@ it is possible to let simexpal pull your programs from some VCS
 Automated builds are controlled by the ``builds`` and ``revisions`` stanzas
 in ``experiments.yml``.
 
-In the remainder of this section, we will reconsider the sorting example from
-TODO. Instead of using a Python implementation of the algorithms,
-we will work with a C implementation and use simexpal's automated build support to compile it.
-In the simexpal repository, sample C code for the problem can be found
-in `TODO`. In this example, simexpal will invoke a CMake build system to build the program;
+In the remainder of this section, we will reconsider the sorting example from the
+:ref:`sortingExample` section. Instead of using a Python implementation of the algorithms,
+we assume a C implementation and use simexpal's automated build support to compile it.
+In this example, simexpal will invoke a CMake build system to build the program;
 however, simexpal is independent of the particular build system in use.
+
+..
+    TODO: In the simexpal repository, sample C code for the problem can be found
+    in `TODO`.
 
 To enable automated builds, we need to add ``builds`` and ``revisions``
 stanzas to ``experiments.yml``. In our example, these look like:
@@ -299,7 +328,7 @@ stanzas to ``experiments.yml``. In our example, these look like:
 			  - 'cmake'
 			  - '-DCMAKE_INSTALL_PREFIX=@THIS_PREFIX_DIR@'
 			  - '-DCMAKE_BUILD_TYPE=RelWithDebInfo'
-			  - '@THIS_CLONE_DIR@/TODO'
+			  - '@THIS_CLONE_DIR@/examples/sorting-c'
 		compile:
 		  - args: ['make', '-j@PARALLELISM@']
 		install:
@@ -314,10 +343,11 @@ using
 
 Once the build process is finished, the experiments can be started as usual.
 
-.. TODO: Give example: how to pull code from this repo, build it and run it.
+..
+    TODO: Give example: how to pull code from this repo, build it and run it.
 
-Run Matrix
-----------
-
-TODO
+..
+    Run Matrix
+    ----------
+    TODO
 
