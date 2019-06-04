@@ -22,6 +22,7 @@ setup(
 	scripts=['scripts/simex'],
 	install_requires=[
 		'argcomplete',
+		'requests',
 		'pyyaml'
 	]
 )
