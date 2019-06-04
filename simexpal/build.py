@@ -134,7 +134,9 @@ def make_build_in_order(cfg, build):
 		util.try_rmtree(build.clone_dir)
 
 		subprocess.check_call(['git', 'clone', build.info._build_yml['git'], build.clone_dir])
-		subprocess.check_call(['git', '-C', build.clone_dir, 'checkout',
+		subprocess.check_call(['git', '--git-dir', build.clone_dir + '/.git',
+				'--work-tree', build.clone_dir,
+				'checkout',
 				build.revision.version_for_build(build.name)])
 		util.touch(os.path.join(build.clone_dir, 'checkedout.simexpal'))
 		did_work = True
