@@ -444,6 +444,10 @@ class BuildInfo:
 		return self._build_yml['name']
 
 	@property
+	def repo_dir(self):
+		return os.path.join(self._cfg.basedir, 'builds', self.name + '.repo')
+
+	@property
 	def requirements(self):
 		if 'requires' in self._build_yml:
 			for name in self._build_yml['requires']:

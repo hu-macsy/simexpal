@@ -130,14 +130,39 @@ def make_build_in_order(cfg, build):
 	if want_phase(Phase.CHECKOUT):
 		log_phase('checkout')
 
-		# Recreate the source directory.
-		util.try_rmtree(build.clone_dir)
+		git_ref = build.revision.version_for_build(build.name)
+		generic_tag = 'refs/tags/simexpal-rev/' + build.revision.name
 
-		subprocess.check_call(['git', 'clone', build.info._build_yml['git'], build.clone_dir])
-		subprocess.check_call(['git', '--git-dir', build.clone_dir + '/.git',
-				'--work-tree', build.clone_dir,
-				'checkout',
-				build.revision.version_for_build(build.name)])
+		# Fetch the remote ref to a local tag.
+		fetch_refspec = ['+' + git_ref + ':' + generic_tag]
+
+		# TODO: If we *know* that the ref is a tag, we want to do something like the following:
+		#fetch_refspec = ['+refs/tags/' + git_ref + ':' + generic_tag]
+
+		# Create the repository (in an empty state).
+		if not os.access(build.info.repo_dir, os.F_OK):
+			subprocess.check_call(['git', 'init', '-q', '--bare', build.info.repo_dir])
+
+		# Fetch the specified revision if it does not exist already.
+		verify_ref_result = subprocess.call(['git', '--git-dir', build.info.repo_dir,
+				'rev-parse', '-q', '--verify', generic_tag],
+			stdout=subprocess.DEVNULL)
+		if verify_ref_result != 0:
+			# As we create generic_tag, we can add --no-tags here.
+			subprocess.check_call(['git', '--git-dir', build.info.repo_dir,
+					'fetch', '--depth=1', '--no-tags',
+					build.info._build_yml['git']] + fetch_refspec)
+
+		# Prune the existing worktree.
+		util.try_rmtree(build.clone_dir)
+		subprocess.check_call(['git', '--git-dir', build.info.repo_dir,
+				'worktree', 'prune'])
+
+		# Recreate the worktree and check out the specified revision.
+		subprocess.check_call(['git', '--git-dir', build.info.repo_dir,
+				'worktree', 'add', '--detach',
+				build.clone_dir,
+				generic_tag])
 		util.touch(os.path.join(build.clone_dir, 'checkedout.simexpal'))
 		did_work = True
 
