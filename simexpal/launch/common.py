@@ -47,23 +47,23 @@ def invoke_run(run):
 	(exp, instance) = (run.experiment, run.instance.filename)
 
 	# Perform a DFS to discover all used builds.
-	recusive_builds = []
+	recursive_builds = []
 	builds_visited = set()
 
 	for name in exp.info.used_builds:
 		assert name not in builds_visited
 		build = run.config.get_build(name, exp.revision)
-		recusive_builds.append(build)
+		recursive_builds.append(build)
 		builds_visited.add(name)
 
-	i = 0 # Need index-based loop as recusive_builds is mutated in the loop.
-	while i < len(recusive_builds):
-		build = recusive_builds[i]
+	i = 0 # Need index-based loop as recursive_builds is mutated in the loop.
+	while i < len(recursive_builds):
+		build = recursive_builds[i]
 		for req_name in build.info.requirements:
 			if req_name in builds_visited:
 				continue
 			req_build = run.config.get_build(req_name, exp.revision)
-			recusive_builds.append(req_build)
+			recursive_builds.append(req_build)
 			builds_visited.add(req_name)
 		i += 1
 
@@ -105,9 +105,9 @@ def invoke_run(run):
 			return ':'.join(items) + ':' + os.environ[var]
 		return ':'.join(items)
 
-	build_paths = [os.path.join(p.prefix_dir, 'bin') for p in recusive_builds]
-	build_ld_paths = [os.path.join(p.prefix_dir, 'lib') for p in recusive_builds]
-	build_python_paths = [os.path.join(p.prefix_dir, export) for p in recusive_builds
+	build_paths = [os.path.join(p.prefix_dir, 'bin') for p in recursive_builds]
+	build_ld_paths = [os.path.join(p.prefix_dir, 'lib') for p in recursive_builds]
+	build_python_paths = [os.path.join(p.prefix_dir, export) for p in recursive_builds
 			for export in p.info.exports_python]
 
 	environ = os.environ.copy()
@@ -146,7 +146,7 @@ def invoke_run(run):
 	child = subprocess.Popen(cmd, cwd=run.config.basedir, env=environ,
 			stdout=stdout, stderr=subprocess.PIPE)
 	sel = selectors.DefaultSelector()
-	
+
 	stderr_writer = LazyWriter(child.stderr, run.aux_file_path('stderr'))
 	sel.register(child.stderr, selectors.EVENT_READ, stderr_writer)
 

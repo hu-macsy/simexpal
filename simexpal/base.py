@@ -476,8 +476,8 @@ class BuildInfo:
 
 	@property
 	def exports_python(self):
-		if 'exports_python' in self._build_yml:
-			return [ ]
+		if 'exports_python' not in self._build_yml:
+			return []
 		return [self._build_yml['exports_python']]
 
 class Revision:
