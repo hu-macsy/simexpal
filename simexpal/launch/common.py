@@ -107,10 +107,13 @@ def invoke_run(run):
 
 	build_paths = [os.path.join(p.prefix_dir, 'bin') for p in recusive_builds]
 	build_ld_paths = [os.path.join(p.prefix_dir, 'lib') for p in recusive_builds]
+	build_python_paths = [os.path.join(p.prefix_dir, export) for p in recusive_builds
+			for export in p.info.exports_python]
 
 	environ = os.environ.copy()
 	environ['PATH'] = prepend_env('PATH', build_paths)
 	environ['LD_LIBRARY_PATH'] = prepend_env('LD_LIBRARY_PATH', build_ld_paths)
+	environ['PYTHONPATH'] = prepend_env('PYTHONPATH', build_python_paths)
 
 	if 'environ' in exp.info._exp_yml:
 		for (k, v) in exp.info._exp_yml['environ'].items():

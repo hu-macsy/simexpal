@@ -474,6 +474,12 @@ class BuildInfo:
 				stack.append(req_info)
 				visited.add(req_name)
 
+	@property
+	def exports_python(self):
+		if 'exports_python' in self._build_yml:
+			return [ ]
+		return [self._build_yml['exports_python']]
+
 class Revision:
 	def __init__(self, cfg, revision_yml):
 		self._cfg = cfg
