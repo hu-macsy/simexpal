@@ -28,34 +28,12 @@ if not os.isatty(sys.stdout.fileno()):
 	for c in colors:
 		colors[c] = ''
 
-run_selection_parser = argparse.ArgumentParser(add_help=False)
-run_selection_parser.add_argument('--instset', type=str)
-run_selection_parser.add_argument('--experiment', type=str)
-run_selection_parser.add_argument('--revision', type=str)
-run_selection_parser.add_argument('--run', type=str)
-run_selection_parser.add_argument('--all', action='store_true')
-run_selection_parser.add_argument('--failed', action='store_true')
-run_selection_parser.add_argument('--unfinished', action='store_true')
+# ---------------------------------------------------------------------------------------
 
-def do_main():
-	args = do_main.parser.parse_args()
-	if args.main_subcmd == 'instances':
-		do_instances(args)
-	elif args.main_subcmd == 'builds':
-		do_builds(args)
-	elif args.main_subcmd == 'experiments':
-		do_experiments(args)
-	elif args.main_subcmd == 'invoke':
-		do_invoke(args, basedir=args.C)
-	elif args.main_subcmd == 'queue':
-		do_queue(args)
-	else:
-		assert args.main_subcmd == 'archive'
-		do_archive(args)
-
-do_main.parser = argparse.ArgumentParser()
-do_main.parser.add_argument('-C', type=str)
-do_main.subcmds = do_main.parser.add_subparsers(dest='main_subcmd')
+main_parser = argparse.ArgumentParser()
+main_parser.add_argument('-C', type=str)
+main_subcmds = main_parser.add_subparsers(metavar='<command>')
+main_subcmds.required = True
 
 def select_runs_from_cli(cfg, args, default_all=True):
 	if args.experiment is not None:
@@ -104,6 +82,17 @@ def select_runs_from_cli(cfg, args, default_all=True):
 		if default_all:
 			yield from cfg.discover_all_runs()
 
+run_selection_parser = argparse.ArgumentParser(add_help=False)
+run_selection_parser.add_argument('--instset', type=str)
+run_selection_parser.add_argument('--experiment', type=str)
+run_selection_parser.add_argument('--revision', type=str)
+run_selection_parser.add_argument('--run', type=str)
+run_selection_parser.add_argument('--all', action='store_true')
+run_selection_parser.add_argument('--failed', action='store_true')
+run_selection_parser.add_argument('--unfinished', action='store_true')
+
+# ---------------------------------------------------------------------------------------
+
 def do_instances(args):
 	if not args.instances_subcmd or args.instances_subcmd == 'list':
 		do_instances_list(args)
@@ -128,8 +117,9 @@ def do_instances(args):
 		assert args.instances_subcmd == 'run-transform'
 		do_instances_run_transform(args)
 
-do_instances.parser = do_main.subcmds.add_parser('instances')
-do_instances.subcmds = do_instances.parser.add_subparsers(dest='instances_subcmd')
+instances_parser = main_subcmds.add_parser('instances', help='Manage instances')
+instances_parser.set_defaults(cmd=do_instances)
+do_instances.subcmds = instances_parser.add_subparsers(dest='instances_subcmd')
 do_instances.subcmds.add_parser('process')
 
 def do_instances_list(args):
@@ -175,8 +165,9 @@ def do_builds(args):
 	assert args.builds_subcmd == 'make'
 	do_builds_build(args)
 
-do_builds.parser = do_main.subcmds.add_parser('builds')
-do_builds.subcmds = do_builds.parser.add_subparsers(dest='builds_subcmd')
+builds_parser = main_subcmds.add_parser('builds', help="Build programs")
+builds_parser.set_defaults(cmd=do_builds)
+do_builds.subcmds = builds_parser.add_subparsers(dest='builds_subcmd')
 do_builds.subcmds.add_parser('make')
 
 def do_builds_build(args):
@@ -201,8 +192,9 @@ def do_experiments(args):
 		assert args.experiments_subcmd == 'purge'
 		do_experiments_purge(args)
 
-do_experiments.parser = do_main.subcmds.add_parser('experiments')
-do_experiments.subcmds = do_experiments.parser.add_subparsers(dest='experiments_subcmd')
+experiments_parser = main_subcmds.add_parser('experiments', help="Manage experiments")
+experiments_parser.set_defaults(cmd=do_experiments)
+do_experiments.subcmds = experiments_parser.add_subparsers(dest='experiments_subcmd')
 
 def do_experiments_list(args, as_default_subcmd):
 	cfg = extl.base.config_for_dir()
@@ -331,6 +323,8 @@ do_experiments_purge.parser = do_experiments.subcmds.add_parser('purge',
 		parents=[run_selection_parser])
 do_experiments_purge.parser.add_argument('-f', action='store_true')
 
+# ---------------------------------------------------------------------------------------
+
 def do_invoke(args, basedir=None):
 	cfg = extl.base.config_for_dir(basedir=basedir)
 
@@ -366,13 +360,16 @@ def do_invoke(args, basedir=None):
 		else:
 			extl.launch.common.invoke_run(run)
 
-do_invoke.parser = do_main.subcmds.add_parser('invoke')
-do_invoke.parser.add_argument('-n', action='store_true')
-do_invoke.parser.add_argument('--specfile', type=str)
-do_invoke.parser.add_argument('--sge-index', action='store_true')
-do_invoke.parser.add_argument('--experiment', type=str)
-do_invoke.parser.add_argument('--instance', type=str)
-do_invoke.parser.add_argument('--repetition', type=int)
+invoke_parser = main_subcmds.add_parser('invoke', help="Invoke experiments (internal)")
+invoke_parser.set_defaults(cmd=do_invoke)
+invoke_parser.add_argument('-n', action='store_true')
+invoke_parser.add_argument('--specfile', type=str)
+invoke_parser.add_argument('--sge-index', action='store_true')
+invoke_parser.add_argument('--experiment', type=str)
+invoke_parser.add_argument('--instance', type=str)
+invoke_parser.add_argument('--repetition', type=int)
+
+# ---------------------------------------------------------------------------------------
 
 def do_queue(args):
 	import asyncio
@@ -430,8 +427,11 @@ def do_queue(args):
 	if args.sockfd is None:
 		os.unlink(sockpath)
 
-do_queue.parser = do_main.subcmds.add_parser('queue')
-do_queue.parser.add_argument('--sockfd', type=int)
+queue_parser = main_subcmds.add_parser('queue')
+queue_parser.set_defaults(cmd=do_queue)
+queue_parser.add_argument('--sockfd', type=int)
+
+# ---------------------------------------------------------------------------------------
 
 def do_archive(args):
 	import tarfile
@@ -441,8 +441,12 @@ def do_archive(args):
 	tar.add('output/')
 	tar.close()
 
-do_archive.parser = do_main.subcmds.add_parser('archive')
+archive_parser = main_subcmds.add_parser('archive', help="Archive experimental results")
+archive_parser.set_defaults(cmd=do_archive)
 
-argcomplete.autocomplete(do_main.parser)
-do_main()
+# ---------------------------------------------------------------------------------------
+
+argcomplete.autocomplete(main_parser)
+main_args = main_parser.parse_args()
+main_args.cmd(main_args)
 
