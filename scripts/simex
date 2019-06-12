@@ -161,23 +161,19 @@ instances_transform_parser.add_argument('instname', type=str)
 
 # ---------------------------------------------------------------------------------------
 
-def do_builds(args):
-	assert args.builds_subcmd == 'make'
-	do_builds_build(args)
-
 builds_parser = main_subcmds.add_parser('builds', help="Build programs")
-builds_parser.set_defaults(cmd=do_builds)
-do_builds.subcmds = builds_parser.add_subparsers(dest='builds_subcmd')
-do_builds.subcmds.add_parser('make')
+builds_subcmds = builds_parser.add_subparsers(dest='builds_subcmd')
+builds_subcmds.required = True
 
-def do_builds_build(args):
+def do_builds_make(args):
 	cfg = extl.base.config_for_dir()
 
 	for revision in cfg.all_revisions():
 		simexpal.build.make_builds(cfg, revision,
 				[build.info for build in cfg.all_builds_for_revision(revision)])
 
-do_builds_build.parser = do_builds.subcmds.add_parser('make')
+builds_make_parser = builds_subcmds.add_parser('make')
+builds_make_parser.set_defaults(cmd=do_builds_make)
 
 # ---------------------------------------------------------------------------------------
 
