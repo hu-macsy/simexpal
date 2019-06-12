@@ -622,5 +622,5 @@ def config_for_dir(basedir=None):
 	if basedir is None:
 		basedir = '.'
 	yml = read_and_validate_setup(basedir=basedir)
-	return Config(os.path.abspath(basedir), read_and_validate_setup(basedir=basedir))
+	return Config(os.path.abspath(basedir), yml)
 
