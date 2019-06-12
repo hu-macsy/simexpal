@@ -182,21 +182,13 @@ do_builds_build.parser = do_builds.subcmds.add_parser('make')
 # ---------------------------------------------------------------------------------------
 
 def do_experiments(args):
-	if not args.experiments_subcmd:
-		do_experiments_list(args, True)
-	elif args.experiments_subcmd == 'list':
-		do_experiments_list(args, False)
-	elif args.experiments_subcmd == 'launch':
-		do_experiments_launch(args)
-	else:
-		assert args.experiments_subcmd == 'purge'
-		do_experiments_purge(args)
+	return do_experiments_list(args, as_default_subcmd=True)
 
 experiments_parser = main_subcmds.add_parser('experiments', help="Manage experiments")
 experiments_parser.set_defaults(cmd=do_experiments)
-do_experiments.subcmds = experiments_parser.add_subparsers(dest='experiments_subcmd')
+experiments_subcmds = experiments_parser.add_subparsers(dest='experiments_subcmd')
 
-def do_experiments_list(args, as_default_subcmd):
+def do_experiments_list(args, as_default_subcmd=False):
 	cfg = extl.base.config_for_dir()
 
 	if as_default_subcmd:
@@ -244,8 +236,9 @@ def do_experiments_list(args, as_default_subcmd):
 		print('{:45.45} {:35.35} [{}] {}'.format(name, instance, run.repetition, status))
 		print(colors['reset'], end='')
 
-do_experiments_list.parser = do_experiments.subcmds.add_parser('list',
+experiments_list_parser = experiments_subcmds.add_parser('list',
 		parents=[run_selection_parser])
+experiments_list_parser.set_defaults(cmd=do_experiments_list)
 
 def do_experiments_launch(args):
 	cfg = extl.base.config_for_dir()
@@ -276,11 +269,12 @@ def do_experiments_launch(args):
 
 	submit_to_launcher(cfg, sel)
 
-do_experiments_launch.parser = do_experiments.subcmds.add_parser('launch',
+experiments_launch_parser = experiments_subcmds.add_parser('launch',
 		parents=[run_selection_parser])
-do_experiments_launch.parser.add_argument('--launcher', choices=['fork', 'queue', 'sge'],
+experiments_launch_parser.set_defaults(cmd=do_experiments_launch)
+experiments_launch_parser.add_argument('--launcher', choices=['fork', 'queue', 'sge'],
 		default='fork')
-do_experiments_launch.parser.add_argument('--queue', type=str)
+experiments_launch_parser.add_argument('--queue', type=str)
 
 def do_experiments_purge(args):
 	cfg = extl.base.config_for_dir()
@@ -319,9 +313,10 @@ def do_experiments_purge(args):
 			print("This would purge experiment '{}', instance '{}' [{}]".format(
 					exp.name, instance, run.repetition))
 
-do_experiments_purge.parser = do_experiments.subcmds.add_parser('purge',
+experiments_purge_parser = experiments_subcmds.add_parser('purge',
 		parents=[run_selection_parser])
-do_experiments_purge.parser.add_argument('-f', action='store_true')
+experiments_purge_parser.set_defaults(cmd=do_experiments_purge)
+experiments_purge_parser.add_argument('-f', action='store_true')
 
 # ---------------------------------------------------------------------------------------
 
