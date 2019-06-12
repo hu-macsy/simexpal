@@ -92,6 +92,8 @@ run_selection_parser.add_argument('--failed', action='store_true')
 run_selection_parser.add_argument('--unfinished', action='store_true')
 
 # ---------------------------------------------------------------------------------------
+# Basic commands.
+# ---------------------------------------------------------------------------------------
 
 def do_instances(args):
 	return do_instances_list(args)
@@ -316,50 +318,19 @@ experiments_purge_parser.add_argument('-f', action='store_true')
 
 # ---------------------------------------------------------------------------------------
 
-def do_invoke(args, basedir=None):
-	cfg = extl.base.config_for_dir(basedir=basedir)
+def do_archive(args):
+	import tarfile
 
-	sel = [ ]
-	for run in cfg.discover_all_runs():
-		if args.specfile is not None:
-			with open(args.specfile, 'r') as f:
-				spec_yml = yaml.load(f, Loader=yaml.Loader)
+	tar = tarfile.open('data.tar.gz', 'w:gz')
+	tar.add('experiments.yml')
+	tar.add('output/')
+	tar.close()
 
-			assert args.sge_index
-			index = int(os.environ['SGE_TASK_ID'])
-			ent_yml = spec_yml['array'][index]
+archive_parser = main_subcmds.add_parser('archive', help="Archive experimental results")
+archive_parser.set_defaults(cmd=do_archive)
 
-			if run.experiment.name != ent_yml['experiment']:
-				continue
-			if run.instance.filename != ent_yml['instance']:
-				continue
-			if run.repetition != ent_yml['repetition']:
-				continue
-		else:
-			if run.experiment.name != args.experiment:
-				continue
-			if run.instance.filename != args.instance:
-				continue
-			if run.repetition != args.repetition:
-				continue
-		sel.append(run)
-
-	for run in sel:
-		if args.n:
-			print("Would launch {}/{}[{}]".format(run.experiment.name, run.instance.filename,
-					run.repetition))
-		else:
-			extl.launch.common.invoke_run(run)
-
-invoke_parser = main_subcmds.add_parser('invoke', help="Invoke experiments (internal)")
-invoke_parser.set_defaults(cmd=do_invoke)
-invoke_parser.add_argument('-n', action='store_true')
-invoke_parser.add_argument('--specfile', type=str)
-invoke_parser.add_argument('--sge-index', action='store_true')
-invoke_parser.add_argument('--experiment', type=str)
-invoke_parser.add_argument('--instance', type=str)
-invoke_parser.add_argument('--repetition', type=int)
-
+# ---------------------------------------------------------------------------------------
+# Advanced commands.
 # ---------------------------------------------------------------------------------------
 
 def do_queue(args):
@@ -437,17 +408,52 @@ queue_parser.add_argument('--in-daemon', action='store_true', help=argparse.SUPP
 queue_parser.add_argument('--sockfd', type=int)
 
 # ---------------------------------------------------------------------------------------
+# Internal commands. Not intended for CLI users.
+# ---------------------------------------------------------------------------------------
 
-def do_archive(args):
-	import tarfile
+def do_invoke(args, basedir=None):
+	cfg = extl.base.config_for_dir(basedir=basedir)
 
-	tar = tarfile.open('data.tar.gz', 'w:gz')
-	tar.add('experiments.yml')
-	tar.add('output/')
-	tar.close()
+	sel = [ ]
+	for run in cfg.discover_all_runs():
+		if args.specfile is not None:
+			with open(args.specfile, 'r') as f:
+				spec_yml = yaml.load(f, Loader=yaml.Loader)
 
-archive_parser = main_subcmds.add_parser('archive', help="Archive experimental results")
-archive_parser.set_defaults(cmd=do_archive)
+			assert args.sge_index
+			index = int(os.environ['SGE_TASK_ID'])
+			ent_yml = spec_yml['array'][index]
+
+			if run.experiment.name != ent_yml['experiment']:
+				continue
+			if run.instance.filename != ent_yml['instance']:
+				continue
+			if run.repetition != ent_yml['repetition']:
+				continue
+		else:
+			if run.experiment.name != args.experiment:
+				continue
+			if run.instance.filename != args.instance:
+				continue
+			if run.repetition != args.repetition:
+				continue
+		sel.append(run)
+
+	for run in sel:
+		if args.n:
+			print("Would launch {}/{}[{}]".format(run.experiment.name, run.instance.filename,
+					run.repetition))
+		else:
+			extl.launch.common.invoke_run(run)
+
+invoke_parser = main_subcmds.add_parser('invoke', help="Invoke experiments (internal)")
+invoke_parser.set_defaults(cmd=do_invoke)
+invoke_parser.add_argument('-n', action='store_true')
+invoke_parser.add_argument('--specfile', type=str)
+invoke_parser.add_argument('--sge-index', action='store_true')
+invoke_parser.add_argument('--experiment', type=str)
+invoke_parser.add_argument('--instance', type=str)
+invoke_parser.add_argument('--repetition', type=int)
 
 # ---------------------------------------------------------------------------------------
 
