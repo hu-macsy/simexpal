@@ -94,33 +94,11 @@ run_selection_parser.add_argument('--unfinished', action='store_true')
 # ---------------------------------------------------------------------------------------
 
 def do_instances(args):
-	if not args.instances_subcmd or args.instances_subcmd == 'list':
-		do_instances_list(args)
-	elif args.instances_subcmd == 'install':
-		do_instances_install(args)
-	elif args.instances_subcmd == 'process':
-		cfg = extl.base.config_for_dir()
-
-		for inst in cfg.all_instances():
-			if not inst.check_available():
-				print("Skipping unavailable instance '{}'".format(inst.shortname))
-				continue
-			if os.access(os.path.join(cfg.instance_dir(), inst.shortname + '.info'), os.F_OK):
-				continue
-
-			print("Processing instance '{}'".format(inst.shortname))
-			with open(os.path.join(cfg.instance_dir(), inst.shortname + '.info.tmp'), 'w') as f:
-				extl.util.compute_network_size(os.path.join(cfg.instance_dir(), inst.filename), f)
-			os.rename(os.path.join(cfg.instance_dir(), inst.shortname + '.info.tmp'),
-					os.path.join(cfg.instance_dir(), inst.shortname + '.info'))
-	else:
-		assert args.instances_subcmd == 'run-transform'
-		do_instances_run_transform(args)
+	return do_instances_list(args)
 
 instances_parser = main_subcmds.add_parser('instances', help='Manage instances')
 instances_parser.set_defaults(cmd=do_instances)
-do_instances.subcmds = instances_parser.add_subparsers(dest='instances_subcmd')
-do_instances.subcmds.add_parser('process')
+instances_subcmds = instances_parser.add_subparsers(dest='instances_subcmd')
 
 def do_instances_list(args):
 	cfg = extl.base.config_for_dir()
@@ -133,7 +111,8 @@ def do_instances_list(args):
 		print(instance.filename, end='')
 		print(colors['reset'])
 
-do_instances_list.parser = do_instances.subcmds.add_parser('list')
+instances_list_parser = instances_subcmds.add_parser('list')
+instances_list_parser.set_defaults(cmd=do_instances_list)
 
 def do_instances_install(args):
 	cfg = extl.base.config_for_dir()
@@ -143,8 +122,28 @@ def do_instances_install(args):
 			util.try_rmfile(os.path.join(cfg.instance_dir(), instance.shortname))
 		instance.install()
 
-do_instances_install.parser = do_instances.subcmds.add_parser('install')
-do_instances_install.parser.add_argument('--overwrite', action='store_true')
+instances_install_parser = instances_subcmds.add_parser('install')
+instances_install_parser.set_defaults(cmd=do_instances_install)
+instances_install_parser.add_argument('--overwrite', action='store_true')
+
+def do_instances_process(args):
+	cfg = extl.base.config_for_dir()
+
+	for inst in cfg.all_instances():
+		if not inst.check_available():
+			print("Skipping unavailable instance '{}'".format(inst.shortname))
+			continue
+		if os.access(os.path.join(cfg.instance_dir(), inst.shortname + '.info'), os.F_OK):
+			continue
+
+		print("Processing instance '{}'".format(inst.shortname))
+		with open(os.path.join(cfg.instance_dir(), inst.shortname + '.info.tmp'), 'w') as f:
+			extl.util.compute_network_size(os.path.join(cfg.instance_dir(), inst.filename), f)
+		os.rename(os.path.join(cfg.instance_dir(), inst.shortname + '.info.tmp'),
+				os.path.join(cfg.instance_dir(), inst.shortname + '.info'))
+
+instances_process_parser = instances_subcmds.add_parser('process')
+instances_process_parser.set_defaults(cmd=do_instances_process)
 
 def do_instances_run_transform(args):
 	cfg = extl.base.config_for_dir()
@@ -154,10 +153,11 @@ def do_instances_run_transform(args):
 			continue
 		instance.run_transform(args.transform, args.output)
 
-do_instances_run_transform.parser = do_instances.subcmds.add_parser('run-transform')
-do_instances_run_transform.parser.add_argument('--transform', type=str, required=True)
-do_instances_run_transform.parser.add_argument('--output', type=str, required=True)
-do_instances_run_transform.parser.add_argument('instname', type=str)
+instances_transform_parser = instances_subcmds.add_parser('run-transform')
+instances_transform_parser.set_defaults(cmd=do_instances_run_transform)
+instances_transform_parser.add_argument('--transform', type=str, required=True)
+instances_transform_parser.add_argument('--output', type=str, required=True)
+instances_transform_parser.add_argument('instname', type=str)
 
 # ---------------------------------------------------------------------------------------
 
