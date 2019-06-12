@@ -3,6 +3,7 @@ import errno
 import os
 import re
 import shutil
+import sys
 import yaml
 
 def expand_at_params(s, fn, listfn=None):
@@ -55,9 +56,22 @@ def touch(path):
 	with open(path, 'w') as f:
 		pass
 
+did_warn_libyaml = False
+
 def read_setup_file(setup_file):
+	global did_warn_libyaml
+
 	with open(setup_file, 'r') as f:
-		setup_dict = yaml.load(f, Loader=yaml.SafeLoader)
+		Loader = yaml.SafeLoader
+		try:
+			Loader = yaml.CSafeLoader
+		except AttributeError:
+			if not did_warn_libyaml:
+				print('simexpal: Using pure Python YAML parser.'
+						' Installing libyaml will improve performance.', file=sys.stderr)
+				did_warn_libyaml = True
+
+		setup_dict = yaml.load(f, Loader=Loader)
 	return setup_dict
 
 def validate_setup_file(setup_file):
