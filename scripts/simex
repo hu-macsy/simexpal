@@ -353,6 +353,12 @@ def do_queue_daemon(args):
 queue_daemon_parser = queue_subcmds.add_parser('daemon')
 queue_daemon_parser.set_defaults(cmd=do_queue_daemon)
 
+def do_queue_stop(args):
+	simexpal.queuesock.stop_queue()
+
+queue_stop_parser = queue_subcmds.add_parser('stop')
+queue_stop_parser.set_defaults(cmd=do_queue_stop)
+
 def do_queue_interactive(args):
 	simexpal.queuesock.run_queue(sockfd=args.sockfd)
 

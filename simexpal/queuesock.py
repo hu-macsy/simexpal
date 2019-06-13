@@ -28,7 +28,11 @@ def run_queue(sockfd=None):
 	async def handle_echo(reader, writer):
 		bits = await reader.readline()
 		m = json.loads(bits.decode())
-		q.put_nowait(m)
+		if m['action'] == 'stop':
+			raise KeyboardInterrupt()
+		else:
+			assert m['action'] == 'invoke'
+			q.put_nowait(m)
 
 	sockpath = os.path.expanduser('~/.extlq.sock')
 	if sockfd is not None:
@@ -62,4 +66,9 @@ def sendrecv(m):
 	s.connect(sockpath)
 	s.send((json.dumps(m) + '\n').encode())
 	s.close()
+
+def stop_queue():
+	sendrecv({
+		'action': 'stop'
+	})
 
