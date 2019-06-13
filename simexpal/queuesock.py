@@ -5,12 +5,16 @@ import os
 import selectors
 import socket
 
-def run_queue(sockfd=None):
+from . import util
+
+def run_queue(sockfd=None, force=False):
 	sockpath = os.path.expanduser('~/.extlq.sock')
 	if sockfd is not None:
 		serve_sock = socket.socket(fileno=sockfd)
 	else:
 		serve_sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+		if force:
+			util.try_rmfile(sockpath)
 		serve_sock.bind(sockpath)
 
 	sel = selectors.DefaultSelector()
