@@ -334,26 +334,31 @@ archive_parser.set_defaults(cmd=do_archive)
 # Advanced commands.
 # ---------------------------------------------------------------------------------------
 
-def do_queue(args):
-	if not args.interactive and not args.in_daemon:
-		import shutil
-		import subprocess
-
-		script = os.path.abspath(sys.argv[0])
-
-		if shutil.which('systemd-run'):
-			subprocess.check_call(['systemd-run', '--user',
-					script, 'queue', '--in-daemon'])
-		else:
-			raise RuntimeError('No supported service manager is available')
-	else:
-		simexpal.queuesock.run_queue()
-
 queue_parser = main_subcmds.add_parser('queue')
-queue_parser.set_defaults(cmd=do_queue)
-queue_parser.add_argument('--interactive', action='store_true')
-queue_parser.add_argument('--in-daemon', action='store_true', help=argparse.SUPPRESS)
-queue_parser.add_argument('--sockfd', type=int)
+queue_subcmds = queue_parser.add_subparsers()
+queue_subcmds.required = True
+
+def do_queue_daemon(args):
+	import shutil
+	import subprocess
+
+	script = os.path.abspath(sys.argv[0])
+
+	if shutil.which('systemd-run'):
+		subprocess.check_call(['systemd-run', '--user',
+				script, 'internal-queuesock'])
+	else:
+		raise RuntimeError('No supported service manager is available')
+
+queue_daemon_parser = queue_subcmds.add_parser('daemon')
+queue_daemon_parser.set_defaults(cmd=do_queue_daemon)
+
+def do_queue_interactive(args):
+	simexpal.queuesock.run_queue(sockfd=args.sockfd)
+
+queue_interactive_parser = queue_subcmds.add_parser('interactive')
+queue_interactive_parser.set_defaults(cmd=do_queue_interactive)
+queue_interactive_parser.add_argument('--sockfd', type=int)
 
 # ---------------------------------------------------------------------------------------
 # Internal commands. Not intended for CLI users.
@@ -402,6 +407,13 @@ invoke_parser.add_argument('--sge-index', action='store_true')
 invoke_parser.add_argument('--experiment', type=str)
 invoke_parser.add_argument('--instance', type=str)
 invoke_parser.add_argument('--repetition', type=int)
+
+def do_internal_queuesock(args):
+	simexpal.queuesock.run_queue(sockfd=args.sockfd)
+
+internal_queuesock_parser = main_subcmds.add_parser('internal-queuesock')
+internal_queuesock_parser.set_defaults(cmd=do_internal_queuesock)
+internal_queuesock_parser.add_argument('--sockfd', type=int)
 
 # ---------------------------------------------------------------------------------------
 
