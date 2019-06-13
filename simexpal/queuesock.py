@@ -1,16 +1,33 @@
 
-import asyncio
+import functools
 import json
 import os
+import selectors
 import socket
 
 def run_queue(sockfd=None):
-	q = asyncio.Queue()
+	sockpath = os.path.expanduser('~/.extlq.sock')
+	if sockfd is not None:
+		serve_sock = socket.socket(fileno=sockfd)
+	else:
+		serve_sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+		serve_sock.bind(sockpath)
 
-	async def handle_queue():
-		while True:
-			it = await q.get()
+	sel = selectors.DefaultSelector()
 
+	class Queue:
+		def __init__(self):
+			self.done = False
+
+	q = Queue()
+
+	# Dispatch a request and return a response.
+	# This function is the main workhorse of the queue server.
+	def dispatch(req):
+		if req['action'] == 'stop':
+			q.done = True
+		else:
+			assert req['action'] == 'launch'
 			cfg = extl.base.config_for_dir(basedir=it['basedir'])
 
 			for run in cfg.discover_all_runs():
@@ -25,37 +42,35 @@ def run_queue(sockfd=None):
 						run.experiment.name, run.instance.filename))
 				extl.launch.common.invoke_run(run)
 
-	async def handle_echo(reader, writer):
-		bits = await reader.readline()
-		m = json.loads(bits.decode())
-		if m['action'] == 'stop':
-			raise KeyboardInterrupt()
-		else:
-			assert m['action'] == 'invoke'
-			q.put_nowait(m)
+	class Connection:
+		def __init__(self):
+			self.recv_buffer = bytes()
 
-	sockpath = os.path.expanduser('~/.extlq.sock')
-	if sockfd is not None:
-		sock = socket.socket(fileno=sockfd)
-	else:
-		sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-		sock.bind(sockpath)
+	def handle_serve(mask):
+		sock, _ = serve_sock.accept()
+		con = Connection()
+		sel.register(sock, selectors.EVENT_READ,
+				functools.partial(handle_req, sock, con))
 
-	loop = asyncio.get_event_loop()
-	loop.create_task(handle_queue())
-	server = loop.run_until_complete(asyncio.start_server(handle_echo, sock=sock, loop=loop))
+	def handle_req(sock, con, mask):
+		data = sock.recv(4096)
+		if data:
+			con.recv_buffer += data
+			return
+
+		req = json.loads(con.recv_buffer.decode())
+		resp = dispatch(req)
+		sel.unregister(sock)
+
+	sel.register(serve_sock, selectors.EVENT_READ, handle_serve)
+	serve_sock.listen()
 
 	# Serve requests until Ctrl+C is pressed
-	print('Serving on {}'.format(server.sockets[0].getsockname()))
-	try:
-		loop.run_forever()
-	except KeyboardInterrupt:
-		pass
-
-	# Close the server
-	server.close()
-	loop.run_until_complete(server.wait_closed())
-	loop.close()
+	print('Serving on {}'.format(serve_sock.getsockname()))
+	while not q.done:
+		events = sel.select();
+		for key, mask in events:
+			key.data(mask)
 
 	if sockfd is None:
 		os.unlink(sockpath)
