@@ -42,7 +42,7 @@ def try_rmfile(path):
 	try:
 		os.remove(path)
 	except OSError as error:
-		if error.errno != errno.EEXIST:
+		if error.errno != errno.ENOENT:
 			raise
 
 def try_rmtree(path):

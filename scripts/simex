@@ -10,6 +10,7 @@ import sys
 
 import simexpal as extl
 import simexpal.build
+import simexpal.evloop
 import simexpal.launch.fork
 import simexpal.launch.queue
 import simexpal.launch.sge
@@ -360,7 +361,9 @@ queue_stop_parser = queue_subcmds.add_parser('stop')
 queue_stop_parser.set_defaults(cmd=do_queue_stop)
 
 def do_queue_interactive(args):
-	simexpal.queuesock.run_queue(force=args.force, sockfd=args.sockfd)
+	loop = simexpal.evloop.EventLoop()
+	simexpal.queuesock.run_queue(loop, force=args.force, sockfd=args.sockfd)
+	loop.run()
 
 queue_interactive_parser = queue_subcmds.add_parser('interactive')
 queue_interactive_parser.set_defaults(cmd=do_queue_interactive)
