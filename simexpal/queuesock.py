@@ -5,6 +5,9 @@ import json
 import os
 import socket
 
+from . import base
+from . import launch
+from .launch import common
 from . import util
 from . import evloop
 
@@ -46,20 +49,20 @@ class _Queue:
 			loop.shutdown()
 		else:
 			assert req['action'] == 'launch'
-			cfg = extl.base.config_for_dir(basedir=it['basedir'])
+			cfg = base.config_for_dir(basedir=req['basedir'])
 
 			for run in cfg.discover_all_runs():
-				if run.experiment.name != it['experiment']:
+				if run.experiment.name != req['experiment']:
 					continue
-				if run.instance.filename != it['instance']:
+				if run.instance.filename != req['instance']:
 					continue
-				if run.repetition != it['repetition']:
+				if run.repetition != req['repetition']:
 					continue
 
 				print("Processing experiment '{}', instance '{}'".format(
 						run.experiment.name, run.instance.filename))
-				manifest = extl.launch.common.compile_manifest(run)
-				extl.launch.common.invoke_run(manifest)
+				manifest = launch.common.compile_manifest(run)
+				launch.common.invoke_run(manifest)
 
 class _Connection:
 	@staticmethod

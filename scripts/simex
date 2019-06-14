@@ -341,7 +341,8 @@ archive_parser.set_defaults(cmd=do_archive)
 # Advanced commands.
 # ---------------------------------------------------------------------------------------
 
-queue_parser = main_subcmds.add_parser('queue', help='Local batch queue for experiments')
+queue_parser = main_subcmds.add_parser('queue', help='Local batch queue for experiments',
+		aliases=['q'])
 queue_subcmds = queue_parser.add_subparsers()
 queue_subcmds.required = True
 
@@ -426,7 +427,9 @@ invoke_parser.add_argument('--instance', type=str)
 invoke_parser.add_argument('--repetition', type=int)
 
 def do_internal_queuesock(args):
-	simexpal.queuesock.run_queue(sockfd=args.sockfd)
+	loop = simexpal.evloop.EventLoop()
+	simexpal.queuesock.run_queue(loop, sockfd=args.sockfd)
+	loop.run()
 
 internal_queuesock_parser = main_subcmds.add_parser('internal-queuesock')
 internal_queuesock_parser.set_defaults(cmd=do_internal_queuesock)
