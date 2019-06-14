@@ -9,7 +9,7 @@ from .. import util
 from . import common
 
 script_template='''#!/bin/sh
-@SIMEX@ internal-invoke --slurm @SPECFILE@
+@SIMEX@ internal-invoke @MODE@ @SPECFILE@
 '''
 
 class SlurmLauncher(common.Launcher):
@@ -17,17 +17,39 @@ class SlurmLauncher(common.Launcher):
 		self.queue = queue
 
 	def submit(self, cfg, run):
-		self._do_submit(cfg, run)
+		self._do_submit(cfg, [run])
 
-	def _do_submit(self, cfg, r):
+	def submit_multiple(self, cfg, runs):
+		self._do_submit(cfg, runs)
+
+	def _do_submit(self, cfg, runs):
 		util.try_mkdir(os.path.join(cfg.basedir, 'aux'))
 		util.try_mkdir(os.path.join(cfg.basedir, 'aux/_slurm'))
 
+		# Lock the runs to make sure that we do not submit runs twice.
+		locked = []
+		for run in runs:
+			if not common.lock_run(run):
+				continue
+			locked.append(run)
+
+		if not locked:
+			return
+		use_array = len(locked) > 1
+		print(use_array)
+
 		# Build the specfile.
-		specs = common.compile_manifest(r).yml
+		if not use_array:
+			specs = {
+				'manifest': common.compile_manifest(locked[0]).yml
+			}
+		else:
+			specs = {
+				'manifests': [common.compile_manifest(run).yml for run in locked]
+			}
 
 		(specfd, specfile) = tempfile.mkstemp(prefix='', suffix='-spec.yml',
-				dir=os.path.join(r.config.basedir, 'aux/_slurm'))
+				dir=os.path.join(cfg.basedir, 'aux/_slurm'))
 		with os.fdopen(specfd, 'w') as f:
 			util.write_yaml_file(f, specs)
 
@@ -37,6 +59,8 @@ class SlurmLauncher(common.Launcher):
 				return os.path.abspath(sys.argv[0])
 			elif p == 'SPECFILE':
 				return specfile
+			elif p == 'MODE':
+				return '--slurm-array' if use_array else '--slurm'
 			else:
 				return None
 
@@ -45,15 +69,17 @@ class SlurmLauncher(common.Launcher):
 		# Build the sbatch command to run the script.
 		# TODO: Support multiple queues
 		sbatch_args = ['sbatch']
-		sbatch_args.extend(['-o', os.path.join(cfg.basedir, 'aux/_slurm/%A.out'),
-				'-e', os.path.join(cfg.basedir, 'aux/_slurm/%A.err')])
+		log_pattern = '%A-%a' if use_array else '%A'
+		sbatch_args.extend(['-o', os.path.join(cfg.basedir, 'aux/_slurm/' + log_pattern + '.out'),
+				'-e', os.path.join(cfg.basedir, 'aux/_slurm/' + log_pattern + '.err')])
+
+		if use_array:
+			sbatch_args.append('--array=0-' + str(len(locked) - 1))
 
 		# Finally start the run.
-		if not common.lock_run(r):
-			return
-		locked = [r]
-		print("Launching experiment '{}', instance '{}' on slurm queue '{}'".format(
-				r.experiment.name, r.instance.filename, '?'))
+		for run in locked:
+			print("Submitting experiment '{}', instance '{}' to slurm queue '{}'".format(
+					run.experiment.name, run.instance.filename, '?'))
 
 		process = subprocess.Popen(sbatch_args, stdin=subprocess.PIPE);
 		process.communicate(sbatch_script.encode()) # Assume UTF-8 encoding here.

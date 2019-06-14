@@ -385,7 +385,16 @@ def do_invoke(args, basedir=None):
 	if args.slurm:
 		with open(args.specfile, 'r') as f:
 			yml = util.read_yaml_file(f)
-		manifest = extl.launch.common.RunManifest(yml)
+		manifest = extl.launch.common.RunManifest(yml['manifest'])
+		extl.launch.common.invoke_run(manifest)
+	elif args.slurm_array:
+		with open(args.specfile, 'r') as f:
+			yml = util.read_yaml_file(f)
+
+		assert 'SLURM_ARRAY_TASK_ID' in os.environ
+		n = int(os.environ['SLURM_ARRAY_TASK_ID'])
+
+		manifest = extl.launch.common.RunManifest(yml['manifests'][n])
 		extl.launch.common.invoke_run(manifest)
 	else:
 		# Legacy handling for SGE.
@@ -428,6 +437,7 @@ invoke_parser = main_subcmds.add_parser('internal-invoke')
 invoke_parser.set_defaults(cmd=do_invoke)
 invoke_parser.add_argument('-n', action='store_true')
 invoke_parser.add_argument('--slurm', action='store_true')
+invoke_parser.add_argument('--slurm-array', action='store_true')
 invoke_parser.add_argument('--sge-index', action='store_true')
 invoke_parser.add_argument('--experiment', type=str) # Legacy argument for SGE.
 invoke_parser.add_argument('--instance', type=str) # Legacy argument for SGE.
