@@ -413,7 +413,8 @@ def do_invoke(args, basedir=None):
 			print("Would launch {}/{}[{}]".format(run.experiment.name, run.instance.filename,
 					run.repetition))
 		else:
-			extl.launch.common.invoke_run(run)
+			manifest = extl.launch.common.compile_manifest(run)
+			extl.launch.common.invoke_run(manifest)
 
 invoke_parser = main_subcmds.add_parser('internal-invoke')
 invoke_parser.set_defaults(cmd=do_invoke)

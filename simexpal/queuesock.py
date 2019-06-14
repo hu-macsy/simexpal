@@ -58,7 +58,8 @@ class _Queue:
 
 				print("Processing experiment '{}', instance '{}'".format(
 						run.experiment.name, run.instance.filename))
-				extl.launch.common.invoke_run(run)
+				manifest = extl.launch.common.compile_manifest(run)
+				extl.launch.common.invoke_run(manifest)
 
 class _Connection:
 	@staticmethod

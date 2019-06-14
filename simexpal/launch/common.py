@@ -7,6 +7,7 @@ import time
 
 import yaml
 
+from .. import base
 from .. import util
 
 class Launcher:
@@ -43,8 +44,100 @@ def create_run_file(run):
 		pass
 	os.rename(run.aux_file_path('run.tmp'), run.aux_file_path('run'))
 
-def invoke_run(run):
-	(exp, instance) = (run.experiment, run.instance.filename)
+# Stores all information that is necessary to invoke a run.
+# This is a view over a POD object which can be YAML-encoded and sent
+# over a wire or stored into a file.
+class RunManifest:
+	def __init__(self, yml):
+		self.yml = yml
+
+	@property
+	def base_dir(self):
+		return self.yml['config']['base_dir']
+
+	@property
+	def instance_dir(self):
+		return self.yml['config']['instance_dir']
+
+	@property
+	def revision(self):
+		return self.yml['revision']
+
+	@property
+	def instance(self):
+		return self.yml['instance']
+
+	@property
+	def experiment(self):
+		return self.yml['experiment']
+
+	@property
+	def repetition(self):
+		return self.yml['repetition']
+
+	@property
+	def args(self):
+		return self.yml['args']
+
+	@property
+	def environ(self):
+		return self.yml['environ']
+
+	@property
+	def output(self):
+		return self.yml['output']
+
+	@property
+	def timeout(self):
+		return self.yml['timeout']
+
+	@property
+	def aux_subdir(self):
+		return base.get_aux_subdir(self.base_dir, self.experiment,
+				[var_yml['name'] for var_yml in self.yml['variants']],
+				self.revision)
+
+	@property
+	def output_subdir(self):
+		return base.get_output_subdir(self.base_dir, self.experiment,
+				[var_yml['name'] for var_yml in self.yml['variants']],
+				self.revision)
+
+	def aux_file_path(self, ext):
+		return os.path.join(self.aux_subdir,
+				base.get_aux_file_name(ext, self.instance, self.repetition))
+
+	def output_file_path(self, ext):
+		return os.path.join(self.output_subdir,
+				base.get_output_file_name(ext, self.instance, self.repetition))
+
+	def get_extra_args(self):
+		extra_args = []
+		for var_yml in self.yml['variants']:
+			extra_args.extend(var_yml['extra_args'])
+		return extra_args
+
+	def get_paths(self):
+		paths = []
+		for build_yml in self.yml['builds']:
+			paths.append(os.path.join(build_yml['prefix'], 'bin'))
+		return paths
+
+	def get_ldso_paths(self):
+		paths = []
+		for build_yml in self.yml['builds']:
+			paths.append(os.path.join(build_yml['prefix'], 'lib'))
+		return paths
+
+	def get_python_paths(self):
+		paths = []
+		for build_yml in self.yml['builds']:
+			for export in build_yml['exports_python']:
+				paths.append(os.path.join(build_yml['prefix'], 'bin'))
+		return paths
+
+def compile_manifest(run):
+	exp = run.experiment
 
 	# Perform a DFS to discover all used builds.
 	recursive_builds = []
@@ -67,37 +160,73 @@ def invoke_run(run):
 			builds_visited.add(req_name)
 		i += 1
 
-	# Collect extra arguments from variants
-	extra_args = [ ]
-	for variant in exp.variation:
-		extra_args.extend(variant.variant_yml['extra_args'])
+	builds_yml = []
+	for build in recursive_builds:
+		builds_yml.append({
+			'prefix': build.prefix_dir,
+			'exports_python': build.info.exports_python
+		})
 
+	# Collect extra arguments from variants
+	variants_yml = {}
+	for variant in exp.variation:
+		variants_yml.append({
+			'name': variant.name,
+			'extra_args': variant.variant_yml['extra_args']
+		})
+
+	timeout = None
+	if 'timeout' in exp.info._exp_yml:
+		timeout = float(exp.info._exp_yml['timeout'])
+
+	environ = {}
+	if 'environ' in exp.info._exp_yml:
+		for (k, v) in exp.info._exp_yml['environ'].items():
+			environ[k] = str(v)
+
+	return RunManifest({
+		'config': {
+			'base_dir': run.config.basedir,
+			'instance_dir': run.config.instance_dir()
+		},
+		'experiment': exp.name,
+		'variants': variants_yml,
+		'revision': exp.revision.name if exp.revision else None,
+		'instance': run.instance.filename,
+		'repetition': run.repetition,
+		'builds': builds_yml,
+		'args': exp.info._exp_yml['args'],
+		'timeout': timeout,
+		'environ': environ,
+		'output': exp.info._exp_yml['output'] if 'output' in exp.info._exp_yml else None
+	})
+
+def invoke_run(manifest):
 	# Create the output file. This signals that the run has been started.
 	stdout = None
-	with open(run.output_file_path('out'), "w") as f:
+	with open(manifest.output_file_path('out'), "w") as f:
 		# We do not actually need to write anything to the output file.
 		# However, we might want to pipe experimental output to it.
-		if 'output' in exp.info._exp_yml and exp.info._exp_yml['output'] == 'stdout':
+		if manifest.output == 'stdout':
 			stdout = os.dup(f.fileno())
 
 	def substitute(p):
 		if p == 'INSTANCE':
-			return run.config.instance_dir() + '/' + instance
+			return manifest.instance_dir + '/' + manifest.instance
 		elif p == 'REPETITION':
-			return str(run.repetition)
+			return str(manifest.repetition)
 		elif p == 'OUTPUT':
-			return run.output_file_path('out')
+			return manifest.output_file_path('out')
 		else:
 			return None
 
 	def substitute_list(p):
 		if p == 'EXTRA_ARGS':
-			return extra_args
+			return manifest.get_extra_args()
 		else:
 			return None
 
-	assert isinstance(exp.info._exp_yml['args'], list)
-	cmd = util.expand_at_params(exp.info._exp_yml['args'], substitute, listfn=substitute_list)
+	cmd = util.expand_at_params(manifest.args, substitute, listfn=substitute_list)
 
 	# Build the environment.
 	def prepend_env(var, items):
@@ -105,19 +234,11 @@ def invoke_run(run):
 			return ':'.join(items) + ':' + os.environ[var]
 		return ':'.join(items)
 
-	build_paths = [os.path.join(p.prefix_dir, 'bin') for p in recursive_builds]
-	build_ld_paths = [os.path.join(p.prefix_dir, 'lib') for p in recursive_builds]
-	build_python_paths = [os.path.join(p.prefix_dir, export) for p in recursive_builds
-			for export in p.info.exports_python]
-
 	environ = os.environ.copy()
-	environ['PATH'] = prepend_env('PATH', build_paths)
-	environ['LD_LIBRARY_PATH'] = prepend_env('LD_LIBRARY_PATH', build_ld_paths)
-	environ['PYTHONPATH'] = prepend_env('PYTHONPATH', build_python_paths)
-
-	if 'environ' in exp.info._exp_yml:
-		for (k, v) in exp.info._exp_yml['environ'].items():
-			environ[k] = str(v)
+	environ['PATH'] = prepend_env('PATH', manifest.get_paths())
+	environ['LD_LIBRARY_PATH'] = prepend_env('LD_LIBRARY_PATH', manifest.get_ldso_paths())
+	environ['PYTHONPATH'] = prepend_env('PYTHONPATH', manifest.get_python_paths())
+	environ.update(manifest.environ)
 
 	# Dumps data from an FD to the FS.
 	# Creates the output file only if something is written.
@@ -143,11 +264,11 @@ def invoke_run(run):
 				self._out.close()
 
 	start = time.perf_counter()
-	child = subprocess.Popen(cmd, cwd=run.config.basedir, env=environ,
+	child = subprocess.Popen(cmd, cwd=manifest.base_dir, env=environ,
 			stdout=stdout, stderr=subprocess.PIPE)
 	sel = selectors.DefaultSelector()
 
-	stderr_writer = LazyWriter(child.stderr, run.aux_file_path('stderr'))
+	stderr_writer = LazyWriter(child.stderr, manifest.aux_file_path('stderr'))
 	sel.register(child.stderr, selectors.EVENT_READ, stderr_writer)
 
 	# Wait until the run program finishes.
@@ -156,7 +277,7 @@ def invoke_run(run):
 			break
 
 		elapsed = time.perf_counter() - start
-		if 'timeout' in exp.info._exp_yml and elapsed > float(exp.info._exp_yml['timeout']):
+		if manifest.timeout is not None and elapsed > manifest.time:
 			child.send_signal(signal.SIGXCPU)
 
 		# Consume any output that might be ready.
@@ -183,12 +304,12 @@ def invoke_run(run):
 		sigcode = signal.Signals(-child.returncode).name
 	else:
 		status = child.returncode
-	timeout = 'timeout' in exp.info._exp_yml and runtime > float(exp.info._exp_yml['timeout'])
+	did_timeout = manifest.timeout is not None and runtime > manifest.timeout
 
 	# Create the status file to signal that we are finished.
-	status_dict = {'timeout': timeout, 'walltime': runtime,
+	status_dict = {'timeout': did_timeout, 'walltime': runtime,
 			'status': status, 'signal': sigcode}
-	with open(run.output_file_path('status.tmp'), "w") as f:
+	with open(manifest.output_file_path('status.tmp'), "w") as f:
 		yaml.dump(status_dict, f)
-	os.rename(run.output_file_path('status.tmp'), run.output_file_path('status'))
+	os.rename(manifest.output_file_path('status.tmp'), manifest.output_file_path('status'))
 

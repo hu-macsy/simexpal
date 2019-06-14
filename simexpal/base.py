@@ -8,6 +8,38 @@ import yaml
 from . import instances
 from . import util
 
+def get_aux_subdir(base_dir, experiment, variation, revision):
+	var = ''
+	if variation:
+		var = '~' + ','.join(variation)
+	rev = ''
+	if revision:
+		rev = '@' + revision
+	return os.path.join(base_dir, 'aux', experiment + var + rev)
+
+def get_output_subdir(base_dir, experiment, variation, revision):
+	var = ''
+	if variation:
+		var = '~' + ','.join(variation)
+	rev = ''
+	if revision:
+		rev = '@' + revision
+	return os.path.join(base_dir, 'output', experiment + var + rev)
+
+def get_aux_file_name(ext, instance, repetition):
+	(fbase, _) = os.path.splitext(instance)
+	rep = ''
+	if repetition > 0:
+		rep = '[{}]'.format(repetition)
+	return fbase + '.' + ext + rep
+
+def get_output_file_name(ext, instance, repetition):
+	(fbase, _) = os.path.splitext(instance)
+	rep = ''
+	if repetition > 0:
+		rep = '[{}]'.format(repetition)
+	return fbase + '.' + ext + rep
+
 class MatrixScope:
 	@staticmethod
 	def walk_matrix(cfg, root_yml, expand):
@@ -569,23 +601,15 @@ class Experiment:
 
 	@property
 	def aux_subdir(self):
-		var = ''
-		if self.variation:
-			var = '~' + ','.join([variant.name for variant in self.variation])
-		rev = ''
-		if self.revision:
-			rev = '@' + self.revision.name
-		return os.path.join(self._cfg.basedir, 'aux', self.name + var + rev)
+		return get_aux_subdir(self._cfg.basedir, self.name,
+				[variant.name for variant in self.variation],
+				self.revision.name if self.revision else None)
 
 	@property
 	def output_subdir(self):
-		var = ''
-		if self.variation:
-			var = '~' + ','.join([variant.name for variant in self.variation])
-		rev = ''
-		if self.revision:
-			rev = '@' + self.revision.name
-		return os.path.join(self._cfg.basedir, 'output', self.name + var + rev)
+		return get_output_subdir(self._cfg.basedir, self.name,
+				[variant.name for variant in self.variation],
+				self.revision.name if self.revision else None)
 
 class Run:
 	def __init__(self, cfg, experiment, instance, repetition):
@@ -600,20 +624,14 @@ class Run:
 
 	# Contains auxiliary files that SHOULD NOT be necessary to determine the result of the run.
 	def aux_file_path(self, ext):
-		(fbase, _) = os.path.splitext(self.instance.filename)
-		rep = ''
-		if self.repetition > 0:
-			rep = '[{}]'.format(self.repetition)
-		return os.path.join(self.experiment.aux_subdir, fbase + '.' + ext + rep)
+		return os.path.join(self.experiment.aux_subdir,
+				get_aux_file_name(ext, self.instance.filename, self.repetition))
 
 	# Contains the final output files; those SHOULD be all that is necessary to determine
 	# if the run succeeded and to evaluate its result.
 	def output_file_path(self, ext):
-		(fbase, _) = os.path.splitext(self.instance.filename)
-		rep = ''
-		if self.repetition > 0:
-			rep = '[{}]'.format(self.repetition)
-		return os.path.join(self.experiment.output_subdir, fbase + '.' + ext + rep)
+		return os.path.join(self.experiment.output_subdir,
+				get_output_file_name(ext, self.instance.filename, self.repetition))
 
 def read_and_validate_setup(basedir='.', setup_file='experiments.yml'):
 	return util.validate_setup_file(os.path.join(basedir, setup_file))
