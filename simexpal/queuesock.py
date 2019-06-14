@@ -48,20 +48,11 @@ class _Queue:
 			loop.shutdown()
 		else:
 			assert req['action'] == 'launch'
-			cfg = base.config_for_dir(basedir=req['basedir'])
+			manifest = launch.common.RunManifest(req['manifest'])
 
-			for run in cfg.discover_all_runs():
-				if run.experiment.name != req['experiment']:
-					continue
-				if run.instance.filename != req['instance']:
-					continue
-				if run.repetition != req['repetition']:
-					continue
-
-				print("Processing experiment '{}', instance '{}'".format(
-						run.experiment.name, run.instance.filename))
-				manifest = launch.common.compile_manifest(run)
-				launch.common.invoke_run(manifest)
+			print("Processing experiment '{}', instance '{}'".format(
+					manifest.experiment, manifest.instance))
+			launch.common.invoke_run(manifest)
 
 class _Connection:
 	@staticmethod

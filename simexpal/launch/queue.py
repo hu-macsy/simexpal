@@ -17,9 +17,6 @@ class QueueLauncher(common.Launcher):
 
 		queuesock.sendrecv({
 			'action': 'launch',
-			'basedir': config.basedir,
-			'experiment': run.experiment.name,
-			'instance': run.instance.filename,
-			'repetition': run.repetition
+			'manifest': common.compile_manifest(run).yml
 		})
 
