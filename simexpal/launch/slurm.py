@@ -8,8 +8,8 @@ import yaml
 from .. import util
 from . import common
 
-template='''#!/bin/sh
-@SIMEX@ -C '@CONFIG_DIR@' internal-invoke --experiment @EXPERIMENT@ --instance @INSTANCE@ --repetition @REP@
+script_template='''#!/bin/sh
+@SIMEX@ internal-invoke --slurm @SPECFILE@
 '''
 
 class SlurmLauncher(common.Launcher):
@@ -23,27 +23,32 @@ class SlurmLauncher(common.Launcher):
 		util.try_mkdir(os.path.join(cfg.basedir, 'aux'))
 		util.try_mkdir(os.path.join(cfg.basedir, 'aux/_slurm'))
 
+		# Build the specfile.
+		specs = common.compile_manifest(r).yml
+
+		(specfd, specfile) = tempfile.mkstemp(prefix='', suffix='-spec.yml',
+				dir=os.path.join(r.config.basedir, 'aux/_slurm'))
+		with os.fdopen(specfd, 'w') as f:
+			util.write_yaml_file(f, specs)
+
+		# Expand the script that is passed to sbatch.
 		def substitute(p):
 			if p == 'SIMEX':
 				return os.path.abspath(sys.argv[0])
-			elif p == 'CONFIG_DIR':
-				return cfg.basedir
-			elif p == 'EXPERIMENT':
-				return r.experiment.name
-			elif p == 'INSTANCE':
-				return r.instance.filename
-			elif p == 'REP':
-				return str(r.repetition)
+			elif p == 'SPECFILE':
+				return specfile
 			else:
 				return None
 
-		script = util.expand_at_params(template, substitute)
+		sbatch_script = util.expand_at_params(script_template, substitute)
 
+		# Build the sbatch command to run the script.
 		# TODO: Support multiple queues
 		sbatch_args = ['sbatch']
 		sbatch_args.extend(['-o', os.path.join(cfg.basedir, 'aux/_slurm/%A.out'),
 				'-e', os.path.join(cfg.basedir, 'aux/_slurm/%A.err')])
 
+		# Finally start the run.
 		if not common.lock_run(r):
 			return
 		locked = [r]
@@ -51,7 +56,7 @@ class SlurmLauncher(common.Launcher):
 				r.experiment.name, r.instance.filename, '?'))
 
 		process = subprocess.Popen(sbatch_args, stdin=subprocess.PIPE);
-		process.communicate(script.encode()) # Assume UTF-8 encoding here.
+		process.communicate(sbatch_script.encode()) # Assume UTF-8 encoding here.
 		assert process.returncode == 0
 
 		for run in locked:

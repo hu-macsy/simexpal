@@ -382,49 +382,57 @@ queue_interactive_parser.add_argument('--force', action='store_true')
 # ---------------------------------------------------------------------------------------
 
 def do_invoke(args, basedir=None):
-	cfg = extl.base.config_for_dir(basedir=basedir)
+	if args.slurm:
+		with open(args.specfile, 'r') as f:
+			yml = util.read_yaml_file(f)
+		manifest = extl.launch.common.RunManifest(yml)
+		extl.launch.common.invoke_run(manifest)
+	else:
+		# Legacy handling for SGE.
+		cfg = extl.base.config_for_dir(basedir=basedir)
 
-	sel = [ ]
-	for run in cfg.discover_all_runs():
-		if args.specfile is not None:
-			with open(args.specfile, 'r') as f:
-				spec_yml = yaml.load(f, Loader=yaml.Loader)
+		sel = [ ]
+		for run in cfg.discover_all_runs():
+			if args.specfile is not None:
+				with open(args.specfile, 'r') as f:
+					spec_yml = yaml.load(f, Loader=yaml.Loader)
 
-			assert args.sge_index
-			index = int(os.environ['SGE_TASK_ID'])
-			ent_yml = spec_yml['array'][index]
+				assert args.sge_index
+				index = int(os.environ['SGE_TASK_ID'])
+				ent_yml = spec_yml['array'][index]
 
-			if run.experiment.name != ent_yml['experiment']:
-				continue
-			if run.instance.filename != ent_yml['instance']:
-				continue
-			if run.repetition != ent_yml['repetition']:
-				continue
-		else:
-			if run.experiment.name != args.experiment:
-				continue
-			if run.instance.filename != args.instance:
-				continue
-			if run.repetition != args.repetition:
-				continue
-		sel.append(run)
+				if run.experiment.name != ent_yml['experiment']:
+					continue
+				if run.instance.filename != ent_yml['instance']:
+					continue
+				if run.repetition != ent_yml['repetition']:
+					continue
+			else:
+				if run.experiment.name != args.experiment:
+					continue
+				if run.instance.filename != args.instance:
+					continue
+				if run.repetition != args.repetition:
+					continue
+			sel.append(run)
 
-	for run in sel:
-		if args.n:
-			print("Would launch {}/{}[{}]".format(run.experiment.name, run.instance.filename,
-					run.repetition))
-		else:
-			manifest = extl.launch.common.compile_manifest(run)
-			extl.launch.common.invoke_run(manifest)
+		for run in sel:
+			if args.n:
+				print("Would launch {}/{}[{}]".format(run.experiment.name, run.instance.filename,
+						run.repetition))
+			else:
+				manifest = extl.launch.common.compile_manifest(run)
+				extl.launch.common.invoke_run(manifest)
 
 invoke_parser = main_subcmds.add_parser('internal-invoke')
 invoke_parser.set_defaults(cmd=do_invoke)
 invoke_parser.add_argument('-n', action='store_true')
-invoke_parser.add_argument('--specfile', type=str)
+invoke_parser.add_argument('--slurm', action='store_true')
 invoke_parser.add_argument('--sge-index', action='store_true')
-invoke_parser.add_argument('--experiment', type=str)
-invoke_parser.add_argument('--instance', type=str)
-invoke_parser.add_argument('--repetition', type=int)
+invoke_parser.add_argument('--experiment', type=str) # Legacy argument for SGE.
+invoke_parser.add_argument('--instance', type=str) # Legacy argument for SGE.
+invoke_parser.add_argument('--repetition', type=int) # Legacy argument for SGE.
+invoke_parser.add_argument('specfile', type=str)
 
 def do_internal_queuesock(args):
 	loop = simexpal.evloop.EventLoop()
