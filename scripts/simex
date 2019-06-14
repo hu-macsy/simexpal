@@ -101,7 +101,8 @@ run_selection_parser.add_argument('--unfinished', action='store_true')
 def do_instances(args):
 	return do_instances_list(args)
 
-instances_parser = main_subcmds.add_parser('instances', help='Manage instances')
+instances_parser = main_subcmds.add_parser('instances', help='Manage instances',
+		aliases=['i'])
 instances_parser.set_defaults(cmd=do_instances)
 instances_subcmds = instances_parser.add_subparsers(dest='instances_subcmd')
 
@@ -166,7 +167,8 @@ instances_transform_parser.add_argument('instname', type=str)
 
 # ---------------------------------------------------------------------------------------
 
-builds_parser = main_subcmds.add_parser('builds', help="Build programs")
+builds_parser = main_subcmds.add_parser('builds', help='Build programs',
+		aliases=['b'])
 builds_subcmds = builds_parser.add_subparsers(dest='builds_subcmd')
 builds_subcmds.required = True
 
@@ -185,7 +187,8 @@ builds_make_parser.set_defaults(cmd=do_builds_make)
 def do_experiments(args):
 	return do_experiments_list(args, as_default_subcmd=True)
 
-experiments_parser = main_subcmds.add_parser('experiments', help="Manage experiments")
+experiments_parser = main_subcmds.add_parser('experiments', help='Manage experiments',
+		aliases=['e'])
 experiments_parser.set_defaults(cmd=do_experiments)
 experiments_subcmds = experiments_parser.add_subparsers(dest='experiments_subcmd')
 
@@ -331,14 +334,14 @@ def do_archive(args):
 	tar.add('output/')
 	tar.close()
 
-archive_parser = main_subcmds.add_parser('archive', help="Archive experimental results")
+archive_parser = main_subcmds.add_parser('archive', help='Archive experimental results')
 archive_parser.set_defaults(cmd=do_archive)
 
 # ---------------------------------------------------------------------------------------
 # Advanced commands.
 # ---------------------------------------------------------------------------------------
 
-queue_parser = main_subcmds.add_parser('queue')
+queue_parser = main_subcmds.add_parser('queue', help='Local batch queue for experiments')
 queue_subcmds = queue_parser.add_subparsers()
 queue_subcmds.required = True
 
