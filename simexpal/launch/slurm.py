@@ -41,6 +41,8 @@ class SlurmLauncher(common.Launcher):
 
 		# TODO: Support multiple queues
 		sbatch_args = ['sbatch']
+		sbatch_args.extend(['-o', os.path.join(cfg.basedir, 'aux/_slurm/%A.out'),
+				'-e', os.path.join(cfg.basedir, 'aux/_slurm/%A.err')])
 
 		if not common.lock_run(r):
 			return
