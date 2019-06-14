@@ -1,7 +1,6 @@
 
 from enum import Enum
 import functools
-import json
 import os
 import socket
 
@@ -74,7 +73,7 @@ class _Connection:
 			self.recv_buffer += data
 			return
 
-		req = json.loads(self.recv_buffer.decode())
+		req = util.yaml_from_string(self.recv_buffer.decode())
 		resp = self.queue.dispatch(descriptor.get_loop(), req)
 		self.state = _State.DONE
 		self._handle.unregister()
@@ -116,7 +115,7 @@ def sendrecv(m):
 	sockpath = os.path.expanduser('~/.extlq.sock')
 	s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
 	s.connect(sockpath)
-	s.send((json.dumps(m) + '\n').encode())
+	s.send(util.yaml_to_string(m).encode())
 	s.close()
 
 def stop_queue():

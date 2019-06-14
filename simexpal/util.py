@@ -58,6 +58,12 @@ def touch(path):
 
 did_warn_libyaml = False
 
+def yaml_to_string(yml):
+	return yaml.dump(yml, Dumper=yaml.SafeDumper)
+
+def yaml_from_string(string):
+	return yaml.load(string, Loader=yaml.SafeLoader)
+
 def read_setup_file(setup_file):
 	global did_warn_libyaml
 
