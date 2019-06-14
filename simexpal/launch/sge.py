@@ -14,8 +14,8 @@ class SgeLauncher(common.Launcher):
 	def __init__(self, queue):
 		self.queue = queue
 
-	def submit(self, run):
-		self._do_submit(run.config, True, run)
+	def submit(self, config, run):
+		self._do_submit(config, True, run)
 
 	def submit_multiple(self, config, runs):
 		self._do_submit(config, False, runs)

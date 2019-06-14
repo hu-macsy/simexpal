@@ -13,6 +13,7 @@ import simexpal.build
 import simexpal.evloop
 import simexpal.launch.fork
 import simexpal.launch.queue
+import simexpal.launch.slurm
 import simexpal.launch.sge
 import simexpal.queuesock
 import simexpal.util as util
@@ -251,7 +252,9 @@ def do_experiments_launch(args):
 			continue
 		sel.append(run)
 
-	if args.launcher == 'sge':
+	if args.launcher == 'slurm':
+		launcher = extl.launch.slurm.SlurmLauncher(args.queue)
+	elif args.launcher == 'sge':
 		launcher = extl.launch.sge.SgeLauncher(args.queue)
 	elif args.launcher == 'queue':
 		launcher = extl.launch.queue.QueueLauncher()
@@ -263,16 +266,16 @@ def do_experiments_launch(args):
 	try:
 		submit_to_launcher = launcher.submit_multiple
 	except AttributeError:
-		def submit_to_launcher(config, runs):
+		def submit_to_launcher(cfg, runs):
 			for run in runs:
-				launcher.submit(config, run)
+				launcher.submit(cfg, run)
 
 	submit_to_launcher(cfg, sel)
 
 experiments_launch_parser = experiments_subcmds.add_parser('launch',
 		parents=[run_selection_parser])
 experiments_launch_parser.set_defaults(cmd=do_experiments_launch)
-experiments_launch_parser.add_argument('--launcher', choices=['fork', 'queue', 'sge'],
+experiments_launch_parser.add_argument('--launcher', choices=['fork', 'queue', 'slurm', 'sge'],
 		default='fork')
 experiments_launch_parser.add_argument('--queue', type=str)
 
