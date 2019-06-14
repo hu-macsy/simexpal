@@ -412,7 +412,7 @@ def do_invoke(args, basedir=None):
 		else:
 			extl.launch.common.invoke_run(run)
 
-invoke_parser = main_subcmds.add_parser('invoke', help="Invoke experiments (internal)")
+invoke_parser = main_subcmds.add_parser('internal-invoke')
 invoke_parser.set_defaults(cmd=do_invoke)
 invoke_parser.add_argument('-n', action='store_true')
 invoke_parser.add_argument('--specfile', type=str)

@@ -29,7 +29,7 @@ class SgeLauncher(common.Launcher):
 		sge_args = ['qsub', '-b', 'y', '-q', self.queue]
 		sge_args.extend(['-o', os.path.join(config.basedir, 'aux/_sge/$JOB_ID.out'),
 				'-e', os.path.join(config.basedir, 'aux/_sge/$JOB_ID.err')])
-		invoke_args = [script, '-C', config.basedir, 'invoke']
+		invoke_args = [script, '-C', config.basedir, 'internal-invoke']
 
 		if single_task:
 			if not common.lock_run(r):

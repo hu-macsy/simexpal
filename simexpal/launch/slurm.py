@@ -9,7 +9,7 @@ from .. import util
 from . import common
 
 template='''#!/bin/sh
-@SIMEX@ -C '@CONFIG_DIR@' invoke --experiment @EXPERIMENT@ --instance @INSTANCE@ --repetition @REP@
+@SIMEX@ -C '@CONFIG_DIR@' internal-invoke --experiment @EXPERIMENT@ --instance @INSTANCE@ --repetition @REP@
 '''
 
 class SlurmLauncher(common.Launcher):
