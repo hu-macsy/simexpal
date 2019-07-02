@@ -168,7 +168,7 @@ def compile_manifest(run):
 		})
 
 	# Collect extra arguments from variants
-	variants_yml = {}
+	variants_yml = []
 	for variant in exp.variation:
 		variants_yml.append({
 			'name': variant.name,
@@ -277,7 +277,7 @@ def invoke_run(manifest):
 			break
 
 		elapsed = time.perf_counter() - start
-		if manifest.timeout is not None and elapsed > manifest.time:
+		if manifest.timeout is not None and elapsed > manifest.timeout:
 			child.send_signal(signal.SIGXCPU)
 
 		# Consume any output that might be ready.
