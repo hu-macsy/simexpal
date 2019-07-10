@@ -62,7 +62,8 @@ def make_build_in_order(cfg, build):
 	util.try_mkdir('builds/')
 
 	def substitute(var):
-		if var == 'THIS_CLONE_DIR':
+		# 'THIS_SOURCE_DIR' is prefered, 'THIS_CLONE_DIR' is deprecated
+		if var in ['THIS_CLONE_DIR', 'THIS_SOURCE_DIR']:
 			return build.clone_dir
 		elif var == 'THIS_PREFIX_DIR':
 			return build.prefix_dir
