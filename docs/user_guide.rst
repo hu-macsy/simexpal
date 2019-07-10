@@ -322,7 +322,7 @@ stanzas to ``experiments.yml``. In our example, these look like:
 
 	builds:
 	  - name: networkit
-		git: 'https://github.com/hu-macsy/simexpal.git'
+		git: 'https://github.com/networkit/networkit.git'
 		configure:
 		  - args:
 			  - 'cmake'
