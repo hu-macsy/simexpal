@@ -133,7 +133,7 @@ class RunManifest:
 		paths = []
 		for build_yml in self.yml['builds']:
 			for export in build_yml['exports_python']:
-				paths.append(os.path.join(build_yml['prefix'], 'bin'))
+				paths.append(os.path.join(build_yml['prefix'], export))
 		return paths
 
 def compile_manifest(run):
