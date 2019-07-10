@@ -10,7 +10,7 @@ def expand_at_params(s, fn, listfn=None):
 	def subfn(m):
 		result = fn(m.group(1))
 		if result is None:
-			raise RuntimeError("Unexpected @-parameter {}".format(p))
+			raise RuntimeError("Unexpected @-parameter {}".format(s))
 		return result
 
 	if isinstance(s, list):
