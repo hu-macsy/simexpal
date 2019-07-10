@@ -76,17 +76,17 @@ on multiple inputs.
 
         Experiment                           Instance                            Status
         ----------                           --------                            ------
-        bubble-sort                          uniform-n1000-s1                    [0] 
-        bubble-sort                          uniform-n1000-s2                    [0] 
-        bubble-sort                          uniform-n1000-s3                    [0] 
-        insertion-sort                       uniform-n1000-s1                    [0] 
-        insertion-sort                       uniform-n1000-s2                    [0] 
-        insertion-sort                       uniform-n1000-s3                    [0] 
+        bubble-sort                          uniform-n1000-s1                    [0]
+        bubble-sort                          uniform-n1000-s2                    [0]
+        bubble-sort                          uniform-n1000-s3                    [0]
+        insertion-sort                       uniform-n1000-s1                    [0]
+        insertion-sort                       uniform-n1000-s2                    [0]
+        insertion-sort                       uniform-n1000-s3                    [0]
 
     .. code-block:: bash
 
         $ simex experiments launch # Launch all configurations locally.
-    
+
     .. code-block:: bash
 
         $ simex experiments # Review the status of the experiments.
@@ -107,7 +107,7 @@ on multiple inputs.
     as part of the ``experiments`` stanza.
 
 5.  Evaluate the results:
-    
+
     .. code-block:: bash
 
         # Here, we use the popular pandas package to aggregate the results.
@@ -115,7 +115,7 @@ on multiple inputs.
         $ ./eval.py
 
     ::
-        
+
         experiment      comparisons          swaps      time
         bubble-sort        499500.0  253437.333333  0.091776
         insertion-sort     241891.0  257609.000000  0.039501
