@@ -36,7 +36,6 @@ class SlurmLauncher(common.Launcher):
 		if not locked:
 			return
 		use_array = len(locked) > 1
-		print(use_array)
 
 		# Build the specfile.
 		if not use_array:
