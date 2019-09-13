@@ -61,6 +61,21 @@ def compute_order(cfg, desired):
 def make_build_in_order(cfg, build):
 	util.try_mkdir('builds/')
 
+	def num_allocated_cpus():
+		try:
+			cpuset = os.sched_getaffinity(0)
+		except AttributeError:
+			# MacOS does not have CPU affinity.
+			return None
+		return len(cpuset)
+
+	def get_concurrency():
+		n = num_allocated_cpus()
+		if n is None:
+			# The best that we can do is returning the number of all CPUs.
+			n = os.cpu_count()
+		return n
+
 	def substitute(var):
 		# 'THIS_SOURCE_DIR' is prefered, 'THIS_CLONE_DIR' is deprecated
 		if var in ['THIS_CLONE_DIR', 'THIS_SOURCE_DIR']:
@@ -68,8 +83,7 @@ def make_build_in_order(cfg, build):
 		elif var == 'THIS_PREFIX_DIR':
 			return build.prefix_dir
 		elif var == 'PARALLELISM':
-			nthreads = len(os.sched_getaffinity(0))
-			return str(nthreads)
+			return str(get_concurrency())
 
 	# Build the environment.
 	def prepend_env(var, items):
