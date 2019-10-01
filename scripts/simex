@@ -255,14 +255,14 @@ def do_experiments_launch(args):
 			continue
 		sel.append(run)
 
-	if args.launcher == 'slurm':
+	if args.launch_through == 'slurm':
 		launcher = extl.launch.slurm.SlurmLauncher(args.queue)
-	elif args.launcher == 'sge':
+	elif args.launch_through == 'sge':
 		launcher = extl.launch.sge.SgeLauncher(args.queue)
-	elif args.launcher == 'queue':
+	elif args.launch_through == 'queue':
 		launcher = extl.launch.queue.QueueLauncher()
 	else:
-		assert args.launcher == 'fork'
+		assert args.launch_through == 'fork'
 		launcher = extl.launch.fork.ForkLauncher()
 
 	# If the launcher supports submit_multiple, we prefer that.
@@ -278,7 +278,7 @@ def do_experiments_launch(args):
 experiments_launch_parser = experiments_subcmds.add_parser('launch',
 		parents=[run_selection_parser])
 experiments_launch_parser.set_defaults(cmd=do_experiments_launch)
-experiments_launch_parser.add_argument('--launcher', choices=['fork', 'queue', 'slurm', 'sge'],
+experiments_launch_parser.add_argument('--launch-through', choices=['fork', 'queue', 'slurm', 'sge'],
 		default='fork')
 experiments_launch_parser.add_argument('--queue', type=str)
 
