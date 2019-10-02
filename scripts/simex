@@ -255,15 +255,42 @@ def do_experiments_launch(args):
 			continue
 		sel.append(run)
 
-	if args.launch_through == 'slurm':
-		launcher = extl.launch.slurm.SlurmLauncher(args.queue)
-	elif args.launch_through == 'sge':
-		launcher = extl.launch.sge.SgeLauncher(args.queue)
-	elif args.launch_through == 'queue':
-		launcher = extl.launch.queue.QueueLauncher()
+	launcher = None
+	def create_launcher(scheduler, queue=None):
+		if scheduler == 'slurm':
+			return extl.launch.slurm.SlurmLauncher(queue)
+		elif scheduler == 'sge':
+			return extl.launch.sge.SgeLauncher(queue)
+		elif scheduler == 'queue':
+			return extl.launch.queue.QueueLauncher()
+		elif scheduler == 'fork':
+			return extl.launch.fork.ForkLauncher()
+		else:
+			raise RuntimeError('Unknown scheduler {}'.format(scheduler))
+
+	if args.launcher:
+		assert not args.launch_through
+
+		with open(os.path.expanduser('~/.simexpal/launchers.yml'), 'r') as f:
+			lf_yml = yaml.load(f, Loader=yaml.Loader)
+
+		# TODO: Raise some "syntax error" exception here.
+		assert 'launchers' in lf_yml
+		info_yml_list = [info_yml for info_yml in lf_yml['launchers']
+				if info_yml['name'] == args.launcher]
+
+		if not info_yml_list:
+			raise RuntimeError('There is no launcher named {}'.format(args.launcher))
+		if len(info_yml_list) > 1:
+			raise RuntimeError('Launcher {} is not unique'.format(args.launcher))
+		info_yml = info_yml_list[0]
+
+		launcher = create_launcher(info_yml['scheduler'])
 	else:
-		assert args.launch_through == 'fork'
-		launcher = extl.launch.fork.ForkLauncher()
+		launcher = create_launcher(
+			scheduler=args.launch_through or 'fork',
+			queue=args.queue
+		)
 
 	# If the launcher supports submit_multiple, we prefer that.
 	try:
@@ -278,8 +305,8 @@ def do_experiments_launch(args):
 experiments_launch_parser = experiments_subcmds.add_parser('launch',
 		parents=[run_selection_parser])
 experiments_launch_parser.set_defaults(cmd=do_experiments_launch)
-experiments_launch_parser.add_argument('--launch-through', choices=['fork', 'queue', 'slurm', 'sge'],
-		default='fork')
+experiments_launch_parser.add_argument('--launcher', type=str)
+experiments_launch_parser.add_argument('--launch-through', choices=['fork', 'queue', 'slurm', 'sge'])
 experiments_launch_parser.add_argument('--queue', type=str)
 
 def do_experiments_purge(args):
