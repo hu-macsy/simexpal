@@ -70,9 +70,18 @@ class SlurmLauncher(common.Launcher):
 
 		sbatch_script = util.expand_at_params(script_template, substitute)
 
+		ps = experiment.effective_process_settings
+		ts = experiment.effective_thread_settings
+
 		# Build the sbatch command to run the script.
 		# TODO: Support multiple queues
 		sbatch_args = ['sbatch']
+		if ps and ps['num_nodes']:
+			sbatch_args += ['-N', str(ps['num_nodes'])]
+		if ps and ps['procs_per_node']:
+			sbatch_args += ['--ntasks-per-node', str(ps['procs_per_node'])]
+		if ts and ts['num_threads']:
+			sbatch_args += ['-c', str(ts['num_threads'])]
 		log_pattern = '%A-%a' if use_array else '%A'
 		sbatch_args.extend(['-o', os.path.join(cfg.basedir, 'aux/_slurm/' + log_pattern + '.out'),
 				'-e', os.path.join(cfg.basedir, 'aux/_slurm/' + log_pattern + '.err')])
