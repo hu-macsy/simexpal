@@ -1,4 +1,5 @@
 
+import collections
 import os
 import subprocess
 import sys
@@ -17,12 +18,16 @@ class SlurmLauncher(common.Launcher):
 		self.queue = queue
 
 	def submit(self, cfg, run):
-		self._do_submit(cfg, [run])
+		self._do_submit(cfg, run.experiment, [run])
 
 	def submit_multiple(self, cfg, runs):
-		self._do_submit(cfg, runs)
+		groups = collections.defaultdict(list)
+		for run in runs:
+			groups[run.experiment].append(run)
+		for grp_exp, grp_runs in groups.items():
+			self._do_submit(cfg, grp_exp, grp_runs)
 
-	def _do_submit(self, cfg, runs):
+	def _do_submit(self, cfg, experiment, runs):
 		util.try_mkdir(os.path.join(cfg.basedir, 'aux'))
 		util.try_mkdir(os.path.join(cfg.basedir, 'aux/_slurm'))
 
