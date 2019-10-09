@@ -76,6 +76,8 @@ class SlurmLauncher(common.Launcher):
 		# Build the sbatch command to run the script.
 		# TODO: Support multiple queues
 		sbatch_args = ['sbatch']
+		if self.queue:
+			sbatch_args += ['-p', self.queue]
 		if ps and ps['num_nodes']:
 			sbatch_args += ['-N', str(ps['num_nodes'])]
 		if ps and ps['procs_per_node']:
@@ -91,8 +93,12 @@ class SlurmLauncher(common.Launcher):
 
 		# Finally start the run.
 		for run in locked:
-			print("Submitting experiment '{}', instance '{}' to slurm queue '{}'".format(
-					run.experiment.name, run.instance.filename, '?'))
+			if self.queue:
+				print("Submitting experiment '{}', instance '{}' to slurm partition '{}'".format(
+						run.experiment.name, run.instance.filename, self.queue))
+			else:
+				print("Submitting experiment '{}', instance '{}' to default slurm partition".format(
+						run.experiment.name, run.instance.filename))
 
 		process = subprocess.Popen(sbatch_args, stdin=subprocess.PIPE);
 		process.communicate(sbatch_script.encode()) # Assume UTF-8 encoding here.
