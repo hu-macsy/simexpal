@@ -268,12 +268,26 @@ def do_experiments_launch(args):
 		else:
 			raise RuntimeError('Unknown scheduler {}'.format(scheduler))
 
+	lf_yml = None
+	default_yml = None
+	with open(os.path.expanduser('~/.simexpal/launchers.yml'), 'r') as f:
+		lf_yml = yaml.load(f, Loader=yaml.Loader)
+
+		# Find the default launcher.
+		# TODO: Raise some "syntax error" exception here.
+		assert 'launchers' in lf_yml
+		default_yml_list = [default_yml for default_yml in lf_yml['launchers']
+				if 'default' in default_yml and default_yml['default']]
+
+		if len(default_yml_list) > 1:
+			raise RuntimeError('Default launcher is not unique')
+		if default_yml_list:
+			default_yml = default_yml_list[0]
+
 	if args.launcher:
 		assert not args.launch_through
 
-		with open(os.path.expanduser('~/.simexpal/launchers.yml'), 'r') as f:
-			lf_yml = yaml.load(f, Loader=yaml.Loader)
-
+		# Find the specified launcher.
 		# TODO: Raise some "syntax error" exception here.
 		assert 'launchers' in lf_yml
 		info_yml_list = [info_yml for info_yml in lf_yml['launchers']
@@ -285,12 +299,23 @@ def do_experiments_launch(args):
 			raise RuntimeError('Launcher {} is not unique'.format(args.launcher))
 		info_yml = info_yml_list[0]
 
-		launcher = create_launcher(info_yml['scheduler'])
-	else:
-		launcher = create_launcher(
-			scheduler=args.launch_through or 'fork',
+		launcher = create_launcher(info_yml['scheduler'],
+			queue=info_yml['queue'] if 'queue' in info_yml else None
+		)
+	elif args.launch_through:
+		assert not args.launcher
+
+		launcher = create_launcher(args.launch_through,
 			queue=args.queue
 		)
+	elif default_yml:
+		# Fallback: use the default launcher.
+		launcher = create_launcher(default_yml['scheduler'],
+			queue=default_yml['queue'] if 'queue' in default_yml else None
+		)
+	else:
+		# Final fallback: use the the fork()-based launcher.
+		launcher = create_launcher(scheduler='fork')
 
 	# If the launcher supports submit_multiple, we prefer that.
 	try:
