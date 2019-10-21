@@ -351,3 +351,29 @@ Once the build process is finished, the experiments can be started as usual.
     ----------
     TODO
 
+Launchers / Support for Batch Schedulers
+----------------------------------------
+
+To submit experiments to a batch scheduler, simexpal allows you to define "launchers".
+A launcher specifies where and how simexpal should submit experiments. If no launcher
+(not even a default launcher or ``--launch-through``) is specified,
+simexpal launches experiments on the local machine.
+
+Launchers are defined in a file ``~/.simexpal/launchers.yml``. For example,
+to submit jobs to the Slurm partition ``fat-nodes``, a launcher configuration
+could look like this:
+
+.. code-block:: YAML
+
+    launchers:
+      - name: local-cluster
+        default: true
+        scheduler: slurm
+        queue: fat-nodes
+
+When launching experiments using ``simex experiments launch``, you can specify
+the ``--launcher`` option (e.g., ``simex experiments launch --launcher local-cluster``)
+to select a certain launcher. Note that the ``default: true`` attribute
+of a launcher overrides the default behavior of launching on the local machine
+(hence, there can only be one launcher with ``default: true``).
+

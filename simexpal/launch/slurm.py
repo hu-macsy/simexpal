@@ -1,4 +1,5 @@
 
+import collections
 import os
 import subprocess
 import sys
@@ -17,12 +18,16 @@ class SlurmLauncher(common.Launcher):
 		self.queue = queue
 
 	def submit(self, cfg, run):
-		self._do_submit(cfg, [run])
+		self._do_submit(cfg, run.experiment, [run])
 
 	def submit_multiple(self, cfg, runs):
-		self._do_submit(cfg, runs)
+		groups = collections.defaultdict(list)
+		for run in runs:
+			groups[run.experiment].append(run)
+		for grp_exp, grp_runs in groups.items():
+			self._do_submit(cfg, grp_exp, grp_runs)
 
-	def _do_submit(self, cfg, runs):
+	def _do_submit(self, cfg, experiment, runs):
 		util.try_mkdir(os.path.join(cfg.basedir, 'aux'))
 		util.try_mkdir(os.path.join(cfg.basedir, 'aux/_slurm'))
 
@@ -65,9 +70,20 @@ class SlurmLauncher(common.Launcher):
 
 		sbatch_script = util.expand_at_params(script_template, substitute)
 
+		ps = experiment.effective_process_settings
+		ts = experiment.effective_thread_settings
+
 		# Build the sbatch command to run the script.
 		# TODO: Support multiple queues
 		sbatch_args = ['sbatch']
+		if self.queue:
+			sbatch_args += ['-p', self.queue]
+		if ps and ps['num_nodes']:
+			sbatch_args += ['-N', str(ps['num_nodes'])]
+		if ps and ps['procs_per_node']:
+			sbatch_args += ['--ntasks-per-node', str(ps['procs_per_node'])]
+		if ts and ts['num_threads']:
+			sbatch_args += ['-c', str(ts['num_threads'])]
 		log_pattern = '%A-%a' if use_array else '%A'
 		sbatch_args.extend(['-o', os.path.join(cfg.basedir, 'aux/_slurm/' + log_pattern + '.out'),
 				'-e', os.path.join(cfg.basedir, 'aux/_slurm/' + log_pattern + '.err')])
@@ -77,8 +93,12 @@ class SlurmLauncher(common.Launcher):
 
 		# Finally start the run.
 		for run in locked:
-			print("Submitting experiment '{}', instance '{}' to slurm queue '{}'".format(
-					run.experiment.name, run.instance.filename, '?'))
+			if self.queue:
+				print("Submitting experiment '{}', instance '{}' to slurm partition '{}'".format(
+						run.experiment.name, run.instance.filename, self.queue))
+			else:
+				print("Submitting experiment '{}', instance '{}' to default slurm partition".format(
+						run.experiment.name, run.instance.filename))
 
 		process = subprocess.Popen(sbatch_args, stdin=subprocess.PIPE);
 		process.communicate(sbatch_script.encode()) # Assume UTF-8 encoding here.

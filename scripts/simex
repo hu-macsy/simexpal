@@ -255,15 +255,67 @@ def do_experiments_launch(args):
 			continue
 		sel.append(run)
 
-	if args.launcher == 'slurm':
-		launcher = extl.launch.slurm.SlurmLauncher(args.queue)
-	elif args.launcher == 'sge':
-		launcher = extl.launch.sge.SgeLauncher(args.queue)
-	elif args.launcher == 'queue':
-		launcher = extl.launch.queue.QueueLauncher()
+	launcher = None
+	def create_launcher(scheduler, queue=None):
+		if scheduler == 'slurm':
+			return extl.launch.slurm.SlurmLauncher(queue)
+		elif scheduler == 'sge':
+			return extl.launch.sge.SgeLauncher(queue)
+		elif scheduler == 'queue':
+			return extl.launch.queue.QueueLauncher()
+		elif scheduler == 'fork':
+			return extl.launch.fork.ForkLauncher()
+		else:
+			raise RuntimeError('Unknown scheduler {}'.format(scheduler))
+
+	lf_yml = None
+	default_yml = None
+	with open(os.path.expanduser('~/.simexpal/launchers.yml'), 'r') as f:
+		lf_yml = yaml.load(f, Loader=yaml.Loader)
+
+		# Find the default launcher.
+		# TODO: Raise some "syntax error" exception here.
+		assert 'launchers' in lf_yml
+		default_yml_list = [default_yml for default_yml in lf_yml['launchers']
+				if 'default' in default_yml and default_yml['default']]
+
+		if len(default_yml_list) > 1:
+			raise RuntimeError('Default launcher is not unique')
+		if default_yml_list:
+			default_yml = default_yml_list[0]
+
+	if args.launcher:
+		assert not args.launch_through
+
+		# Find the specified launcher.
+		# TODO: Raise some "syntax error" exception here.
+		assert 'launchers' in lf_yml
+		info_yml_list = [info_yml for info_yml in lf_yml['launchers']
+				if info_yml['name'] == args.launcher]
+
+		if not info_yml_list:
+			raise RuntimeError('There is no launcher named {}'.format(args.launcher))
+		if len(info_yml_list) > 1:
+			raise RuntimeError('Launcher {} is not unique'.format(args.launcher))
+		info_yml = info_yml_list[0]
+
+		launcher = create_launcher(info_yml['scheduler'],
+			queue=info_yml['queue'] if 'queue' in info_yml else None
+		)
+	elif args.launch_through:
+		assert not args.launcher
+
+		launcher = create_launcher(args.launch_through,
+			queue=args.queue
+		)
+	elif default_yml:
+		# Fallback: use the default launcher.
+		launcher = create_launcher(default_yml['scheduler'],
+			queue=default_yml['queue'] if 'queue' in default_yml else None
+		)
 	else:
-		assert args.launcher == 'fork'
-		launcher = extl.launch.fork.ForkLauncher()
+		# Final fallback: use the the fork()-based launcher.
+		launcher = create_launcher(scheduler='fork')
 
 	# If the launcher supports submit_multiple, we prefer that.
 	try:
@@ -278,8 +330,10 @@ def do_experiments_launch(args):
 experiments_launch_parser = experiments_subcmds.add_parser('launch',
 		parents=[run_selection_parser])
 experiments_launch_parser.set_defaults(cmd=do_experiments_launch)
-experiments_launch_parser.add_argument('--launcher', choices=['fork', 'queue', 'slurm', 'sge'],
-		default='fork')
+experiments_launch_mechanism = experiments_launch_parser.add_mutually_exclusive_group()
+experiments_launch_mechanism.add_argument('--launcher', type=str)
+experiments_launch_mechanism.add_argument('--launch-through',
+		choices=['fork', 'queue', 'slurm', 'sge'])
 experiments_launch_parser.add_argument('--queue', type=str)
 
 def do_experiments_purge(args):

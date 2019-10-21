@@ -553,6 +553,21 @@ class Build:
 		rev = '@' + self.revision.name
 		return os.path.join(self._cfg.basedir, 'builds', self.name + rev)
 
+def extract_process_settings(yml):
+	if 'num_nodes' not in yml:
+		return None
+	return {
+		'num_nodes': yml['num_nodes'],
+		'procs_per_node': yml.get('procs_per_node', None)
+	}
+
+def extract_thread_settings(yml):
+	if 'num_threads' not in yml:
+		return None
+	return {
+		'num_threads': yml['num_threads']
+	}
+
 class Variant:
 	def __init__(self, cfg, axis, variant_yml):
 		self._cfg = cfg
@@ -562,6 +577,14 @@ class Variant:
 	@property
 	def name(self):
 		return self.variant_yml['name']
+
+	@property
+	def process_settings(self):
+		return extract_process_settings(self.variant_yml)
+
+	@property
+	def thread_settings(self):
+		return extract_thread_settings(self.variant_yml)
 
 class ExperimentInfo:
 	def __init__(self, cfg, exp_yml):
@@ -577,6 +600,14 @@ class ExperimentInfo:
 		if 'use_builds' in self._exp_yml:
 			for name in self._exp_yml['use_builds']:
 				yield name
+
+	@property
+	def process_settings(self):
+		return extract_process_settings(self._exp_yml)
+
+	@property
+	def thread_settings(self):
+		return extract_thread_settings(self._exp_yml)
 
 class Experiment:
 	"""
@@ -610,6 +641,30 @@ class Experiment:
 		return get_output_subdir(self._cfg.basedir, self.name,
 				[variant.name for variant in self.variation],
 				self.revision.name if self.revision else None)
+
+	@property
+	def effective_process_settings(self):
+		s = None
+		for variant in self.variation:
+			vs = variant.process_settings
+			if not vs:
+				continue
+			if s:
+				raise RuntimeError('Process settings overriden by multiple variants')
+			s = vs
+		return s or self.info.process_settings
+
+	@property
+	def effective_thread_settings(self):
+		s = None
+		for variant in self.variation:
+			vs = variant.thread_settings
+			if not vs:
+				continue
+			if s:
+				raise RuntimeError('Thread settings overriden by multiple variants')
+			s = vs
+		return s or self.info.thread_settings
 
 class Run:
 	def __init__(self, cfg, experiment, instance, repetition):
