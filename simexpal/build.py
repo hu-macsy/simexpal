@@ -96,7 +96,8 @@ def make_build_in_order(cfg, build):
 
 	def collect_prefix_paths(subdir):
 		return [os.path.join(req.prefix_dir, subdir) for req in recursive_builds]
-	pkgconfig_paths = collect_prefix_paths('lib/pkgconfig')
+	pkgconfig_paths = collect_prefix_paths('lib64/pkgconfig')
+	pkgconfig_paths += collect_prefix_paths('lib/pkgconfig')
 
 	base_environ = os.environ.copy()
 	base_environ['PKG_CONFIG_PATH'] = prepend_env('PKG_CONFIG_PATH', pkgconfig_paths)

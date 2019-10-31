@@ -126,6 +126,7 @@ class RunManifest:
 	def get_ldso_paths(self):
 		paths = []
 		for build_yml in self.yml['builds']:
+			paths.append(os.path.join(build_yml['prefix'], 'lib64'))
 			paths.append(os.path.join(build_yml['prefix'], 'lib'))
 		return paths
 
