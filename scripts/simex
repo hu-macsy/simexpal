@@ -269,21 +269,27 @@ def do_experiments_launch(args):
 			raise RuntimeError('Unknown scheduler {}'.format(scheduler))
 
 	lf_yml = None
-	default_yml = None
-	with open(os.path.expanduser('~/.simexpal/launchers.yml'), 'r') as f:
-		lf_yml = yaml.load(f, Loader=yaml.Loader)
-
-		# Find the default launcher.
-		# TODO: Raise some "syntax error" exception here.
-		assert 'launchers' in lf_yml
-		default_yml_list = [default_yml for default_yml in lf_yml['launchers']
-				if 'default' in default_yml and default_yml['default']]
-
-		if len(default_yml_list) > 1:
-			raise RuntimeError('Default launcher is not unique')
-		if default_yml_list:
-			default_yml = default_yml_list[0]
-
+	default_yml = None		
+	try:
+		file_path = os.path.expanduser('~/.simexpal/launchers.yml')
+		f = open(file_path, 'r')
+	except FileNotFoundError:
+		print("No launcher was specified in {}.".format(file_path))
+	else:
+		with f:
+			lf_yml = yaml.load(f, Loader=yaml.Loader)
+	
+			# Find the default launcher.
+			# TODO: Raise some "syntax error" exception here.
+			assert 'launchers' in lf_yml
+			default_yml_list = [default_yml for default_yml in lf_yml['launchers']
+								if 'default' in default_yml and default_yml['default']]
+	
+			if len(default_yml_list) > 1:
+				raise RuntimeError('Default launcher is not unique')
+			if default_yml_list:
+				default_yml = default_yml_list[0]	
+	
 	if args.launcher:
 		assert not args.launch_through
 
