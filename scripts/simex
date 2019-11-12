@@ -43,6 +43,10 @@ def select_runs_from_cli(cfg, args, default_all=True):
 		for run in cfg.discover_all_runs():
 			if args.experiment == run.experiment.name:
 				yield run
+	elif args.instance is not None:
+		for run in cfg.discover_all_runs():
+			if args.instance == run.instance.filename:
+				yield run
 	elif args.revision is not None:
 		for run in cfg.discover_all_runs():
 			if run.experiment.revision is None:
@@ -88,6 +92,7 @@ def select_runs_from_cli(cfg, args, default_all=True):
 run_selection_parser = argparse.ArgumentParser(add_help=False)
 run_selection_parser.add_argument('--instset', type=str)
 run_selection_parser.add_argument('--experiment', type=str)
+run_selection_parser.add_argument('--instance', type=str)
 run_selection_parser.add_argument('--revision', type=str)
 run_selection_parser.add_argument('--run', type=str)
 run_selection_parser.add_argument('--all', action='store_true')
