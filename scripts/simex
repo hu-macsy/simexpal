@@ -43,6 +43,10 @@ def select_runs_from_cli(cfg, args, default_all=True):
 		for run in cfg.discover_all_runs():
 			if args.experiment == run.experiment.name:
 				yield run
+	elif args.instance is not None:
+		for run in cfg.discover_all_runs():
+			if args.instance == run.instance.filename:
+				yield run
 	elif args.revision is not None:
 		for run in cfg.discover_all_runs():
 			if run.experiment.revision is None:
@@ -88,6 +92,7 @@ def select_runs_from_cli(cfg, args, default_all=True):
 run_selection_parser = argparse.ArgumentParser(add_help=False)
 run_selection_parser.add_argument('--instset', type=str)
 run_selection_parser.add_argument('--experiment', type=str)
+run_selection_parser.add_argument('--instance', type=str)
 run_selection_parser.add_argument('--revision', type=str)
 run_selection_parser.add_argument('--run', type=str)
 run_selection_parser.add_argument('--all', action='store_true')
@@ -383,6 +388,30 @@ experiments_purge_parser = experiments_subcmds.add_parser('purge',
 		parents=[run_selection_parser])
 experiments_purge_parser.set_defaults(cmd=do_experiments_purge)
 experiments_purge_parser.add_argument('-f', action='store_true')
+
+def do_experiments_print_output(args):
+	cfg = extl.base.config_for_dir()
+
+	selection = list(select_runs_from_cli(cfg, args, default_all=False))
+
+	if selection:
+		for run in selection:
+			try:
+				f = open(run.output_file_path('out'), 'r')
+			except FileNotFoundError:
+				pass
+			else:
+				with f:
+					print('Experiment: {}'.format(run.experiment.name))
+					print('Instance: {}'.format(run.instance.filename))
+					print('Output:\n\n{}\n'.format(f.read()))
+	else:
+		print("Use an additional argument to print the respective output files.\n"
+				"Use 'simex e print -h' to look at the list of possible arguments.", file=sys.stderr)
+
+experiments_print_parser = experiments_subcmds.add_parser('print',
+		parents=[run_selection_parser])
+experiments_print_parser.set_defaults(cmd=do_experiments_print_output)
 
 # ---------------------------------------------------------------------------------------
 
