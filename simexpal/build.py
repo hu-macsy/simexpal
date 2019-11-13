@@ -135,12 +135,18 @@ def make_build_in_order(cfg, build):
 
 	did_work = False
 
-	def do_step(step_yml, workdir=None):
+	def do_step(step_yml, default_workdir=None):
+		workdir = default_workdir
+		if 'workdir' in step_yml:
+			workdir = util.expand_at_params(step_yml['workdir'], substitute)
+
 		environ = base_environ.copy()
 		if 'environ' in step_yml:
 			for (var, value) in step_yml['environ'].items():
 				environ[var] = util.expand_at_params(value, substitute)
+
 		args = [util.expand_at_params(arg, substitute) for arg in step_yml['args']]
+
 		subprocess.check_call(args, cwd=workdir, env=environ)
 
 	if want_phase(Phase.CHECKOUT):
@@ -199,7 +205,7 @@ def make_build_in_order(cfg, build):
 
 		if 'configure' in build.info._build_yml:
 			for step_yml in build.info._build_yml['configure']:
-				do_step(step_yml, workdir=build.compile_dir)
+				do_step(step_yml, default_workdir=build.compile_dir)
 		util.touch(os.path.join(build.compile_dir, 'configured.simexpal'))
 		did_work = True
 
@@ -207,7 +213,7 @@ def make_build_in_order(cfg, build):
 		log_phase('compile')
 		if 'compile' in build.info._build_yml:
 			for step_yml in build.info._build_yml['compile']:
-				do_step(step_yml, workdir=build.compile_dir)
+				do_step(step_yml, default_workdir=build.compile_dir)
 		util.touch(os.path.join(build.compile_dir, 'compiled.simexpal'))
 		did_work = True
 
@@ -220,7 +226,7 @@ def make_build_in_order(cfg, build):
 
 		if 'install' in build.info._build_yml:
 			for step_yml in build.info._build_yml['install']:
-				do_step(step_yml, workdir=build.compile_dir)
+				do_step(step_yml, default_workdir=build.compile_dir)
 		util.touch(os.path.join(build.prefix_dir, 'installed.simexpal'))
 		did_work = True
 
