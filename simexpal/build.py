@@ -145,9 +145,17 @@ def make_build_in_order(cfg, build):
 			for (var, value) in step_yml['environ'].items():
 				environ[var] = util.expand_at_params(value, substitute)
 
-		args = [util.expand_at_params(arg, substitute) for arg in step_yml['args']]
+		shell = None
+		args = None
+		if isinstance(step_yml['args'], list):
+			shell = False
+			args = [util.expand_at_params(arg, substitute) for arg in step_yml['args']]
+		else:
+			assert isinstance(step_yml['args'], str)
+			shell = True
+			args = util.expand_at_params(step_yml['args'], substitute)
 
-		subprocess.check_call(args, cwd=workdir, env=environ)
+		subprocess.check_call(args, cwd=workdir, env=environ, shell=shell)
 
 	if want_phase(Phase.CHECKOUT):
 		log_phase('checkout')
