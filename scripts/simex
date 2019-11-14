@@ -404,10 +404,12 @@ experiments_purge_parser.add_argument('-f', action='store_true')
 def do_experiments_print_output(args):
 	cfg = extl.base.config_for_dir()
 
-	selection = list(select_runs_from_cli(cfg, args, default_all=False))
-
-	if selection:
-		for run in selection:
+	if not can_select_runs_from_cli(args):
+		print("Use an additional argument to print the respective output files.\n"
+			  "Use 'simex e print -h' to look at the list of possible arguments.", file=sys.stderr)
+		return
+	else:
+		for run in select_runs_from_cli(cfg, args, default_all=False):
 			try:
 				f = open(run.output_file_path('out'), 'r')
 			except FileNotFoundError:
@@ -417,9 +419,6 @@ def do_experiments_print_output(args):
 					print('Experiment: {}'.format(run.experiment.name))
 					print('Instance: {}'.format(run.instance.filename))
 					print('Output:\n\n{}\n'.format(f.read()))
-	else:
-		print("Use an additional argument to print the respective output files.\n"
-				"Use 'simex e print -h' to look at the list of possible arguments.", file=sys.stderr)
 
 experiments_print_parser = experiments_subcmds.add_parser('print',
 		parents=[run_selection_parser])
