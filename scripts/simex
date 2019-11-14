@@ -89,6 +89,18 @@ def select_runs_from_cli(cfg, args, default_all=True):
 		if default_all:
 			yield from cfg.discover_all_runs()
 
+def can_select_runs_from_cli(args):
+	if (args.experiment is not None
+			or args.instance is not None
+			or args.revision is not None
+			or args.instset is not None
+			or args.run is not None
+			or args.all
+			or args.failed
+			or args.unfinished):
+		return True
+	return False
+
 run_selection_parser = argparse.ArgumentParser(add_help=False)
 run_selection_parser.add_argument('--instset', type=str)
 run_selection_parser.add_argument('--experiment', type=str)
@@ -350,52 +362,59 @@ experiments_launch_parser.add_argument('--queue', type=str)
 def do_experiments_purge(args):
 	cfg = extl.base.config_for_dir()
 
-	for run in select_runs_from_cli(cfg, args, default_all=False):
-		(exp, instance) = (run.experiment, run.instance.filename)
+	if not can_select_runs_from_cli(args):
+		print("Use an additional argument to purge the respective files.\n"
+			  "Use 'simex e purge -h' to look at the list of possible arguments.", file=sys.stderr)
+		return
+	else:
+		for run in select_runs_from_cli(cfg, args, default_all=False):
+			(exp, instance) = (run.experiment, run.instance.filename)
 
-		if args.f:
-			print("Purging experiment '{}', instance '{}' [{}]".format(
-					exp.name, instance, run.repetition))
-			try:
-				os.unlink(run.aux_file_path('lock'))
-			except FileNotFoundError:
-				pass
-			try:
-				os.unlink(run.aux_file_path('run'))
-			except FileNotFoundError:
-				pass
-			try:
-				os.unlink(run.aux_file_path('run.tmp'))
-			except FileNotFoundError:
-				pass
-			try:
-				os.unlink(run.output_file_path('out'))
-			except FileNotFoundError:
-				pass
-			try:
-				os.unlink(run.output_file_path('status'))
-			except FileNotFoundError:
-				pass
-			try:
-				os.unlink(run.output_file_path('status.tmp'))
-			except FileNotFoundError:
-				pass
-		else:
-			print("This would purge experiment '{}', instance '{}' [{}]".format(
-					exp.name, instance, run.repetition))
+			if args.f:
+				print("Purging experiment '{}', instance '{}' [{}]".format(
+						exp.name, instance, run.repetition))
+				try:
+					os.unlink(run.aux_file_path('lock'))
+				except FileNotFoundError:
+					pass
+				try:
+					os.unlink(run.aux_file_path('run'))
+				except FileNotFoundError:
+					pass
+				try:
+					os.unlink(run.aux_file_path('run.tmp'))
+				except FileNotFoundError:
+					pass
+				try:
+					os.unlink(run.output_file_path('out'))
+				except FileNotFoundError:
+					pass
+				try:
+					os.unlink(run.output_file_path('status'))
+				except FileNotFoundError:
+					pass
+				try:
+					os.unlink(run.output_file_path('status.tmp'))
+				except FileNotFoundError:
+					pass
+			else:
+				print("This would purge experiment '{}', instance '{}' [{}]".format(
+						exp.name, instance, run.repetition))
 
 experiments_purge_parser = experiments_subcmds.add_parser('purge',
 		parents=[run_selection_parser])
 experiments_purge_parser.set_defaults(cmd=do_experiments_purge)
-experiments_purge_parser.add_argument('-f', action='store_true')
+experiments_purge_parser.add_argument('-f', action='store_true', help='execute purge')
 
 def do_experiments_print_output(args):
 	cfg = extl.base.config_for_dir()
 
-	selection = list(select_runs_from_cli(cfg, args, default_all=False))
-
-	if selection:
-		for run in selection:
+	if not can_select_runs_from_cli(args):
+		print("Use an additional argument to print the respective output files.\n"
+			  "Use 'simex e print -h' to look at the list of possible arguments.", file=sys.stderr)
+		return
+	else:
+		for run in select_runs_from_cli(cfg, args, default_all=False):
 			try:
 				f = open(run.output_file_path('out'), 'r')
 			except FileNotFoundError:
@@ -405,9 +424,6 @@ def do_experiments_print_output(args):
 					print('Experiment: {}'.format(run.experiment.name))
 					print('Instance: {}'.format(run.instance.filename))
 					print('Output:\n\n{}\n'.format(f.read()))
-	else:
-		print("Use an additional argument to print the respective output files.\n"
-				"Use 'simex e print -h' to look at the list of possible arguments.", file=sys.stderr)
 
 experiments_print_parser = experiments_subcmds.add_parser('print',
 		parents=[run_selection_parser])
