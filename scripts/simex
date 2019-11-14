@@ -89,6 +89,18 @@ def select_runs_from_cli(cfg, args, default_all=True):
 		if default_all:
 			yield from cfg.discover_all_runs()
 
+def can_select_runs_from_cli(args):
+	if (args.experiment is not None
+			or args.instance is not None
+			or args.revision is not None
+			or args.instset is not None
+			or args.run is not None
+			or args.all
+			or args.failed
+			or args.unfinished):
+		return True
+	return False
+
 run_selection_parser = argparse.ArgumentParser(add_help=False)
 run_selection_parser.add_argument('--instset', type=str)
 run_selection_parser.add_argument('--experiment', type=str)
