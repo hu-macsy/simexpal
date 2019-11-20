@@ -225,6 +225,10 @@ def invoke_run(manifest):
 		if manifest.output == 'stdout':
 			stdout = os.dup(f.fileno())
 
+	# Create the error file.
+	(stderr_pipe, stderr) = os.pipe()
+	os.set_blocking(stderr_pipe, False)
+
 	def substitute(p):
 		if p == 'INSTANCE':
 			return manifest.instance_dir + '/' + manifest.instance
@@ -265,13 +269,14 @@ def invoke_run(manifest):
 
 		def progress(self):
 			# Specify some chunk size to avoid reading the whole pipe at once.
-			chunk = self._fd.read(16 * 1024)
+			chunk = os.read(self._fd, 16 * 1024)
 			if not len(chunk):
 				return False
 
 			if self._out is None:
 				self._out = open(self._path, "wb")
 			self._out.write(chunk)
+			self._out.flush()
 			return True
 
 		def close(self):
@@ -281,11 +286,11 @@ def invoke_run(manifest):
 	start = time.perf_counter()
 	cwd = manifest.workdir if manifest.workdir is not None else manifest.base_dir
 	child = subprocess.Popen(cmd, cwd=cwd, env=environ,
-			stdout=stdout, stderr=subprocess.PIPE)
+			stdout=stdout, stderr=stderr)
 	sel = selectors.DefaultSelector()
 
-	stderr_writer = LazyWriter(child.stderr, manifest.aux_file_path('stderr'))
-	sel.register(child.stderr, selectors.EVENT_READ, stderr_writer)
+	stderr_writer = LazyWriter(stderr_pipe, manifest.aux_file_path('stderr'))
+	sel.register(stderr_pipe, selectors.EVENT_READ, stderr_writer)
 
 	# Wait until the run program finishes.
 	while True:
