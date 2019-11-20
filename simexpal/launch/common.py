@@ -218,12 +218,15 @@ def compile_manifest(run):
 
 def invoke_run(manifest):
 	# Create the output file. This signals that the run has been started.
-	stdout = None
+	(stdout_pipe, stdout) = (None, None)
 	with open(manifest.output_file_path('out'), "w") as f:
 		# We do not actually need to write anything to the output file.
 		# However, we might want to pipe experimental output to it.
 		if manifest.output == 'stdout':
 			stdout = os.dup(f.fileno())
+		else:
+			(stdout_pipe, stdout) = os.pipe()
+			os.set_blocking(stdout_pipe, False)
 
 	# Create the error file.
 	(stderr_pipe, stderr) = os.pipe()
@@ -289,6 +292,9 @@ def invoke_run(manifest):
 			stdout=stdout, stderr=stderr)
 	sel = selectors.DefaultSelector()
 
+	if manifest.output != 'stdout':
+		stdout_writer = LazyWriter(stdout_pipe, manifest.aux_file_path('stdout'))
+		sel.register(stdout_pipe, selectors.EVENT_READ, stdout_writer)
 	stderr_writer = LazyWriter(stderr_pipe, manifest.aux_file_path('stderr'))
 	sel.register(stderr_pipe, selectors.EVENT_READ, stderr_writer)
 
@@ -315,6 +321,8 @@ def invoke_run(manifest):
 				sel.unregister(sk.fd)
 		if not events:
 			break
+	if manifest.output != 'stdout':
+		stdout_writer.close()
 	stderr_writer.close()
 	runtime = time.perf_counter() - start
 
