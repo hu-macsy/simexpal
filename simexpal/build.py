@@ -36,8 +36,6 @@ def compute_order(cfg, desired):
 			state[info.name] = State.EXPANDING
 			stack.append((info, list(links)))
 		elif state[info.name] == State.EXPANDING:
-			for (circ_action, circ_subject, _) in stack:
-				print(Action.strings[circ_action], circ_subject.name)
 			raise RuntimeError("Program has circular dependencies")
 		else:
 			# Programs that are already ordered do not need to be considered again.
