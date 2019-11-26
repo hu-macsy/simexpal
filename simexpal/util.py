@@ -110,3 +110,9 @@ def compute_network_size(path, out):
 	}
 	yaml.dump(data, out, default_flow_style=False)
 
+def ensure_list_type(arg):
+	if isinstance(arg, list):
+		return arg
+	assert isinstance(arg, str)
+	return [arg]
+
