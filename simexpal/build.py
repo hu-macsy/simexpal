@@ -194,6 +194,12 @@ def make_build_in_order(cfg, build):
 				build.clone_dir,
 				generic_tag])
 		util.touch(os.path.join(build.clone_dir, 'checkedout.simexpal'))
+
+		if 'recursive-clone' in build.info._build_yml:
+			# Clone submodules recursively
+			if build.info._build_yml['recursive-clone']:
+				subprocess.check_call(['git', 'submodule',
+						'update', '--init', '--recursive'] ,cwd=build.clone_dir)
 		did_work = True
 
 	if want_phase(Phase.REGENERATE):
