@@ -181,7 +181,7 @@ def make_build_in_order(cfg, build):
 			# As we create generic_tag, we can add --no-tags here.
 			subprocess.check_call(['git', '--git-dir', build.info.repo_dir,
 					'fetch', '--depth=1', '--no-tags',
-					build.info._build_yml['git']] + fetch_refspec)
+					build.info.git_repo] + fetch_refspec)
 
 		# Prune the existing worktree.
 		util.try_rmtree(build.clone_dir)
@@ -195,18 +195,20 @@ def make_build_in_order(cfg, build):
 				generic_tag])
 		util.touch(os.path.join(build.clone_dir, 'checkedout.simexpal'))
 
-		if 'recursive-clone' in build.info._build_yml:
+		recursive_clone = build.info.recursive_clone
+		if recursive_clone:
 			# Clone submodules recursively
-			if build.info._build_yml['recursive-clone']:
-				subprocess.check_call(['git', 'submodule',
-						'update', '--init', '--recursive'] ,cwd=build.clone_dir)
+			subprocess.check_call(['git', 'submodule',
+					'update', '--init', '--recursive'] ,cwd=build.clone_dir)
+
 		did_work = True
 
 	if want_phase(Phase.REGENERATE):
 		log_phase('regenerate')
-		if 'regenerate' in build.info._build_yml:
-			for step_yml in build.info._build_yml['regenerate']:
-				do_step(step_yml, build.clone_dir)
+
+		regenerate_args = util.ensure_list_type(build.info.regenerate)
+		for step_yml in regenerate_args:
+			do_step(step_yml, build.clone_dir)
 		util.touch(os.path.join(build.clone_dir, 'regenerated.simexpal'))
 		did_work = True
 
@@ -217,17 +219,18 @@ def make_build_in_order(cfg, build):
 		util.try_rmtree(build.compile_dir)
 		util.try_mkdir(build.compile_dir)
 
-		if 'configure' in build.info._build_yml:
-			for step_yml in build.info._build_yml['configure']:
-				do_step(step_yml, default_workdir=build.compile_dir)
+		configure_args = util.ensure_list_type(build.info.configure)
+		for step_yml in configure_args:
+			do_step(step_yml, default_workdir=build.compile_dir)
 		util.touch(os.path.join(build.compile_dir, 'configured.simexpal'))
 		did_work = True
 
 	if want_phase(Phase.COMPILE):
 		log_phase('compile')
-		if 'compile' in build.info._build_yml:
-			for step_yml in build.info._build_yml['compile']:
-				do_step(step_yml, default_workdir=build.compile_dir)
+
+		compile_args = util.ensure_list_type(build.info.compile)
+		for step_yml in compile_args:
+			do_step(step_yml, default_workdir=build.compile_dir)
 		util.touch(os.path.join(build.compile_dir, 'compiled.simexpal'))
 		did_work = True
 
@@ -238,9 +241,9 @@ def make_build_in_order(cfg, build):
 		util.try_rmtree(build.prefix_dir)
 		util.try_mkdir(build.prefix_dir)
 
-		if 'install' in build.info._build_yml:
-			for step_yml in build.info._build_yml['install']:
-				do_step(step_yml, default_workdir=build.compile_dir)
+		install_args = util.ensure_list_type(build.info.install)
+		for step_yml in install_args:
+			do_step(step_yml, default_workdir=build.compile_dir)
 		util.touch(os.path.join(build.prefix_dir, 'installed.simexpal'))
 		did_work = True
 
