@@ -633,6 +633,10 @@ class ExperimentInfo:
 	def thread_settings(self):
 		return extract_thread_settings(self._exp_yml)
 
+	@property
+	def slurm_args(self):
+		return self._exp_yml.get('slurm_args',[])
+
 class Experiment:
 	"""
 	Represents an experiment (see below).
