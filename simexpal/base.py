@@ -694,6 +694,15 @@ class Experiment:
 			s = vs
 		return s or self.info.thread_settings
 
+	@property
+	def display_name(self):
+		display_name = self.name
+		if self.variation:
+			display_name += ' ~ ' + ', '.join([variant.name for variant in self.variation])
+		if self.revision:
+			display_name += ' @ ' + self.revision.name
+		return display_name
+
 class Run:
 	def __init__(self, cfg, experiment, instance, repetition):
 		self._cfg = cfg
