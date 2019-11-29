@@ -512,6 +512,30 @@ class BuildInfo:
 			return []
 		return [self._build_yml['exports_python']]
 
+	@property
+	def configure(self):
+		return self._build_yml.get('configure', [])
+
+	@property
+	def compile(self):
+		return self._build_yml.get('compile', [])
+
+	@property
+	def install(self):
+		return self._build_yml.get('install', [])
+
+	@property
+	def git_repo(self):
+		return self._build_yml.get('git', '')
+
+	@property
+	def recursive_clone(self):
+		return self._build_yml.get('recursive-clone', False)
+
+	@property
+	def regenerate(self):
+		return self._build_yml.get('regenerate', [])
+
 class Revision:
 	def __init__(self, cfg, revision_yml):
 		self._cfg = cfg
