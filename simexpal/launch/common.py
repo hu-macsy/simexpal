@@ -81,7 +81,11 @@ class RunManifest:
 
 	@property
 	def environ(self):
-		return self.yml['environ']
+		env_vars = self.yml['environ']
+		for variant in self.yml['variants']:
+			env_vars.update(variant['environ'].items())
+
+		return env_vars
 
 	@property
 	def output(self):
@@ -102,6 +106,10 @@ class RunManifest:
 		return base.get_output_subdir(self.base_dir, self.experiment,
 				[var_yml['name'] for var_yml in self.yml['variants']],
 				self.revision)
+
+	@property
+	def workdir(self):
+		return self.yml['workdir']
 
 	def aux_file_path(self, ext):
 		return os.path.join(self.aux_subdir,
@@ -171,9 +179,14 @@ def compile_manifest(run):
 	# Collect extra arguments from variants
 	variants_yml = []
 	for variant in exp.variation:
+		environ = {}
+		if 'environ' in variant.variant_yml:
+			for (k, v) in variant.variant_yml['environ'].items():
+				environ[k] = str(v)
 		variants_yml.append({
 			'name': variant.name,
-			'extra_args': variant.variant_yml['extra_args']
+			'extra_args': variant.variant_yml['extra_args'],
+			'environ': environ
 		})
 
 	timeout = None
@@ -199,7 +212,8 @@ def compile_manifest(run):
 		'args': exp.info._exp_yml['args'],
 		'timeout': timeout,
 		'environ': environ,
-		'output': exp.info._exp_yml['output'] if 'output' in exp.info._exp_yml else None
+		'output': exp.info._exp_yml['output'] if 'output' in exp.info._exp_yml else None,
+		'workdir': exp.info._exp_yml['workdir'] if 'workdir' in exp.info._exp_yml else None
 	})
 
 def invoke_run(manifest):
@@ -265,7 +279,8 @@ def invoke_run(manifest):
 				self._out.close()
 
 	start = time.perf_counter()
-	child = subprocess.Popen(cmd, cwd=manifest.base_dir, env=environ,
+	cwd = manifest.workdir if manifest.workdir is not None else manifest.base_dir
+	child = subprocess.Popen(cmd, cwd=cwd, env=environ,
 			stdout=stdout, stderr=subprocess.PIPE)
 	sel = selectors.DefaultSelector()
 
