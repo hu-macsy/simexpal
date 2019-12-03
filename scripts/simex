@@ -249,12 +249,7 @@ def do_experiments_list(args, as_default_subcmd=False):
 			print(colors['green'], end='')
 		elif status == 'timeout' or status == 'killed' or status == 'failed':
 			print(colors['red'], end='')
-		name = exp.name
-		if exp.variation:
-			name += ' ~ ' + ', '.join([variant.name for variant in exp.variation])
-		if exp.revision:
-			name += ' @ ' + exp.revision.name
-		print('{:45.45} {:35.35} [{}] {}'.format(name, instance, run.repetition, status))
+		print('{:45.45} {:35.35} [{}] {}'.format(exp.display_name, instance, run.repetition, status))
 		print(colors['reset'], end='')
 
 experiments_list_parser = experiments_subcmds.add_parser('list',

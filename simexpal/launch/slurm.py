@@ -75,7 +75,7 @@ class SlurmLauncher(common.Launcher):
 
 		# Build the sbatch command to run the script.
 		# TODO: Support multiple queues
-		sbatch_args = ['sbatch']
+		sbatch_args = ['sbatch', '-J', experiment.display_name]
 		if self.queue:
 			sbatch_args += ['-p', self.queue]
 		if ps and ps['num_nodes']:
@@ -90,6 +90,10 @@ class SlurmLauncher(common.Launcher):
 
 		if use_array:
 			sbatch_args.append('--array=0-' + str(len(locked) - 1))
+
+		# Add custom sbatch parameters of the user.
+		slurm_args = util.ensure_list_type(experiment.info.slurm_args)
+		sbatch_args.extend(slurm_args)
 
 		# Finally start the run.
 		for run in locked:
