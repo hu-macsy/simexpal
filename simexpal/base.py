@@ -1,5 +1,6 @@
 
 from collections import OrderedDict
+from enum import IntEnum
 import copy
 import itertools
 import os
@@ -706,6 +707,46 @@ class Experiment:
 		if self.revision:
 			display_name += ' @ ' + self.revision.name
 		return display_name
+
+class Status(IntEnum):
+	NOT_SUBMITTED = 0
+	SUBMITTED = 1
+	IN_SUBMISSION = 2
+	STARTED = 3
+	FINISHED = 4
+	TIMEOUT = 5
+	KILLED = 6
+	FAILED = 7
+
+	def __str__(self):
+		if self.value == Status.NOT_SUBMITTED:
+			return 'not submitted'
+		if self.value == Status.SUBMITTED:
+			return 'submitted'
+		if self.value == Status.IN_SUBMISSION:
+			return 'in submission'
+		if self.value == Status.STARTED:
+			return 'started'
+		if self.value == Status.FINISHED:
+			return 'finished'
+		if self.value == Status.TIMEOUT:
+			return 'timeout'
+		if self.value == Status.KILLED:
+			return 'killed'
+		if self.value == Status.FAILED:
+			return 'failed'
+
+	@property
+	def is_positive(self):
+		return self.value == Status.FINISHED
+
+	@property
+	def is_neutral(self):
+		return self.value in [Status.IN_SUBMISSION, Status.SUBMITTED, Status.STARTED]
+
+	@property
+	def is_negative(self):
+		return self.value in [Status.TIMEOUT, Status.KILLED, Status.FAILED]
 
 class Run:
 	def __init__(self, cfg, experiment, instance, repetition):
