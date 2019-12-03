@@ -217,39 +217,18 @@ def do_experiments_list(args, as_default_subcmd=False):
 	else:
 		selection = select_runs_from_cli(cfg, args)
 
-	listing = [ ]
-	for run in selection:
-		(exp, instance) = (run.experiment, run.instance.filename)
-		started = os.access(run.output_file_path('out'), os.F_OK)
-		finished = os.access(run.output_file_path('status'), os.F_OK)
-		if finished:
-			with open(run.output_file_path('status'), "r") as f:
-				status_dict = yaml.load(f, Loader=yaml.Loader)
-
-		status = ''
-		if finished and status_dict['timeout']:
-			status = 'timeout'
-		elif finished and status_dict['signal']:
-			status = 'killed'
-		elif finished and status_dict['status'] > 0:
-			status = 'failed'
-		elif finished:
-			status = 'finished'
-		elif started:
-			status = 'started'
-		listing.append((run, status))
-
 	print('{:45.45} {:35.35} {}'.format('Experiment', 'Instance', 'Status'))
 	print('{:45.45} {:35.35} {}'.format('----------', '--------', '------'))
-	for (run, status) in listing:
-		(exp, instance) = (run.experiment, run.instance.filename)
-		if status == 'started':
+	for run in selection:
+		exp, instance, status = (run.experiment, run.instance.filename, run.get_status())
+
+		if status.is_neutral:
 			print(colors['yellow'], end='')
-		elif status == 'finished':
+		elif status.is_positive:
 			print(colors['green'], end='')
-		elif status == 'timeout' or status == 'killed' or status == 'failed':
+		elif status.is_negative:
 			print(colors['red'], end='')
-		print('{:45.45} {:35.35} [{}] {}'.format(exp.display_name, instance, run.repetition, status))
+		print('{:45.45} {:35.35} [{}] {}'.format(exp.display_name, instance, run.repetition, str(status)))
 		print(colors['reset'], end='')
 
 experiments_list_parser = experiments_subcmds.add_parser('list',
