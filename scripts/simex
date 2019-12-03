@@ -377,6 +377,10 @@ def do_experiments_purge(args):
 				except FileNotFoundError:
 					pass
 				try:
+					os.unlink(run.aux_file_path('stderr'))
+				except FileNotFoundError:
+					pass
+				try:
 					os.unlink(run.aux_file_path('run.tmp'))
 				except FileNotFoundError:
 					pass
