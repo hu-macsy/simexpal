@@ -116,3 +116,11 @@ def ensure_list_type(arg):
 	assert isinstance(arg, str)
 	return [arg]
 
+def read_file(path):
+	try:
+		f = open(path, 'r')
+	except FileNotFoundError:
+		return ''
+	else:
+		with f:
+			return f.read()
