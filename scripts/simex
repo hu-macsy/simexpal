@@ -38,56 +38,40 @@ main_parser.add_argument('-C', type=str)
 main_subcmds = main_parser.add_subparsers(metavar='<command>')
 main_subcmds.required = True
 
-def select_runs_from_cli(cfg, args, default_all=True):
+def cli_selects_run(args, run):
 	if args.experiment is not None:
-		for run in cfg.discover_all_runs():
-			if args.experiment == run.experiment.name:
-				yield run
-	elif args.instance is not None:
-		for run in cfg.discover_all_runs():
-			if args.instance == run.instance.filename:
-				yield run
-	elif args.revision is not None:
-		for run in cfg.discover_all_runs():
-			if run.experiment.revision is None:
-				continue
-			if args.revision == run.experiment.revision.name:
-				yield run
-	elif args.instset is not None:
-		for run in cfg.discover_all_runs():
-			if args.instset in run.instance.instsets:
-				yield run
-	elif args.run is not None:
-		for run in cfg.discover_all_runs():
-			if args.run == run.experiment.name + '/' + run.instance.filename:
-				yield run
-	elif args.all:
-		yield from cfg.discover_all_runs()
-	elif args.failed:
-		for run in cfg.discover_all_runs():
-			if not os.access(run.aux_file_path('lock'), os.F_OK):
-				continue
-			finished = os.access(run.output_file_path('status'), os.F_OK)
-			if finished:
-				with open(run.output_file_path('status'), "r") as f:
-					status_dict = yaml.load(f, Loader=yaml.Loader)
-
-			if finished and status_dict['timeout']:
-				yield run
-			elif finished and status_dict['signal']:
-				yield run
-			elif finished and status_dict['status'] > 0:
-				yield run
+		if args.experiment != run.experiment.name:
+			return False
+	if args.instance is not None:
+		if args.instance != run.instance.filename:
+			return False
+	if args.revision is not None:
+		if (run.experiment.revision is None
+				or args.revision != run.experiment.revision.name):
+			return False
+	if args.instset is not None:
+		if args.instset not in run.instance.instsets:
+			return False
+	if args.run is not None:
+		if args.run != run.experiment.name + '/' + run.instance.filename:
+			return False
+	if args.failed:
+		if not run.get_status().is_negative:
+			return False
 	elif args.unfinished:
-		for run in cfg.discover_all_runs():
-			if not os.access(run.aux_file_path('lock'), os.F_OK):
-				continue
-			if os.access(run.output_file_path('status'), os.F_OK):
-				continue
-			yield run
+		if not run.get_status().is_neutral:
+			return False
+
+	return True
+
+def select_runs_from_cli(cfg, args, default_all=True):
+	if (not can_select_runs_from_cli(args) and default_all
+			or args.all):
+		yield from cfg.discover_all_runs()
 	else:
-		if default_all:
-			yield from cfg.discover_all_runs()
+		for run in cfg.discover_all_runs():
+			if cli_selects_run(args, run):
+				yield run
 
 def can_select_runs_from_cli(args):
 	if (args.experiment is not None
