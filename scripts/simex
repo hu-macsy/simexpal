@@ -393,15 +393,10 @@ def do_experiments_print_output(args):
 		return
 	else:
 		for run in select_runs_from_cli(cfg, args, default_all=False):
-			try:
-				f = open(run.output_file_path('out'), 'r')
-			except FileNotFoundError:
-				pass
-			else:
-				with f:
-					print('Experiment: {}'.format(run.experiment.name))
-					print('Instance: {}'.format(run.instance.filename))
-					print('Output:\n\n{}\n'.format(f.read()))
+			print('Experiment: {}'.format(run.experiment.name))
+			print('Instance: {}'.format(run.instance.filename))
+			print('Output:\n\n{}\n'.format(util.read_file(run.output_file_path('out'))))
+			print('Error Output:\n\n{}\n'.format(util.read_file(run.aux_file_path('stderr'))))
 
 experiments_print_parser = experiments_subcmds.add_parser('print',
 		parents=[run_selection_parser])
