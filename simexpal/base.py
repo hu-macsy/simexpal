@@ -123,8 +123,8 @@ class Config:
 		def construct_instances():
 			if 'instances' in self.yml:
 				for inst_yml in self.yml['instances']:
-					for item in inst_yml['items']:
-						yield Instance(self, item, inst_yml)
+					for idx, item in enumerate(inst_yml['items']):
+						yield Instance(self, item, inst_yml, idx)
 
 		def construct_variants():
 			if 'variants' in self.yml:
@@ -376,10 +376,11 @@ class Config:
 class Instance:
 	"""Represents a single instance"""
 
-	def __init__(self, cfg, filename, inst_yml):
+	def __init__(self, cfg, filename, inst_yml, index):
 		self._cfg = cfg
 		self.filename = filename
 		self._inst_yml = inst_yml
+		self.index = index
 
 	@property
 	def config(self):
