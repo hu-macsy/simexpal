@@ -383,6 +383,15 @@ class Instance:
 		self.index = index
 
 	@property
+	def yml_name(self):
+		if isinstance(self._inst_yml['items'][self.index], dict):
+			assert 'name' in self._inst_yml['items'][self.index]
+
+			return self._inst_yml['items'][self.index]['name']
+
+		return self._inst_yml['items'][self.index]
+
+	@property
 	def config(self):
 		return self._cfg
 
