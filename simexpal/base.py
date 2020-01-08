@@ -443,7 +443,10 @@ class Instance:
 			return [self.yml_name]
 
 	def check_available(self):
-		return os.path.isfile(os.path.join(self._cfg.instance_dir(), self.filename))
+		for file in self.filenames:
+			if not os.path.isfile(os.path.join(self._cfg.instance_dir(), file)):
+				return False
+		return True
 
 	def install(self):
 		if self.check_available():
