@@ -396,6 +396,12 @@ class Instance:
 		return 'extensions' in self._inst_yml
 
 	@property
+	def has_multi_files(self):
+		if isinstance(self._inst_yml['items'][self.index], dict):
+			return 'files' in self._inst_yml['items'][self.index]
+		return False
+
+	@property
 	def extensions(self):
 		assert self.has_multi_ext
 		return self._inst_yml['extensions']
