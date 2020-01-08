@@ -433,6 +433,15 @@ class Instance:
 			return None
 		return self._inst_yml['repo']
 
+	@property
+	def filenames(self):
+		if self.has_multi_ext:
+			return [self.yml_name + '.' + ext for ext in self._inst_yml['extensions']]
+		elif self.has_multi_files:
+			return [file for file in self._inst_yml['items'][self.index]['files']]
+		else:
+			return [self.yml_name]
+
 	def check_available(self):
 		return os.path.isfile(os.path.join(self._cfg.instance_dir(), self.filename))
 
