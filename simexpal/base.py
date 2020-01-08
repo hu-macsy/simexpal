@@ -392,6 +392,15 @@ class Instance:
 		return self._inst_yml['items'][self.index]
 
 	@property
+	def has_multi_ext(self):
+		return 'extensions' in self._inst_yml
+
+	@property
+	def extensions(self):
+		assert self.has_multi_ext
+		return self._inst_yml['extensions']
+
+	@property
 	def config(self):
 		return self._cfg
 
