@@ -185,7 +185,7 @@ def compile_manifest(run):
 				environ[k] = str(v)
 		variants_yml.append({
 			'name': variant.name,
-			'extra_args': variant.variant_yml['extra_args'],
+			'extra_args': variant.variant_yml.get('extra_args', []),
 			'environ': environ
 		})
 
@@ -212,8 +212,8 @@ def compile_manifest(run):
 		'args': exp.info._exp_yml['args'],
 		'timeout': timeout,
 		'environ': environ,
-		'output': exp.info._exp_yml['output'] if 'output' in exp.info._exp_yml else None,
-		'workdir': exp.info._exp_yml['workdir'] if 'workdir' in exp.info._exp_yml else None
+		'output': exp.info._exp_yml.get('output', None),
+		'workdir': exp.info._exp_yml.get('workdir', None)
 	})
 
 def invoke_run(manifest):
