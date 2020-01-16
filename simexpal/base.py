@@ -482,8 +482,12 @@ class BuildInfo:
 	@property
 	def requirements(self):
 		if 'requires' in self._build_yml:
-			for name in self._build_yml['requires']:
-				yield name
+			if isinstance(self._build_yml['requires'], list):
+				for name in self._build_yml['requires']:
+					yield name
+			else:
+				assert isinstance(self._build_yml['requires'], str)
+				yield self._build_yml['requires']
 
 	def traverse_requirements(self):
 		# Perform a DFS to discover all recursively required builds.
