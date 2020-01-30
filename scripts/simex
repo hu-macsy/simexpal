@@ -38,56 +38,40 @@ main_parser.add_argument('-C', type=str)
 main_subcmds = main_parser.add_subparsers(metavar='<command>')
 main_subcmds.required = True
 
-def select_runs_from_cli(cfg, args, default_all=True):
+def cli_selects_run(args, run):
 	if args.experiment is not None:
-		for run in cfg.discover_all_runs():
-			if args.experiment == run.experiment.name:
-				yield run
-	elif args.instance is not None:
-		for run in cfg.discover_all_runs():
-			if args.instance == run.instance.filename:
-				yield run
-	elif args.revision is not None:
-		for run in cfg.discover_all_runs():
-			if run.experiment.revision is None:
-				continue
-			if args.revision == run.experiment.revision.name:
-				yield run
-	elif args.instset is not None:
-		for run in cfg.discover_all_runs():
-			if args.instset in run.instance.instsets:
-				yield run
-	elif args.run is not None:
-		for run in cfg.discover_all_runs():
-			if args.run == run.experiment.name + '/' + run.instance.filename:
-				yield run
-	elif args.all:
-		yield from cfg.discover_all_runs()
-	elif args.failed:
-		for run in cfg.discover_all_runs():
-			if not os.access(run.aux_file_path('lock'), os.F_OK):
-				continue
-			finished = os.access(run.output_file_path('status'), os.F_OK)
-			if finished:
-				with open(run.output_file_path('status'), "r") as f:
-					status_dict = yaml.load(f, Loader=yaml.Loader)
-
-			if finished and status_dict['timeout']:
-				yield run
-			elif finished and status_dict['signal']:
-				yield run
-			elif finished and status_dict['status'] > 0:
-				yield run
+		if args.experiment != run.experiment.name:
+			return False
+	if args.instance is not None:
+		if args.instance != run.instance.filename:
+			return False
+	if args.revision is not None:
+		if (run.experiment.revision is None
+				or args.revision != run.experiment.revision.name):
+			return False
+	if args.instset is not None:
+		if args.instset not in run.instance.instsets:
+			return False
+	if args.run is not None:
+		if args.run != run.experiment.name + '/' + run.instance.filename:
+			return False
+	if args.failed:
+		if not run.get_status().is_negative:
+			return False
 	elif args.unfinished:
-		for run in cfg.discover_all_runs():
-			if not os.access(run.aux_file_path('lock'), os.F_OK):
-				continue
-			if os.access(run.output_file_path('status'), os.F_OK):
-				continue
-			yield run
+		if not run.get_status().is_neutral:
+			return False
+
+	return True
+
+def select_runs_from_cli(cfg, args, default_all=True):
+	if (not can_select_runs_from_cli(args) and default_all
+			or args.all):
+		yield from cfg.discover_all_runs()
 	else:
-		if default_all:
-			yield from cfg.discover_all_runs()
+		for run in cfg.discover_all_runs():
+			if cli_selects_run(args, run):
+				yield run
 
 def can_select_runs_from_cli(args):
 	if (args.experiment is not None
@@ -217,39 +201,18 @@ def do_experiments_list(args, as_default_subcmd=False):
 	else:
 		selection = select_runs_from_cli(cfg, args)
 
-	listing = [ ]
-	for run in selection:
-		(exp, instance) = (run.experiment, run.instance.filename)
-		started = os.access(run.output_file_path('out'), os.F_OK)
-		finished = os.access(run.output_file_path('status'), os.F_OK)
-		if finished:
-			with open(run.output_file_path('status'), "r") as f:
-				status_dict = yaml.load(f, Loader=yaml.Loader)
-
-		status = ''
-		if finished and status_dict['timeout']:
-			status = 'timeout'
-		elif finished and status_dict['signal']:
-			status = 'killed'
-		elif finished and status_dict['status'] > 0:
-			status = 'failed'
-		elif finished:
-			status = 'finished'
-		elif started:
-			status = 'started'
-		listing.append((run, status))
-
 	print('{:45.45} {:35.35} {}'.format('Experiment', 'Instance', 'Status'))
 	print('{:45.45} {:35.35} {}'.format('----------', '--------', '------'))
-	for (run, status) in listing:
-		(exp, instance) = (run.experiment, run.instance.filename)
-		if status == 'started':
+	for run in selection:
+		exp, instance, status = (run.experiment, run.instance.filename, run.get_status())
+
+		if status.is_neutral:
 			print(colors['yellow'], end='')
-		elif status == 'finished':
+		elif status.is_positive:
 			print(colors['green'], end='')
-		elif status == 'timeout' or status == 'killed' or status == 'failed':
+		elif status.is_negative:
 			print(colors['red'], end='')
-		print('{:45.45} {:35.35} [{}] {}'.format(exp.display_name, instance, run.repetition, status))
+		print('{:45.45} {:35.35} [{}] {}'.format(exp.display_name, instance, run.repetition, str(status)))
 		print(colors['reset'], end='')
 
 experiments_list_parser = experiments_subcmds.add_parser('list',
@@ -377,6 +340,10 @@ def do_experiments_purge(args):
 				except FileNotFoundError:
 					pass
 				try:
+					os.unlink(run.aux_file_path('stderr'))
+				except FileNotFoundError:
+					pass
+				try:
 					os.unlink(run.aux_file_path('run.tmp'))
 				except FileNotFoundError:
 					pass
@@ -410,15 +377,10 @@ def do_experiments_print_output(args):
 		return
 	else:
 		for run in select_runs_from_cli(cfg, args, default_all=False):
-			try:
-				f = open(run.output_file_path('out'), 'r')
-			except FileNotFoundError:
-				pass
-			else:
-				with f:
-					print('Experiment: {}'.format(run.experiment.name))
-					print('Instance: {}'.format(run.instance.filename))
-					print('Output:\n\n{}\n'.format(f.read()))
+			print('Experiment: {}'.format(run.experiment.name))
+			print('Instance: {}'.format(run.instance.filename))
+			print('Output:\n\n{}\n'.format(util.read_file(run.output_file_path('out'))))
+			print('Error Output:\n\n{}\n'.format(util.read_file(run.aux_file_path('stderr'))))
 
 experiments_print_parser = experiments_subcmds.add_parser('print',
 		parents=[run_selection_parser])

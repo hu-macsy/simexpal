@@ -1,5 +1,6 @@
 
 from collections import OrderedDict
+from enum import IntEnum
 import copy
 import itertools
 import os
@@ -707,6 +708,46 @@ class Experiment:
 			display_name += ' @ ' + self.revision.name
 		return display_name
 
+class Status(IntEnum):
+	NOT_SUBMITTED = 0
+	SUBMITTED = 1
+	IN_SUBMISSION = 2
+	STARTED = 3
+	FINISHED = 4
+	TIMEOUT = 5
+	KILLED = 6
+	FAILED = 7
+
+	def __str__(self):
+		if self.value == Status.NOT_SUBMITTED:
+			return 'not submitted'
+		if self.value == Status.SUBMITTED:
+			return 'submitted'
+		if self.value == Status.IN_SUBMISSION:
+			return 'in submission'
+		if self.value == Status.STARTED:
+			return 'started'
+		if self.value == Status.FINISHED:
+			return 'finished'
+		if self.value == Status.TIMEOUT:
+			return 'timeout'
+		if self.value == Status.KILLED:
+			return 'killed'
+		if self.value == Status.FAILED:
+			return 'failed'
+
+	@property
+	def is_positive(self):
+		return self.value == Status.FINISHED
+
+	@property
+	def is_neutral(self):
+		return self.value in [Status.IN_SUBMISSION, Status.SUBMITTED, Status.STARTED]
+
+	@property
+	def is_negative(self):
+		return self.value in [Status.TIMEOUT, Status.KILLED, Status.FAILED]
+
 class Run:
 	def __init__(self, cfg, experiment, instance, repetition):
 		self._cfg = cfg
@@ -728,6 +769,27 @@ class Run:
 	def output_file_path(self, ext):
 		return os.path.join(self.experiment.output_subdir,
 				get_output_file_name(ext, self.instance.filename, self.repetition))
+
+	def get_status(self):
+		if os.access(self.output_file_path('status'), os.F_OK):
+			with open(self.output_file_path('status'), "r") as f:
+				status_dict = yaml.load(f, Loader=yaml.Loader)
+
+			if status_dict['timeout']:
+				return Status.TIMEOUT
+			elif status_dict['signal']:
+				return Status.KILLED
+			elif status_dict['status'] > 0:
+				return Status.FAILED
+			return Status.FINISHED
+		elif os.access(self.output_file_path('out'), os.F_OK):
+			return Status.STARTED
+		elif os.access(self.aux_file_path('run'), os.F_OK):
+			return Status.SUBMITTED
+		elif os.access(self.aux_file_path('lock'), os.F_OK):
+			return Status.IN_SUBMISSION
+
+		return Status.NOT_SUBMITTED
 
 def read_and_validate_setup(basedir='.', setup_file='experiments.yml'):
 	return util.validate_setup_file(os.path.join(basedir, setup_file))
