@@ -442,6 +442,12 @@ class Instance:
 		else:
 			return [self.yml_name]
 
+	@property
+	def unique_filename(self):
+		if len(self.filenames) > 1:
+			raise RuntimeError("The instance '{}' does not have a unique filename.".format(self.yml_name))
+		return self.filenames[0]
+
 	def check_available(self):
 		for file in self.filenames:
 			if not os.path.isfile(os.path.join(self._cfg.instance_dir(), file)):
