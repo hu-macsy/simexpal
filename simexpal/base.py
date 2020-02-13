@@ -28,18 +28,16 @@ def get_output_subdir(base_dir, experiment, variation, revision):
 	return os.path.join(base_dir, 'output', experiment + var + rev)
 
 def get_aux_file_name(ext, instance, repetition):
-	(fbase, _) = os.path.splitext(instance)
 	rep = ''
 	if repetition > 0:
 		rep = '[{}]'.format(repetition)
-	return fbase + '.' + ext + rep
+	return instance + '.' + ext + rep
 
 def get_output_file_name(ext, instance, repetition):
-	(fbase, _) = os.path.splitext(instance)
 	rep = ''
 	if repetition > 0:
 		rep = '[{}]'.format(repetition)
-	return fbase + '.' + ext + rep
+	return instance + '.' + ext + rep
 
 class MatrixScope:
 	@staticmethod
