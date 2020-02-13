@@ -121,8 +121,8 @@ class Config:
 		def construct_instances():
 			if 'instances' in self.yml:
 				for inst_yml in self.yml['instances']:
-					for idx, item in enumerate(inst_yml['items']):
-						yield Instance(self, item, inst_yml, idx)
+					for idx in range(len(inst_yml['items'])):
+						yield Instance(self, inst_yml, idx)
 
 		def construct_variants():
 			if 'variants' in self.yml:
@@ -374,11 +374,19 @@ class Config:
 class Instance:
 	"""Represents a single instance"""
 
-	def __init__(self, cfg, filename, inst_yml, index):
+	def __init__(self, cfg, inst_yml, index):
 		self._cfg = cfg
-		self.filename = filename
 		self._inst_yml = inst_yml
 		self.index = index
+
+	@property
+	def filename(self):
+		import warnings
+		warnings.simplefilter(action='default', category=DeprecationWarning)
+		msg = "The 'Instance.filename' attribute is deprecated and will be removed in future versions."
+		warnings.warn(msg, DeprecationWarning)
+
+		return self.filenames[0]
 
 	@property
 	def yml_name(self):
