@@ -43,7 +43,7 @@ def cli_selects_run(args, run):
 		if args.experiment != run.experiment.name:
 			return False
 	if args.instance is not None:
-		if args.instance != run.instance.filename:
+		if args.instance != run.instance.shortname:
 			return False
 	if args.revision is not None:
 		if (run.experiment.revision is None
@@ -53,7 +53,7 @@ def cli_selects_run(args, run):
 		if args.instset not in run.instance.instsets:
 			return False
 	if args.run is not None:
-		if args.run != run.experiment.name + '/' + run.instance.filename:
+		if args.run != run.experiment.name + '/' + run.instance.shortname:
 			return False
 	if args.failed:
 		if not run.get_status().is_negative:
@@ -115,7 +115,7 @@ def do_instances_list(args):
 			print(colors['green'], end='')
 		else:
 			print(colors['red'], end='')
-		print(instance.filename, end='')
+		print(instance.shortname, end='')
 		print(colors['reset'])
 
 instances_list_parser = instances_subcmds.add_parser('list')
@@ -140,12 +140,15 @@ def do_instances_process(args):
 		if not inst.check_available():
 			print("Skipping unavailable instance '{}'".format(inst.shortname))
 			continue
+		if len(inst.filenames) > 1:
+			print("Skipping instance '{}' as it does not have a unique filename".format(inst.shortname))
+			continue
 		if os.access(os.path.join(cfg.instance_dir(), inst.shortname + '.info'), os.F_OK):
 			continue
 
 		print("Processing instance '{}'".format(inst.shortname))
 		with open(os.path.join(cfg.instance_dir(), inst.shortname + '.info.tmp'), 'w') as f:
-			extl.util.compute_network_size(os.path.join(cfg.instance_dir(), inst.filename), f)
+			extl.util.compute_network_size(os.path.join(cfg.instance_dir(), inst.unique_filename), f)
 		os.rename(os.path.join(cfg.instance_dir(), inst.shortname + '.info.tmp'),
 				os.path.join(cfg.instance_dir(), inst.shortname + '.info'))
 
@@ -204,7 +207,7 @@ def do_experiments_list(args, as_default_subcmd=False):
 	print('{:45.45} {:35.35} {}'.format('Experiment', 'Instance', 'Status'))
 	print('{:45.45} {:35.35} {}'.format('----------', '--------', '------'))
 	for run in selection:
-		exp, instance, status = (run.experiment, run.instance.filename, run.get_status())
+		exp, instance, status = (run.experiment, run.instance.shortname, run.get_status())
 
 		if status.is_neutral:
 			print(colors['yellow'], end='')
@@ -226,7 +229,7 @@ def do_experiments_launch(args):
 	for run in select_runs_from_cli(cfg, args):
 		if not run.instance.check_available():
 			print("Skipping run {}/{}[{}] as instance is not available".format(
-					run.experiment.name, run.instance.filename, run.repetition))
+					run.experiment.name, run.instance.shortname, run.repetition))
 			continue
 		sel.append(run)
 
@@ -326,7 +329,7 @@ def do_experiments_purge(args):
 		return
 	else:
 		for run in select_runs_from_cli(cfg, args, default_all=False):
-			(exp, instance) = (run.experiment, run.instance.filename)
+			(exp, instance) = (run.experiment, run.instance.shortname)
 
 			if args.f:
 				print("Purging experiment '{}', instance '{}' [{}]".format(
@@ -378,7 +381,7 @@ def do_experiments_print_output(args):
 	else:
 		for run in select_runs_from_cli(cfg, args, default_all=False):
 			print('Experiment: {}'.format(run.experiment.name))
-			print('Instance: {}'.format(run.instance.filename))
+			print('Instance: {}'.format(run.instance.shortname))
 			print('Output:\n\n{}\n'.format(util.read_file(run.output_file_path('out'))))
 			print('Error Output:\n\n{}\n'.format(util.read_file(run.aux_file_path('stderr'))))
 
@@ -474,14 +477,14 @@ def do_invoke(args, basedir=None):
 
 				if run.experiment.name != ent_yml['experiment']:
 					continue
-				if run.instance.filename != ent_yml['instance']:
+				if run.instance.shortname != ent_yml['instance']:
 					continue
 				if run.repetition != ent_yml['repetition']:
 					continue
 			else:
 				if run.experiment.name != args.experiment:
 					continue
-				if run.instance.filename != args.instance:
+				if run.instance.shortname != args.instance:
 					continue
 				if run.repetition != args.repetition:
 					continue
@@ -489,7 +492,7 @@ def do_invoke(args, basedir=None):
 
 		for run in sel:
 			if args.n:
-				print("Would launch {}/{}[{}]".format(run.experiment.name, run.instance.filename,
+				print("Would launch {}/{}[{}]".format(run.experiment.name, run.instance.shortname,
 						run.repetition))
 			else:
 				manifest = extl.launch.common.compile_manifest(run)

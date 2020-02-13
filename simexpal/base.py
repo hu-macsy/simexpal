@@ -132,8 +132,8 @@ class Config:
 					for variant_yml in axis_yml['items']:
 						yield Variant(self, axis_yml['axis'], variant_yml)
 
-		for inst in sorted(construct_instances(), key=lambda inst: inst.filename):
-			self._insts[inst.filename] = inst
+		for inst in sorted(construct_instances(), key=lambda inst: inst.shortname):
+			self._insts[inst.shortname] = inst
 
 		if 'builds' in self.yml:
 			for build_yml in sorted(self.yml['builds'], key=lambda y: y['name']):
@@ -156,7 +156,7 @@ class Config:
 
 	def all_instance_ids(self):
 		for inst in self.all_instances():
-			yield inst.filename
+			yield inst.shortname
 
 	def all_instances(self):
 		yield from self._insts.values()
@@ -339,7 +339,7 @@ class Config:
 				elif 'repeat' in exp.info._exp_yml:
 					reps = range(0, exp.info._exp_yml['repeat'])
 				for rep in reps:
-					yield (instance.filename, rep)
+					yield (instance.shortname, rep)
 
 		expansion = MatrixScope.walk_matrix(self, self.yml, expand)
 		return sorted(expansion)
@@ -412,11 +412,11 @@ class Instance:
 
 	@property
 	def shortname(self):
-		return os.path.splitext(self.filename)[0]
+		return os.path.splitext(self.yml_name)[0]
 
 	@property
 	def fullpath(self):
-		return os.path.join(self._cfg.instance_dir(), self.filename)
+		return os.path.join(self._cfg.instance_dir(), self.unique_filename)
 
 	@property
 	def instsets(self):
@@ -464,23 +464,23 @@ class Instance:
 			if self._inst_yml['repo'] == 'local':
 				return
 
-		partial_path = os.path.join(self._cfg.instance_dir(), self.filename)
+		partial_path = os.path.join(self._cfg.instance_dir(), self.unique_filename)
 		if 'repo' in self._inst_yml:
-			print("Downloading instance '{}' from {} repository".format(self.filename,
+			print("Downloading instance '{}' from {} repository".format(self.unique_filename,
 					self._inst_yml['repo']))
 
 			instances.download_instance(self._inst_yml,
-					self.config.instance_dir(), self.filename, partial_path, '.post0')
+					self.config.instance_dir(), self.unique_filename, partial_path, '.post0')
 		else:
 			assert 'generator' in self._inst_yml
 			import subprocess
 
 			def substitute(p):
 				if p == 'INSTANCE_FILENAME':
-					return self.filename
+					return self.unique_filename
 				raise RuntimeError("Unexpected parameter {}".format(p))
 
-			print("Generating instance '{}'".format(self.filename))
+			print("Generating instance '{}'".format(self.unique_filename))
 
 			assert isinstance(self._inst_yml['generator']['args'], list)
 			cmd = [util.expand_at_params(arg_tmpl, substitute) for arg_tmpl
@@ -805,13 +805,13 @@ class Run:
 	# Contains auxiliary files that SHOULD NOT be necessary to determine the result of the run.
 	def aux_file_path(self, ext):
 		return os.path.join(self.experiment.aux_subdir,
-				get_aux_file_name(ext, self.instance.filename, self.repetition))
+				get_aux_file_name(ext, self.instance.shortname, self.repetition))
 
 	# Contains the final output files; those SHOULD be all that is necessary to determine
 	# if the run succeeded and to evaluate its result.
 	def output_file_path(self, ext):
 		return os.path.join(self.experiment.output_subdir,
-				get_output_file_name(ext, self.instance.filename, self.repetition))
+				get_output_file_name(ext, self.instance.shortname, self.repetition))
 
 	def get_status(self):
 		if os.access(self.output_file_path('status'), os.F_OK):

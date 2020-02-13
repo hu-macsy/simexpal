@@ -14,11 +14,10 @@ class Launcher:
 	pass
 
 def lock_run(run):
-	(exp, instance) = (run.experiment, run.instance.filename)
 	util.try_mkdir(os.path.join(run.config.basedir, 'aux'))
 	util.try_mkdir(os.path.join(run.config.basedir, 'output'))
-	util.try_mkdir(exp.aux_subdir)
-	util.try_mkdir(exp.output_subdir)
+	util.try_mkdir(run.experiment.aux_subdir)
+	util.try_mkdir(run.experiment.output_subdir)
 
 	# We will try to launch the experiment.
 	# First, create a .lock file. If that is successful, we are the process that
@@ -37,7 +36,6 @@ def lock_run(run):
 	return True
 
 def create_run_file(run):
-	(exp, instance) = (run.experiment, run.instance.filename)
 
 	# Create the .run file. This signals that the run has been submitted.
 	with open(run.aux_file_path('run.tmp'), "w") as f:
