@@ -70,6 +70,14 @@ class RunManifest:
 		return self.yml['instance_filename']
 
 	@property
+	def instance_extensions(self):
+		return self.yml['instance_extensions']
+
+	@property
+	def instance_files(self):
+		return self.yml['instance_files']
+
+	@property
 	def experiment(self):
 		return self.yml['experiment']
 
@@ -171,6 +179,13 @@ def compile_manifest(run):
 			builds_visited.add(req_name)
 		i += 1
 
+	instance_files = None
+	instance_extensions = None
+	if run.instance.has_multi_files:
+		instance_files = run.instance.filenames
+	elif run.instance.has_multi_ext:
+		instance_extensions = run.instance.extensions
+
 	builds_yml = []
 	for build in recursive_builds:
 		builds_yml.append({
@@ -210,6 +225,8 @@ def compile_manifest(run):
 		'revision': exp.revision.name if exp.revision else None,
 		'instance': run.instance.shortname,
 		'instance_filename': run.instance.yml_name,
+		'instance_extensions': instance_extensions,
+		'instance_files': instance_files,
 		'repetition': run.repetition,
 		'builds': builds_yml,
 		'args': exp.info._exp_yml['args'],
@@ -235,9 +252,32 @@ def invoke_run(manifest):
 	(stderr_pipe, stderr) = os.pipe()
 	os.set_blocking(stderr_pipe, False)
 
+	def get_qualified_filename(identifier):
+		if identifier.isdigit():
+			identifier = int(identifier)
+			if manifest.instance_files is None:
+				raise RuntimeError(
+					f"Instance '{manifest.instance}' does not have any files specified in the experiments.yml"
+				) from None
+			if len(manifest.instance_files) <= identifier:
+				raise IndexError('File index out of range: {}'.format(identifier))
+			return ''.join([manifest.instance_dir, '/', manifest.instance_files[identifier]])
+		else:
+			if manifest.instance_extensions is None:
+				raise RuntimeError(
+					f"Instance '{manifest.instance}' does not have any extensions specified in the experiments.yml"
+				) from None
+			if identifier not in manifest.instance_extensions:
+				raise RuntimeError(
+					f"Unexpected file extension for instance '{manifest.instance}': .{identifier}"
+				) from None
+			return ''.join([manifest.instance_dir, '/', manifest.instance_yml_name, '.', identifier])
+
 	def substitute(p):
 		if p == 'INSTANCE':
 			return manifest.instance_dir + '/' + manifest.instance_yml_name
+		elif p[:9] == 'INSTANCE:':
+			return get_qualified_filename(p.split(':')[1])
 		elif p == 'REPETITION':
 			return str(manifest.repetition)
 		elif p == 'OUTPUT':
