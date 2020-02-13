@@ -68,6 +68,10 @@ class RunManifest:
 		return self.yml['instance']
 
 	@property
+	def instance_yml_name(self):
+		return self.yml['instance_filename']
+
+	@property
 	def experiment(self):
 		return self.yml['experiment']
 
@@ -206,7 +210,8 @@ def compile_manifest(run):
 		'experiment': exp.name,
 		'variants': variants_yml,
 		'revision': exp.revision.name if exp.revision else None,
-		'instance': run.instance.filename,
+		'instance': run.instance.shortname,
+		'instance_filename': run.instance.yml_name,
 		'repetition': run.repetition,
 		'builds': builds_yml,
 		'args': exp.info._exp_yml['args'],
@@ -234,7 +239,7 @@ def invoke_run(manifest):
 
 	def substitute(p):
 		if p == 'INSTANCE':
-			return manifest.instance_dir + '/' + manifest.instance
+			return manifest.instance_dir + '/' + manifest.instance_yml_name
 		elif p == 'REPETITION':
 			return str(manifest.repetition)
 		elif p == 'OUTPUT':
