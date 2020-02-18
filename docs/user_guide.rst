@@ -251,6 +251,8 @@ All the listed instances can be downloaded within the "./graphs" directory with:
 
    $ simex instances install
 
+.. _parametersAndVariants:
+
 Dealing with Parameters and Variants of an Algorithm
 ----------------------------------------------------
 
@@ -363,10 +365,65 @@ using
 Once the build process is finished, the experiments can be started as usual.
 
 
-..
-    Run Matrix
-    ----------
-    TODO
+Run Matrix
+----------
+
+In the :ref:`parametersAndVariants` section we saw how we can use simexpal to specify
+variants of experiments. For the following example we will consider this ``variants`` stanza:
+
+.. code-block:: YAML
+
+    variants:
+      - axis: 'block-algo'
+        items:
+          - name: 'ba-insert'
+            extra_args: ['insertion_sort']
+          - name: 'ba-bubble'
+            extra_args: ['bubble_sort']
+      - axis: 'block-size'
+        items:
+          - name: 'bs32'
+            extra_args: ['32']
+          - name: 'bs64'
+            extra_args: ['64']
+
+simexpal will build every possible combination of experiment, instance,
+variant and revision. There are cases where this is not desired. For example, you might only want
+to run certain instance/variant combinations.
+
+Assume you want to run Quicksort with Insertionsort as base block algorithm and ``32`` as
+minimal block size. Additionally you want to run Quicksort with Bubblesort as base block
+algorithm and use both ``32`` and ``64`` as minimal block sizes.
+
+To achieve this, we need to add a ``matrix`` stanza to ``experiments.yml``.
+In our example, this looks like:
+
+.. code-block:: YAML
+
+    matrix:
+      include:
+        - experiments: [quick-sort]
+          variants: [ba-insert, bs32]
+          revisions: [main]
+        - experiments: [quick-sort]
+          variants: [ba-bubble]     # We could explicitly specify [ba-bubble, bs32, bs64]. In this case it is not
+                                    # necessary as bs32 and bs64 are all the possible values for the block-size axis
+          revisions: [main]
+
+(The full ``experiments.yml`` can be found `here <https://github.com/hu-macsy/simexpal/tree/master/examples/sorting_cpp>`_ .)
+
+Using ``simex experiments list`` we can confirm that we got our desired experiments:
+
+.. code-block:: bash
+
+    Experiment                                    Instance                            Status
+    ----------                                    --------                            ------
+    quick-sort ~ ba-bubble, bs32 @ main           uniform-n1000-s1                    [0] not submitted
+    quick-sort ~ ba-bubble, bs32 @ main           uniform-n1000-s2                    [0] not submitted
+    quick-sort ~ ba-bubble, bs64 @ main           uniform-n1000-s1                    [0] not submitted
+    quick-sort ~ ba-bubble, bs64 @ main           uniform-n1000-s2                    [0] not submitted
+    quick-sort ~ ba-insert, bs32 @ main           uniform-n1000-s1                    [0] not submitted
+    quick-sort ~ ba-insert, bs32 @ main           uniform-n1000-s2                    [0] not submitted
 
 Launchers / Support for Batch Schedulers
 ----------------------------------------
