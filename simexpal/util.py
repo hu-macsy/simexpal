@@ -25,11 +25,11 @@ def expand_at_params(s, fn, listfn=None):
 						seq.extend(result)
 						continue
 
-			seq.append(re.sub(r'@(\w+)@', subfn, item))
+			seq.append(re.sub(r'@(\w+(:[^@]+)?)@', subfn, item))
 		return seq
 	else:
 		assert isinstance(s, str)
-		return re.sub(r'@(\w+)@', subfn, s)
+		return re.sub(r'@(\w+(:[^@]+)?)@', subfn, s)
 
 def try_mkdir(path):
 	try:

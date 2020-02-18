@@ -99,10 +99,10 @@ class SlurmLauncher(common.Launcher):
 		for run in locked:
 			if self.queue:
 				print("Submitting experiment '{}', instance '{}' to slurm partition '{}'".format(
-						run.experiment.name, run.instance.filename, self.queue))
+						run.experiment.name, run.instance.shortname, self.queue))
 			else:
 				print("Submitting experiment '{}', instance '{}' to default slurm partition".format(
-						run.experiment.name, run.instance.filename))
+						run.experiment.name, run.instance.shortname))
 
 		process = subprocess.Popen(sbatch_args, stdin=subprocess.PIPE);
 		process.communicate(sbatch_script.encode()) # Assume UTF-8 encoding here.

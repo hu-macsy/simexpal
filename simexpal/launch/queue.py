@@ -13,7 +13,7 @@ class QueueLauncher(common.Launcher):
 		common.create_run_file(run)
 
 		print("Launching experiment '{}', instance '{}' on local machine".format(
-				run.experiment.name, run.instance.filename))
+				run.experiment.name, run.instance.shortname))
 
 		queuesock.sendrecv({
 			'action': 'launch',

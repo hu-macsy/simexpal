@@ -28,18 +28,16 @@ def get_output_subdir(base_dir, experiment, variation, revision):
 	return os.path.join(base_dir, 'output', experiment + var + rev)
 
 def get_aux_file_name(ext, instance, repetition):
-	(fbase, _) = os.path.splitext(instance)
 	rep = ''
 	if repetition > 0:
 		rep = '[{}]'.format(repetition)
-	return fbase + '.' + ext + rep
+	return instance + '.' + ext + rep
 
 def get_output_file_name(ext, instance, repetition):
-	(fbase, _) = os.path.splitext(instance)
 	rep = ''
 	if repetition > 0:
 		rep = '[{}]'.format(repetition)
-	return fbase + '.' + ext + rep
+	return instance + '.' + ext + rep
 
 class MatrixScope:
 	@staticmethod
@@ -123,8 +121,8 @@ class Config:
 		def construct_instances():
 			if 'instances' in self.yml:
 				for inst_yml in self.yml['instances']:
-					for item in inst_yml['items']:
-						yield Instance(self, item, inst_yml)
+					for idx in range(len(inst_yml['items'])):
+						yield Instance(self, inst_yml, idx)
 
 		def construct_variants():
 			if 'variants' in self.yml:
@@ -132,22 +130,32 @@ class Config:
 					for variant_yml in axis_yml['items']:
 						yield Variant(self, axis_yml['axis'], variant_yml)
 
-		for inst in sorted(construct_instances(), key=lambda inst: inst.filename):
-			self._insts[inst.filename] = inst
+		for inst in sorted(construct_instances(), key=lambda inst: inst.shortname):
+			if inst.shortname in self._insts:
+				raise RuntimeError("The instance name '{}' is ambiguous".format(inst.shortname))
+			self._insts[inst.shortname] = inst
 
 		if 'builds' in self.yml:
 			for build_yml in sorted(self.yml['builds'], key=lambda y: y['name']):
+				if build_yml['name'] in self._build_infos:
+					raise RuntimeError("The build name '{}' is ambiguous".format(build_yml['name']))
 				self._build_infos[build_yml['name']] = BuildInfo(self, build_yml)
 
 		if 'revisions' in self.yml:
 			for revision_yml in sorted(self.yml['revisions'], key=lambda y: y['name']):
+				if revision_yml['name'] in self._revisions:
+					raise RuntimeError("The revision name '{}' is ambiguous".format(revision_yml['name']))
 				self._revisions[revision_yml['name']] = Revision(self, revision_yml)
 
 		for variant in sorted(construct_variants(), key=lambda variant: variant.name):
+			if variant.name in self._variants:
+				raise RuntimeError("The variant name '{}' is ambiguous".format(variant.name))
 			self._variants[variant.name] = variant
 
 		if 'experiments' in self.yml:
 			for exp_yml in sorted(self.yml['experiments'], key=lambda y: y['name']):
+				if exp_yml['name'] in self._exp_infos:
+					raise RuntimeError("The experiment name '{}' is ambiguous".format(exp_yml['name']))
 				self._exp_infos[exp_yml['name']] = ExperimentInfo(self, exp_yml)
 
 	def instance_dir(self):
@@ -156,7 +164,7 @@ class Config:
 
 	def all_instance_ids(self):
 		for inst in self.all_instances():
-			yield inst.filename
+			yield inst.shortname
 
 	def all_instances(self):
 		yield from self._insts.values()
@@ -339,7 +347,7 @@ class Config:
 				elif 'repeat' in exp.info._exp_yml:
 					reps = range(0, exp.info._exp_yml['repeat'])
 				for rep in reps:
-					yield (instance.filename, rep)
+					yield (instance.shortname, rep)
 
 		expansion = MatrixScope.walk_matrix(self, self.yml, expand)
 		return sorted(expansion)
@@ -376,10 +384,43 @@ class Config:
 class Instance:
 	"""Represents a single instance"""
 
-	def __init__(self, cfg, filename, inst_yml):
+	def __init__(self, cfg, inst_yml, index):
 		self._cfg = cfg
-		self.filename = filename
 		self._inst_yml = inst_yml
+		self.index = index
+
+	@property
+	def filename(self):
+		import warnings
+		warnings.simplefilter(action='default', category=DeprecationWarning)
+		msg = "The 'Instance.filename' attribute is deprecated and will be removed in future versions."
+		warnings.warn(msg, DeprecationWarning)
+
+		return self.filenames[0]
+
+	@property
+	def yml_name(self):
+		if isinstance(self._inst_yml['items'][self.index], dict):
+			assert 'name' in self._inst_yml['items'][self.index]
+
+			return self._inst_yml['items'][self.index]['name']
+
+		return self._inst_yml['items'][self.index]
+
+	@property
+	def has_multi_ext(self):
+		return 'extensions' in self._inst_yml
+
+	@property
+	def has_multi_files(self):
+		if isinstance(self._inst_yml['items'][self.index], dict):
+			return 'files' in self._inst_yml['items'][self.index]
+		return False
+
+	@property
+	def extensions(self):
+		assert self.has_multi_ext
+		return self._inst_yml['extensions']
 
 	@property
 	def config(self):
@@ -387,11 +428,11 @@ class Instance:
 
 	@property
 	def shortname(self):
-		return os.path.splitext(self.filename)[0]
+		return os.path.splitext(self.yml_name)[0]
 
 	@property
 	def fullpath(self):
-		return os.path.join(self._cfg.instance_dir(), self.filename)
+		return os.path.join(self._cfg.instance_dir(), self.unique_filename)
 
 	@property
 	def instsets(self):
@@ -408,8 +449,26 @@ class Instance:
 			return None
 		return self._inst_yml['repo']
 
+	@property
+	def filenames(self):
+		if self.has_multi_ext:
+			return [self.yml_name + '.' + ext for ext in self._inst_yml['extensions']]
+		elif self.has_multi_files:
+			return [file for file in self._inst_yml['items'][self.index]['files']]
+		else:
+			return [self.yml_name]
+
+	@property
+	def unique_filename(self):
+		if len(self.filenames) > 1:
+			raise RuntimeError("The instance '{}' does not have a unique filename.".format(self.yml_name))
+		return self.filenames[0]
+
 	def check_available(self):
-		return os.path.isfile(os.path.join(self._cfg.instance_dir(), self.filename))
+		for file in self.filenames:
+			if not os.path.isfile(os.path.join(self._cfg.instance_dir(), file)):
+				return False
+		return True
 
 	def install(self):
 		if self.check_available():
@@ -421,23 +480,23 @@ class Instance:
 			if self._inst_yml['repo'] == 'local':
 				return
 
-		partial_path = os.path.join(self._cfg.instance_dir(), self.filename)
+		partial_path = os.path.join(self._cfg.instance_dir(), self.unique_filename)
 		if 'repo' in self._inst_yml:
-			print("Downloading instance '{}' from {} repository".format(self.filename,
+			print("Downloading instance '{}' from {} repository".format(self.unique_filename,
 					self._inst_yml['repo']))
 
 			instances.download_instance(self._inst_yml,
-					self.config.instance_dir(), self.filename, partial_path, '.post0')
+					self.config.instance_dir(), self.unique_filename, partial_path, '.post0')
 		else:
 			assert 'generator' in self._inst_yml
 			import subprocess
 
 			def substitute(p):
 				if p == 'INSTANCE_FILENAME':
-					return self.filename
+					return self.unique_filename
 				raise RuntimeError("Unexpected parameter {}".format(p))
 
-			print("Generating instance '{}'".format(self.filename))
+			print("Generating instance '{}'".format(self.unique_filename))
 
 			assert isinstance(self._inst_yml['generator']['args'], list)
 			cmd = [util.expand_at_params(arg_tmpl, substitute) for arg_tmpl
@@ -762,13 +821,13 @@ class Run:
 	# Contains auxiliary files that SHOULD NOT be necessary to determine the result of the run.
 	def aux_file_path(self, ext):
 		return os.path.join(self.experiment.aux_subdir,
-				get_aux_file_name(ext, self.instance.filename, self.repetition))
+				get_aux_file_name(ext, self.instance.shortname, self.repetition))
 
 	# Contains the final output files; those SHOULD be all that is necessary to determine
 	# if the run succeeded and to evaluate its result.
 	def output_file_path(self, ext):
 		return os.path.join(self.experiment.output_subdir,
-				get_output_file_name(ext, self.instance.filename, self.repetition))
+				get_output_file_name(ext, self.instance.shortname, self.repetition))
 
 	def get_status(self):
 		if os.access(self.output_file_path('status'), os.F_OK):

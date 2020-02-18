@@ -14,11 +14,10 @@ class Launcher:
 	pass
 
 def lock_run(run):
-	(exp, instance) = (run.experiment, run.instance.filename)
 	util.try_mkdir(os.path.join(run.config.basedir, 'aux'))
 	util.try_mkdir(os.path.join(run.config.basedir, 'output'))
-	util.try_mkdir(exp.aux_subdir)
-	util.try_mkdir(exp.output_subdir)
+	util.try_mkdir(run.experiment.aux_subdir)
+	util.try_mkdir(run.experiment.output_subdir)
 
 	# We will try to launch the experiment.
 	# First, create a .lock file. If that is successful, we are the process that
@@ -37,7 +36,6 @@ def lock_run(run):
 	return True
 
 def create_run_file(run):
-	(exp, instance) = (run.experiment, run.instance.filename)
 
 	# Create the .run file. This signals that the run has been submitted.
 	with open(run.aux_file_path('run.tmp'), "w") as f:
@@ -66,6 +64,18 @@ class RunManifest:
 	@property
 	def instance(self):
 		return self.yml['instance']
+
+	@property
+	def instance_yml_name(self):
+		return self.yml['instance_filename']
+
+	@property
+	def instance_extensions(self):
+		return self.yml['instance_extensions']
+
+	@property
+	def instance_files(self):
+		return self.yml['instance_files']
 
 	@property
 	def experiment(self):
@@ -169,6 +179,13 @@ def compile_manifest(run):
 			builds_visited.add(req_name)
 		i += 1
 
+	instance_files = None
+	instance_extensions = None
+	if run.instance.has_multi_files:
+		instance_files = run.instance.filenames
+	elif run.instance.has_multi_ext:
+		instance_extensions = run.instance.extensions
+
 	builds_yml = []
 	for build in recursive_builds:
 		builds_yml.append({
@@ -206,7 +223,10 @@ def compile_manifest(run):
 		'experiment': exp.name,
 		'variants': variants_yml,
 		'revision': exp.revision.name if exp.revision else None,
-		'instance': run.instance.filename,
+		'instance': run.instance.shortname,
+		'instance_filename': run.instance.yml_name,
+		'instance_extensions': instance_extensions,
+		'instance_files': instance_files,
 		'repetition': run.repetition,
 		'builds': builds_yml,
 		'args': exp.info._exp_yml['args'],
@@ -232,9 +252,32 @@ def invoke_run(manifest):
 	(stderr_pipe, stderr) = os.pipe()
 	os.set_blocking(stderr_pipe, False)
 
+	def get_qualified_filename(identifier):
+		if identifier.isdigit():
+			identifier = int(identifier)
+			if manifest.instance_files is None:
+				raise RuntimeError(
+					f"Instance '{manifest.instance}' does not have any files specified in the experiments.yml"
+				) from None
+			if len(manifest.instance_files) <= identifier:
+				raise IndexError('File index out of range: {}'.format(identifier))
+			return ''.join([manifest.instance_dir, '/', manifest.instance_files[identifier]])
+		else:
+			if manifest.instance_extensions is None:
+				raise RuntimeError(
+					f"Instance '{manifest.instance}' does not have any extensions specified in the experiments.yml"
+				) from None
+			if identifier not in manifest.instance_extensions:
+				raise RuntimeError(
+					f"Unexpected file extension for instance '{manifest.instance}': .{identifier}"
+				) from None
+			return ''.join([manifest.instance_dir, '/', manifest.instance_yml_name, '.', identifier])
+
 	def substitute(p):
 		if p == 'INSTANCE':
-			return manifest.instance_dir + '/' + manifest.instance
+			return manifest.instance_dir + '/' + manifest.instance_yml_name
+		elif p[:9] == 'INSTANCE:':
+			return get_qualified_filename(p.split(':')[1])
 		elif p == 'REPETITION':
 			return str(manifest.repetition)
 		elif p == 'OUTPUT':

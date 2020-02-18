@@ -36,10 +36,10 @@ class SgeLauncher(common.Launcher):
 				return
 			locked = [r]
 			print("Launching experiment '{}', instance '{}' on SGE queue '{}'".format(
-					r.experiment.name, r.instance.filename, self.queue))
+					r.experiment.name, r.instance.shortname, self.queue))
 
 			invoke_args.extend(['--experiment', r.experiment.name,
-					'--instance', r.instance.filename,
+					'--instance', r.instance.shortname,
 					'--repetition', str(r.repetition)])
 		else:
 			locked = [ ]
@@ -47,7 +47,7 @@ class SgeLauncher(common.Launcher):
 				if not common.lock_run(run):
 					continue
 				print("Launching experiment '{}', instance '{}' on SGE queue '{}'".format(
-						run.experiment.name, run.instance.filename, self.queue))
+						run.experiment.name, run.instance.shortname, self.queue))
 				locked.append(run)
 
 			if not locked:
@@ -55,7 +55,7 @@ class SgeLauncher(common.Launcher):
 
 			spec_dict = {'array': [
 				{'experiment': run.experiment.name,
-					'instance': run.instance.filename,
+					'instance': run.instance.shortname,
 					'repetition': run.repetition}
 				for run in locked
 			]}
