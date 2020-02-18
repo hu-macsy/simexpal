@@ -251,6 +251,8 @@ All the listed instances can be downloaded within the "./graphs" directory with:
 
    $ simex instances install
 
+.. _parametersAndVariants:
+
 Dealing with Parameters and Variants of an Algorithm
 ----------------------------------------------------
 
@@ -295,6 +297,7 @@ simexpal will duplicate the experiment for each possible combination
 of variants. Such a combination will consist of exactly one variant
 for every ``axis`` property.
 
+
 Automated Builds and Revision Support
 -------------------------------------
 
@@ -307,49 +310,120 @@ in ``experiments.yml``.
 
 In the remainder of this section, we will reconsider the sorting example from the
 :ref:`sortingExample` section. Instead of using a Python implementation of the algorithms,
-we assume a C implementation and use simexpal's automated build support to compile it.
-In this example, simexpal will invoke a CMake build system to build the program;
-however, simexpal is independent of the particular build system in use.
+we assume a `C++ implementation <https://github.com/hu-macsy/simexpal/tree/master/examples/sorting_cpp>`_ and use
+simexpal's automated build support to compile it. In this example, simexpal will invoke a CMake build system to
+build the program; however, simexpal is independent of the particular build system in use.
 
-..
-    TODO: In the simexpal repository, sample C code for the problem can be found
-    in `TODO`.
 
 To enable automated builds, we need to add ``builds`` and ``revisions``
 stanzas to ``experiments.yml``. In our example, these look like:
 
 .. code-block:: YAML
 
-	builds:
-	  - name: networkit
-		git: 'https://github.com/networkit/networkit.git'
-		configure:
-		  - args:
-			  - 'cmake'
-			  - '-DCMAKE_INSTALL_PREFIX=@THIS_PREFIX_DIR@'
-			  - '-DCMAKE_BUILD_TYPE=RelWithDebInfo'
-			  - '@THIS_CLONE_DIR@/examples/sorting-c'
-		compile:
-		  - args: ['make', '-j@PARALLELISM@']
-		install:
-		  - args: ['make', 'install']
+    builds:
+      - name: simexpal
+        git: 'https://github.com/hu-macsy/simexpal'
+        configure:
+          - args:
+            - 'cmake'
+            - '-DCMAKE_INSTALL_PREFIX=@THIS_PREFIX_DIR@'
+            - '@THIS_CLONE_DIR@/examples/sorting_cpp/'
+        compile:
+          - args:
+            - 'make'
+            - '-j@PARALLELISM@'
+        install:
+          - args:
+            - 'make'
+            - 'install'
+
+    revisions:
+      - name: main
+        build_version:
+          'simexpal': 'd8d421e3c2eaa32311a6c678b15e9e22ea0d8eac'      # specify the SHA-1 hash of a tagged commit (recommended)
+                                                                      # it is also possible to checkout the top commit
+                                                                      # of a branch by specifying the SHA-1 hash or
+                                                                      # branch name (not recommended for reproducibility reasons)
+
+Next, we have to assign the builds to their respective experiments
+
+.. code-block:: YAML
+
+    experiments:
+      - name: quick-sort
+        use_builds: [simexpal]  # specify which builds get used for this experiment
+        args: ['quicksort', '@INSTANCE@']
+        output: stdout
 
 After ``experiments.yml`` has been adopted, we can run the automated build
 using
 
 .. code-block:: bash
 
-	$ simex builds make
+    $ simex builds make
 
 Once the build process is finished, the experiments can be started as usual.
 
-..
-    TODO: Give example: how to pull code from this repo, build it and run it.
 
-..
-    Run Matrix
-    ----------
-    TODO
+Run Matrix
+----------
+
+In the :ref:`parametersAndVariants` section we saw how we can use simexpal to specify
+variants of experiments. For the following example we will consider this ``variants`` stanza:
+
+.. code-block:: YAML
+
+    variants:
+      - axis: 'block-algo'
+        items:
+          - name: 'ba-insert'
+            extra_args: ['insertion_sort']
+          - name: 'ba-bubble'
+            extra_args: ['bubble_sort']
+      - axis: 'block-size'
+        items:
+          - name: 'bs32'
+            extra_args: ['32']
+          - name: 'bs64'
+            extra_args: ['64']
+
+simexpal will build every possible combination of experiment, instance,
+variant and revision. There are cases where this is not desired. For example, you might only want
+to run certain instance/variant combinations.
+
+Assume you want to run Quicksort with Insertionsort as base block algorithm and ``32`` as
+minimal block size. Additionally you want to run Quicksort with Bubblesort as base block
+algorithm and use both ``32`` and ``64`` as minimal block sizes.
+
+To achieve this, we need to add a ``matrix`` stanza to ``experiments.yml``.
+In our example, this looks like:
+
+.. code-block:: YAML
+
+    matrix:
+      include:
+        - experiments: [quick-sort]
+          variants: [ba-insert, bs32]
+          revisions: [main]
+        - experiments: [quick-sort]
+          variants: [ba-bubble]     # We could explicitly specify [ba-bubble, bs32, bs64]. In this case it is not
+                                    # necessary as bs32 and bs64 are all the possible values for the block-size axis
+          revisions: [main]
+
+(The full ``experiments.yml`` can be found `here <https://github.com/hu-macsy/simexpal/tree/master/examples/sorting_cpp>`_ .)
+
+Using ``simex experiments list`` we can confirm that we got our desired experiments:
+
+.. code-block:: bash
+
+    Experiment                                    Instance                            Status
+    ----------                                    --------                            ------
+    quick-sort ~ ba-bubble, bs32 @ main           uniform-n1000-s1                    [0] not submitted
+    quick-sort ~ ba-bubble, bs32 @ main           uniform-n1000-s2                    [0] not submitted
+    quick-sort ~ ba-bubble, bs64 @ main           uniform-n1000-s1                    [0] not submitted
+    quick-sort ~ ba-bubble, bs64 @ main           uniform-n1000-s2                    [0] not submitted
+    quick-sort ~ ba-insert, bs32 @ main           uniform-n1000-s1                    [0] not submitted
+    quick-sort ~ ba-insert, bs32 @ main           uniform-n1000-s2                    [0] not submitted
 
 Launchers / Support for Batch Schedulers
 ----------------------------------------
