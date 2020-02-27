@@ -51,8 +51,12 @@ def cli_selects_run(args, run):
 			return False
 	if args.variants is not None:
 		#possibly, this can be done faster
-		for wantedVar in args.variants:
+		for wantedVar in args.variants: #args.variants is a list
 			if wantedVar not in [var.name for var in run.experiment.variation]:
+				return False
+	if args.axis is not None:
+		for wantedAxis in args.axis:	#args.axis is a list
+			if wantedAxis not in  [var.axis for var in run.experiment.variation]:
 				return False
 	if args.instset is not None:
 		if args.instset not in run.instance.instsets:
@@ -84,6 +88,7 @@ def can_select_runs_from_cli(args):
 			or args.revision is not None
 			or args.instset is not None
 			or args.variants is not None
+			or args.axis is not None
 			or args.run is not None
 			or args.all
 			or args.failed
@@ -97,6 +102,7 @@ run_selection_parser.add_argument('--experiment', type=str)
 run_selection_parser.add_argument('--instance', type=str)
 run_selection_parser.add_argument('--revision', type=str)
 run_selection_parser.add_argument('--variants','-v' , type=str , nargs='*', help='name of different variants (space separated)')
+run_selection_parser.add_argument('--axis','-x' , type=str , nargs='*', help='name of different variants axis (space separated)')
 run_selection_parser.add_argument('--run', type=str, help='given as experiment/instance')
 run_selection_parser.add_argument('--all', action='store_true')
 run_selection_parser.add_argument('--failed', action='store_true')
