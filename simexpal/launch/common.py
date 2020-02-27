@@ -130,9 +130,11 @@ class RunManifest:
 				base.get_output_file_name(ext, self.instance, self.repetition))
 
 	def get_extra_args(self):
-		extra_args = []
+		extra_args = []		
 		for var_yml in self.yml['variants']:
-			extra_args.extend(var_yml['extra_args'])
+			#this is not working; need to write extra_args:= [''] in experiments.yml file
+			if not (var_yml['extra_args'] is None):
+				extra_args.extend(var_yml['extra_args'])
 		return extra_args
 
 	def get_paths(self):
@@ -214,7 +216,8 @@ def compile_manifest(run):
 	if 'environ' in exp.info._exp_yml:
 		for (k, v) in exp.info._exp_yml['environ'].items():
 			environ[k] = str(v)
-
+	#print("common.py ~220 ")
+	#print(exp.info._exp_yml['args'])
 	return RunManifest({
 		'config': {
 			'base_dir': run.config.basedir,
@@ -292,7 +295,8 @@ def invoke_run(manifest):
 			return None
 
 	cmd = util.expand_at_params(manifest.args, substitute, listfn=substitute_list)
-
+	print("common.py ~300 ")
+	print(cmd)
 	# Build the environment.
 	def prepend_env(var, items):
 		if(var in os.environ):
