@@ -88,7 +88,7 @@ def can_select_runs_from_cli(args):
 			or args.revision is not None
 			or args.instset is not None
 			or args.variants is not None
-			or args.axis is not None
+			or args.axes is not None
 			or args.run is not None
 			or args.all
 			or args.failed
