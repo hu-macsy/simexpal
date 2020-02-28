@@ -55,8 +55,8 @@ def cli_selects_run(args, run):
 			if wantedVar not in [var.name for var in run.experiment.variation]:
 				return False
 	if args.axes is not None:
-		for wantedAxis in args.axes:	#args.axis is a list
-			if wantedAxis not in  [var.axis for var in run.experiment.variation]:
+		for wantedAxis in args.axes:	#args.axes is a list
+			if wantedAxis not in [var.axis for var in run.experiment.variation]:
 				return False
 	if args.instset is not None:
 		if args.instset not in run.instance.instsets:
@@ -220,6 +220,7 @@ def do_experiments_list(args, as_default_subcmd=False):
 	else:
 		selection = select_runs_from_cli(cfg, args)
 
+	num_runs = 0
 	print('{:45.45} {:35.35} {}'.format('Experiment', 'Instance', 'Status'))
 	print('{:45.45} {:35.35} {}'.format('----------', '--------', '------'))
 	for run in selection:
@@ -233,10 +234,57 @@ def do_experiments_list(args, as_default_subcmd=False):
 			print(colors['red'], end='')
 		print('{:45.45} {:35.35} [{}] {}'.format(exp.display_name, instance, run.repetition, str(status)))
 		print(colors['reset'], end='')
+		num_runs += 1
+	print(num_runs, "experiments in total")
+
+def do_experiments_info(args, as_default_subcmd=False):
+	cfg = extl.base.config_for_dir()
+
+	if as_default_subcmd:
+		selection = cfg.discover_all_runs()
+	else:
+		selection = select_runs_from_cli(cfg, args)
+
+	exp_name_set = set()
+	instance_name_set = set()
+	instset_name_set = set()
+	variants_name_set = set()
+	axis_name_set = set()
+
+	for run in selection:
+		exp_name_set.add(run.experiment.name)
+		#run.instance.instsets is a set; add all elements
+		for iset in run.instance.instsets:
+			instset_name_set.add(iset)
+		instance_name_set.add(run.instance.shortname)
+		for var in run.experiment.variation:
+			variants_name_set.add(var.name)
+		for var in run.experiment.variation:
+			axis_name_set.add(var.axis)
+
+	print("All related experiments are:")
+	for exp in sorted(list(exp_name_set)):
+		print('\t',exp)
+	print("All related instsets are:")
+	for instset in sorted(list(instset_name_set)):
+		print('\t', instset)
+	print("All related instances are:")
+	for inst in sorted(list(instance_name_set)):
+		print('\t', inst)
+	print("All related axes are:")
+	for ax in sorted(list(axis_name_set)):
+		print('\t', ax)
+	print("All related variants are:")
+	for v in sorted(list(variants_name_set)):
+		print('\t', v)
+
 
 experiments_list_parser = experiments_subcmds.add_parser('list',
 		parents=[run_selection_parser])
 experiments_list_parser.set_defaults(cmd=do_experiments_list)
+experiments_list_parser = experiments_subcmds.add_parser('info',
+		parents=[run_selection_parser])
+experiments_list_parser.set_defaults(cmd=do_experiments_info)
 
 def do_experiments_launch(args):
 	cfg = extl.base.config_for_dir()
