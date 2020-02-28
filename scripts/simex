@@ -54,8 +54,8 @@ def cli_selects_run(args, run):
 		for wantedVar in args.variants: #args.variants is a list
 			if wantedVar not in [var.name for var in run.experiment.variation]:
 				return False
-	if args.axis is not None:
-		for wantedAxis in args.axis:	#args.axis is a list
+	if args.axes is not None:
+		for wantedAxis in args.axes:	#args.axis is a list
 			if wantedAxis not in  [var.axis for var in run.experiment.variation]:
 				return False
 	if args.instset is not None:
@@ -102,7 +102,7 @@ run_selection_parser.add_argument('--experiment', type=str)
 run_selection_parser.add_argument('--instance', type=str)
 run_selection_parser.add_argument('--revision', type=str)
 run_selection_parser.add_argument('--variants','-v' , type=str , nargs='*', help='name of different variants (space separated)')
-run_selection_parser.add_argument('--axis','-x' , type=str , nargs='*', help='name of different variants axis (space separated)')
+run_selection_parser.add_argument('--axes','-x' , type=str , nargs='*', help='name of different variants axes (space separated)')
 run_selection_parser.add_argument('--run', type=str, help='given as experiment/instance')
 run_selection_parser.add_argument('--all', action='store_true')
 run_selection_parser.add_argument('--failed', action='store_true')
@@ -123,13 +123,16 @@ instances_subcmds = instances_parser.add_subparsers(dest='instances_subcmd')
 def do_instances_list(args):
 	cfg = extl.base.config_for_dir()
 
+	print("Instance short name and in which sets it belongs to:")
 	for instance in cfg.all_instances():
 		if instance.check_available():
 			print(colors['green'], end='')
 		else:
 			print(colors['red'], end='')
 		print(instance.shortname, end='')
-		print(colors['reset'])
+		print(colors['reset'], end='')
+		print(" in ", end='')
+		print( ', '.join([s for s in instance.instsets]) )
 
 instances_list_parser = instances_subcmds.add_parser('list')
 instances_list_parser.set_defaults(cmd=do_instances_list)
