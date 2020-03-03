@@ -282,9 +282,9 @@ def do_experiments_info(args, as_default_subcmd=False):
 experiments_list_parser = experiments_subcmds.add_parser('list',
 		parents=[run_selection_parser])
 experiments_list_parser.set_defaults(cmd=do_experiments_list)
-experiments_list_parser = experiments_subcmds.add_parser('info',
+experiments_info_parser = experiments_subcmds.add_parser('info',
 		parents=[run_selection_parser])
-experiments_list_parser.set_defaults(cmd=do_experiments_info)
+experiments_info_parser.set_defaults(cmd=do_experiments_info)
 
 def do_experiments_launch(args):
 	cfg = extl.base.config_for_dir()
