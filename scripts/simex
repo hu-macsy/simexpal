@@ -51,12 +51,12 @@ def cli_selects_run(args, run):
 			return False
 	if args.variants is not None:
 		#possibly, this can be done faster
-		for wantedVar in args.variants: #args.variants is a list
-			if wantedVar not in [var.name for var in run.experiment.variation]:
+		for wanted_var in args.variants: #args.variants is a list
+			if wanted_var not in [var.name for var in run.experiment.variation]:
 				return False
 	if args.axes is not None:
-		for wantedAxis in args.axes:	#args.axes is a list
-			if wantedAxis not in [var.axis for var in run.experiment.variation]:
+		for wanted_axis in args.axes:	#args.axes is a list
+			if wanted_axis not in [var.axis for var in run.experiment.variation]:
 				return False
 	if args.instset is not None:
 		if args.instset not in run.instance.instsets:
