@@ -168,26 +168,26 @@ def make_build_in_order(cfg, build):
 		#fetch_refspec = ['+refs/tags/' + git_ref + ':' + generic_tag]
 
 		# Create the repository (in an empty state).
-		if not os.access(build.info.repo_dir, os.F_OK):
-			subprocess.check_call(['git', 'init', '-q', '--bare', build.info.repo_dir])
+		if not os.access(build.repo_dir, os.F_OK):
+			subprocess.check_call(['git', 'init', '-q', '--bare', build.repo_dir])
 
 		# Fetch the specified revision if it does not exist already.
-		verify_ref_result = subprocess.call(['git', '--git-dir', build.info.repo_dir,
+		verify_ref_result = subprocess.call(['git', '--git-dir', build.repo_dir,
 				'rev-parse', '-q', '--verify', generic_tag],
 			stdout=subprocess.DEVNULL)
 		if verify_ref_result != 0:
 			# As we create generic_tag, we can add --no-tags here.
-			subprocess.check_call(['git', '--git-dir', build.info.repo_dir,
+			subprocess.check_call(['git', '--git-dir', build.repo_dir,
 					'fetch', '--depth=1', '--no-tags',
 					build.info.git_repo] + fetch_refspec)
 
 		# Prune the existing worktree.
 		util.try_rmtree(build.clone_dir)
-		subprocess.check_call(['git', '--git-dir', build.info.repo_dir,
+		subprocess.check_call(['git', '--git-dir', build.repo_dir,
 				'worktree', 'prune'])
 
 		# Recreate the worktree and check out the specified revision.
-		subprocess.check_call(['git', '--git-dir', build.info.repo_dir,
+		subprocess.check_call(['git', '--git-dir', build.repo_dir,
 				'worktree', 'add', '--detach',
 				build.clone_dir,
 				generic_tag])
