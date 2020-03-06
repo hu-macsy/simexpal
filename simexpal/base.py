@@ -632,6 +632,12 @@ class Build:
 	def name(self):
 		return self.info.name
 
+	def _get_dev_build_suffix(self):
+		if self.revision.is_default_dev_build:
+			return ''
+		else:
+			return '@' + self.revision.name
+
 	@property
 	def repo_dir(self):
 		return os.path.join(self._cfg.basedir, 'builds', self.name + '.repo')
