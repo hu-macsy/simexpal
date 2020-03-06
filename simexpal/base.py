@@ -612,6 +612,10 @@ class Revision:
 	def version_for_build(self, build_name):
 		return self.revision_yml['build_version'][build_name]
 
+	@property
+	def is_dev_build(self):
+		return self.revision_yml.get('develop', False)
+
 class Build:
 	def __init__(self, cfg, info, revision):
 		self._cfg = cfg
