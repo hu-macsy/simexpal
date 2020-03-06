@@ -618,6 +618,10 @@ class Revision:
 	def is_dev_build(self):
 		return self.revision_yml.get('develop', False)
 
+	@property
+	def is_default_dev_build(self):
+		return self.name == DEFAULT_DEV_BUILD_NAME
+
 class Build:
 	def __init__(self, cfg, info, revision):
 		self._cfg = cfg
