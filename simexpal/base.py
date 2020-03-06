@@ -657,6 +657,16 @@ class Build:
 		rev = '@' + self.revision.name
 		return os.path.join(self._cfg.basedir, 'builds', self.name + rev)
 
+	@property
+	def source_dir(self):
+		"""
+			dev-builds only have a source directory instead of a repo and clone directory
+		"""
+		assert self.revision.is_dev_build
+
+		rev = self._get_dev_build_suffix()
+		return os.path.join(self._cfg.basedir, 'develop', self.name + rev)
+
 def extract_process_settings(yml):
 	if 'num_nodes' not in yml:
 		return None
