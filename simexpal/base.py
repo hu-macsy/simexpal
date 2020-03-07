@@ -649,11 +649,17 @@ class Build:
 
 	@property
 	def compile_dir(self):
+		if self.revision.is_dev_build:
+			rev = self._get_dev_build_suffix()
+			return os.path.join(self._cfg.basedir, 'dev-builds', self.name + rev + '.compile')
 		rev = '@' + self.revision.name
 		return os.path.join(self._cfg.basedir, 'builds', self.name + rev + '.compile')
 
 	@property
 	def prefix_dir(self):
+		if self.revision.is_dev_build:
+			rev = self._get_dev_build_suffix()
+			return os.path.join(self._cfg.basedir, 'dev-builds', self.name + rev)
 		rev = '@' + self.revision.name
 		return os.path.join(self._cfg.basedir, 'builds', self.name + rev)
 
