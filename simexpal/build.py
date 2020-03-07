@@ -56,6 +56,15 @@ def compute_order(cfg, desired):
 
 	return order
 
+# Determine which phases to run.
+class Phase(IntEnum):
+	NULL = 0
+	CHECKOUT = 1
+	REGENERATE = 2
+	CONFIGURE = 3
+	COMPILE = 4
+	INSTALL = 5
+
 def make_build_in_order(cfg, build):
 	util.try_mkdir('builds/')
 
@@ -99,15 +108,6 @@ def make_build_in_order(cfg, build):
 
 	base_environ = os.environ.copy()
 	base_environ['PKG_CONFIG_PATH'] = prepend_env('PKG_CONFIG_PATH', pkgconfig_paths)
-
-	# Determine which phases to run.
-	class Phase(IntEnum):
-		NULL = 0
-		CHECKOUT = 1
-		REGENERATE = 2
-		CONFIGURE = 3
-		COMPILE = 4
-		INSTALL = 5
 
 	done_phases = set()
 	if os.access(os.path.join(build.prefix_dir, 'installed.simexpal'), os.F_OK):
