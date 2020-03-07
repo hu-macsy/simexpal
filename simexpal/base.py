@@ -640,10 +640,16 @@ class Build:
 
 	@property
 	def repo_dir(self):
+		# Use the source_dir property for dev-build revisions
+		assert not self.revision.is_dev_build
+
 		return os.path.join(self._cfg.basedir, 'builds', self.name + '.repo')
 
 	@property
 	def clone_dir(self):
+		# Use the source_dir property for dev-build revisions
+		assert not self.revision.is_dev_build
+
 		rev = '@' + self.revision.name
 		return os.path.join(self._cfg.basedir, 'builds', self.name + rev + '.clone')
 
