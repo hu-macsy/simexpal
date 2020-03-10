@@ -120,6 +120,10 @@ class Config:
 		self._variants = OrderedDict()
 		self._exp_infos = OrderedDict()
 
+		def check_for_reserved_name(name):
+			if name.startswith('_'):
+				raise RuntimeError(f"Names starting with an underscore are reserved for internal simexpal objects: {name}")
+
 		def construct_instances():
 			if 'instances' in self.yml:
 				for inst_yml in self.yml['instances']:
