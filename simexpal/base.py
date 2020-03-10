@@ -154,13 +154,17 @@ class Config:
 				self._build_infos[build_yml['name']] = BuildInfo(self, build_yml)
 
 		if 'revisions' in self.yml:
-			for revision_yml in sorted(self.yml['revisions'], key=lambda y: y['name']):
+			revision_list = []
+
+			for revision_yml in self.yml['revisions']:
 				if 'name' in revision_yml:
 					check_for_reserved_name(revision_yml['name'])
+				revision_list.append(Revision(self, revision_yml))
 
-				if revision_yml['name'] in self._revisions:
-					raise RuntimeError("The revision name '{}' is ambiguous".format(revision_yml['name']))
-				self._revisions[revision_yml['name']] = Revision(self, revision_yml)
+			for revision in sorted(revision_list, key=lambda y: y.name):
+				if revision.name in self._revisions:
+					raise RuntimeError("The revision name '{}' is ambiguous".format(revision.name))
+				self._revisions[revision.name] = revision
 
 		for variant in sorted(construct_variants(), key=lambda variant: variant.name):
 			if variant.name in self._variants:
