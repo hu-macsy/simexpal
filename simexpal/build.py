@@ -5,13 +5,13 @@ import subprocess
 
 from . import util
 
-def make_builds(cfg, revision, infos):
+def make_builds(cfg, revision, infos, wanted_builds, wanted_phases):
 	order = compute_order(cfg, infos)
 
 	print("simexpal: Making builds {} @ {}".format(', '.join([info.name for info in order]),
 			revision.name))
 	for info in order:
-		make_build_in_order(cfg, cfg.get_build(info.name, revision))
+		make_build_in_order(cfg, cfg.get_build(info.name, revision), wanted_builds, wanted_phases)
 
 def compute_order(cfg, desired):
 	class State(Enum):
@@ -65,8 +65,14 @@ class Phase(IntEnum):
 	COMPILE = 4
 	INSTALL = 5
 
-def make_build_in_order(cfg, build):
-	util.try_mkdir('builds/')
+def make_build_in_order(cfg, build, wanted_builds, wanted_phases):
+	if not build.revision.is_dev_build:
+		util.try_mkdir('builds/')
+		checkout_dir = build.clone_dir
+	else:
+		util.try_mkdir('develop/')
+		util.try_mkdir('dev-builds/')
+		checkout_dir = build.source_dir
 
 	def num_allocated_cpus():
 		try:
@@ -86,7 +92,10 @@ def make_build_in_order(cfg, build):
 	def substitute(var):
 		# 'THIS_SOURCE_DIR' is prefered, 'THIS_CLONE_DIR' is deprecated
 		if var in ['THIS_CLONE_DIR', 'THIS_SOURCE_DIR']:
-			return build.clone_dir
+			if not build.revision.is_dev_build:
+				return build.clone_dir
+			else:
+				return build.source_dir
 		elif var == 'THIS_PREFIX_DIR':
 			return build.prefix_dir
 		elif var == 'PARALLELISM':
@@ -110,22 +119,33 @@ def make_build_in_order(cfg, build):
 	base_environ['PKG_CONFIG_PATH'] = prepend_env('PKG_CONFIG_PATH', pkgconfig_paths)
 
 	done_phases = set()
-	if build.is_installed():
-		done_phases.add(Phase.INSTALL)
-	if build.is_compiled():
-		done_phases.add(Phase.COMPILE)
-	if build.is_configured():
-		done_phases.add(Phase.CONFIGURE)
-	if build.is_regenerated():
-		done_phases.add(Phase.REGENERATE)
-	if build.is_checked_out():
-		done_phases.add(Phase.CHECKOUT)
+	if build.name in wanted_builds:
+		if build.is_installed() and Phase.INSTALL not in wanted_phases:
+			done_phases.add(Phase.INSTALL)
+		if build.is_compiled() and Phase.COMPILE not in wanted_phases:
+			done_phases.add(Phase.COMPILE)
+		if build.is_configured() and Phase.CONFIGURE not in wanted_phases:
+			done_phases.add(Phase.CONFIGURE)
+		if build.is_regenerated() and Phase.REGENERATE not in wanted_phases:
+			done_phases.add(Phase.REGENERATE)
+		if build.is_checked_out() and Phase.CHECKOUT not in wanted_phases:
+			done_phases.add(Phase.CHECKOUT)
+	else:
+		if build.is_installed():
+			done_phases.add(Phase.INSTALL)
+		if build.is_compiled():
+			done_phases.add(Phase.COMPILE)
+		if build.is_configured():
+			done_phases.add(Phase.CONFIGURE)
+		if build.is_regenerated():
+			done_phases.add(Phase.REGENERATE)
+		if build.is_checked_out():
+			done_phases.add(Phase.CHECKOUT)
 
 	def want_phase(phase):
 		# TODO: Support additional phase section modes. For example:
 		#       - Clean rebuilds from scratch. This should be prefered for production use.
-		#       - Running individual phases. This should help with debugging.
-		return not done_phases or phase > max(done_phases)
+		return phase not in done_phases
 
 	# Perform the actual build phases.
 	def log_phase(step):
@@ -158,46 +178,56 @@ def make_build_in_order(cfg, build):
 	if want_phase(Phase.CHECKOUT):
 		log_phase('checkout')
 
-		git_ref = build.revision.version_for_build(build.name)
-		generic_tag = 'refs/tags/simexpal-rev/' + build.revision.name
+		if not build.revision.is_dev_build:
 
-		# Fetch the remote ref to a local tag.
-		fetch_refspec = ['+' + git_ref + ':' + generic_tag]
+			git_ref = build.revision.version_for_build(build.name)
+			generic_tag = 'refs/tags/simexpal-rev/' + build.revision.name
 
-		# TODO: If we *know* that the ref is a tag, we want to do something like the following:
-		#fetch_refspec = ['+refs/tags/' + git_ref + ':' + generic_tag]
+			# Fetch the remote ref to a local tag.
+			fetch_refspec = ['+' + git_ref + ':' + generic_tag]
 
-		# Create the repository (in an empty state).
-		if not os.access(build.repo_dir, os.F_OK):
-			subprocess.check_call(['git', 'init', '-q', '--bare', build.repo_dir])
+			# TODO: If we *know* that the ref is a tag, we want to do something like the following:
+			#fetch_refspec = ['+refs/tags/' + git_ref + ':' + generic_tag]
 
-		# Fetch the specified revision if it does not exist already.
-		verify_ref_result = subprocess.call(['git', '--git-dir', build.repo_dir,
-				'rev-parse', '-q', '--verify', generic_tag],
-			stdout=subprocess.DEVNULL)
-		if verify_ref_result != 0:
-			# As we create generic_tag, we can add --no-tags here.
+			# Create the repository (in an empty state).
+			if not os.access(build.repo_dir, os.F_OK):
+				subprocess.check_call(['git', 'init', '-q', '--bare', build.repo_dir])
+
+			# Fetch the specified revision if it does not exist already.
+			verify_ref_result = subprocess.call(['git', '--git-dir', build.repo_dir,
+					'rev-parse', '-q', '--verify', generic_tag],
+				stdout=subprocess.DEVNULL)
+			if verify_ref_result != 0:
+				# As we create generic_tag, we can add --no-tags here.
+				subprocess.check_call(['git', '--git-dir', build.repo_dir,
+						'fetch', '--depth=1', '--no-tags',
+						build.info.git_repo] + fetch_refspec)
+
+			# Prune the existing worktree.
+			util.try_rmtree(build.clone_dir)
 			subprocess.check_call(['git', '--git-dir', build.repo_dir,
-					'fetch', '--depth=1', '--no-tags',
-					build.info.git_repo] + fetch_refspec)
+					'worktree', 'prune'])
 
-		# Prune the existing worktree.
-		util.try_rmtree(build.clone_dir)
-		subprocess.check_call(['git', '--git-dir', build.repo_dir,
-				'worktree', 'prune'])
+			# Recreate the worktree and check out the specified revision.
+			subprocess.check_call(['git', '--git-dir', build.repo_dir,
+					'worktree', 'add', '--detach',
+					build.clone_dir,
+					generic_tag])
+		else:
+			# Recreate the source directory
+			util.try_rmtree(build.source_dir)
+			util.try_mkdir(build.source_dir)
 
-		# Recreate the worktree and check out the specified revision.
-		subprocess.check_call(['git', '--git-dir', build.repo_dir,
-				'worktree', 'add', '--detach',
-				build.clone_dir,
-				generic_tag])
-		util.touch(os.path.join(build.clone_dir, 'checkedout.simexpal'))
+			# Clone the git repository into the build.source_dir
+			subprocess.check_call(['git', 'clone', build.info.git_repo, build.source_dir])
+
+		util.touch(os.path.join(checkout_dir, 'checkedout.simexpal'))
 
 		recursive_clone = build.info.recursive_clone
 		if recursive_clone:
 			# Clone submodules recursively
 			subprocess.check_call(['git', 'submodule',
-					'update', '--init', '--recursive'] ,cwd=build.clone_dir)
+					'update', '--init', '--recursive'], cwd=checkout_dir)
 
 		did_work = True
 
@@ -206,8 +236,8 @@ def make_build_in_order(cfg, build):
 
 		regenerate_args = util.ensure_list_type(build.info.regenerate)
 		for step_yml in regenerate_args:
-			do_step(step_yml, build.clone_dir)
-		util.touch(os.path.join(build.clone_dir, 'regenerated.simexpal'))
+			do_step(step_yml, checkout_dir)
+		util.touch(os.path.join(checkout_dir, 'regenerated.simexpal'))
 		did_work = True
 
 	if want_phase(Phase.CONFIGURE):
