@@ -110,15 +110,15 @@ def make_build_in_order(cfg, build):
 	base_environ['PKG_CONFIG_PATH'] = prepend_env('PKG_CONFIG_PATH', pkgconfig_paths)
 
 	done_phases = set()
-	if os.access(os.path.join(build.prefix_dir, 'installed.simexpal'), os.F_OK):
+	if build.is_installed():
 		done_phases.add(Phase.INSTALL)
-	if os.access(os.path.join(build.compile_dir, 'compiled.simexpal'), os.F_OK):
+	if build.is_compiled():
 		done_phases.add(Phase.COMPILE)
-	if os.access(os.path.join(build.compile_dir, 'configured.simexpal'), os.F_OK):
+	if build.is_configured():
 		done_phases.add(Phase.CONFIGURE)
-	if os.access(os.path.join(build.clone_dir, 'regenerated.simexpal'), os.F_OK):
+	if build.is_regenerated():
 		done_phases.add(Phase.REGENERATE)
-	if os.access(os.path.join(build.clone_dir, 'checkedout.simexpal'), os.F_OK):
+	if build.is_checked_out():
 		done_phases.add(Phase.CHECKOUT)
 
 	def want_phase(phase):
