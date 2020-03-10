@@ -133,7 +133,11 @@ class Config:
 		def construct_variants():
 			if 'variants' in self.yml:
 				for axis_yml in self.yml['variants']:
+					check_for_reserved_name(axis_yml['axis'])
+
 					for variant_yml in axis_yml['items']:
+						check_for_reserved_name(variant_yml['name'])
+
 						yield Variant(self, axis_yml['axis'], variant_yml)
 
 		for inst in sorted(construct_instances(), key=lambda inst: inst.shortname):
@@ -143,12 +147,17 @@ class Config:
 
 		if 'builds' in self.yml:
 			for build_yml in sorted(self.yml['builds'], key=lambda y: y['name']):
+				check_for_reserved_name(build_yml['name'])
+
 				if build_yml['name'] in self._build_infos:
 					raise RuntimeError("The build name '{}' is ambiguous".format(build_yml['name']))
 				self._build_infos[build_yml['name']] = BuildInfo(self, build_yml)
 
 		if 'revisions' in self.yml:
 			for revision_yml in sorted(self.yml['revisions'], key=lambda y: y['name']):
+				if 'name' in revision_yml:
+					check_for_reserved_name(revision_yml['name'])
+
 				if revision_yml['name'] in self._revisions:
 					raise RuntimeError("The revision name '{}' is ambiguous".format(revision_yml['name']))
 				self._revisions[revision_yml['name']] = Revision(self, revision_yml)
@@ -160,6 +169,8 @@ class Config:
 
 		if 'experiments' in self.yml:
 			for exp_yml in sorted(self.yml['experiments'], key=lambda y: y['name']):
+				check_for_reserved_name(exp_yml['name'])
+
 				if exp_yml['name'] in self._exp_infos:
 					raise RuntimeError("The experiment name '{}' is ambiguous".format(exp_yml['name']))
 				self._exp_infos[exp_yml['name']] = ExperimentInfo(self, exp_yml)
