@@ -96,6 +96,70 @@ run_selection_parser.add_argument('--failed', action='store_true')
 run_selection_parser.add_argument('--unfinished', action='store_true')
 
 # ---------------------------------------------------------------------------------------
+
+def select_phases_from_cli(args):
+
+	def subsequent_phases(start_phase):
+		return [phase for phase in simexpal.build.Phase if phase >= start_phase]
+
+	if args.recheckout:
+		if not args.f:
+			print("This would delete the local git repository for the build and reclone it. Confirm this action"
+					" by using the '-f' flag.")
+			return []
+		else:
+			return subsequent_phases(simexpal.build.Phase.CHECKOUT)
+	elif args.checkout:
+		if not args.f:
+			print("This would delete the local git repository for the build and reclone it. Confirm this action"
+					" by using the '-f' flag.")
+			return []
+		else:
+			return [simexpal.build.Phase.CHECKOUT]
+	elif args.reregenerate:
+		return subsequent_phases(simexpal.build.Phase.REGENERATE)
+	elif args.regenerate:
+		return [simexpal.build.Phase.REGENERATE]
+	elif args.reconfigure:
+		return subsequent_phases(simexpal.build.Phase.CONFIGURE)
+	elif args.configure:
+		return [simexpal.build.Phase.CONFIGURE]
+	elif args.compile:
+		return [simexpal.build.Phase.COMPILE]
+	elif args.reinstall:
+		return subsequent_phases(simexpal.build.Phase.INSTALL)
+	elif args.install:
+		return [simexpal.build.Phase.INSTALL]
+	else:
+		# This case also includes 'args.recompile == True'
+		return subsequent_phases(simexpal.build.Phase.COMPILE)
+
+phase_selection_parser = argparse.ArgumentParser(add_help=False)
+phase_selection_mechanism = phase_selection_parser.add_mutually_exclusive_group()
+phase_selection_mechanism.add_argument('--recheckout', action='store_true',
+			help='Delete local build git repository, reclone, regenerate, reconfigure, recompile and reinstall it')
+phase_selection_mechanism.add_argument('--checkout', action='store_true',
+			help='Delete local git repository for build and (re-)clone it')
+phase_selection_mechanism.add_argument('--reregenerate', action='store_true',
+			help='Regenerate, reconfigure, recompile and reinstall build')
+phase_selection_mechanism.add_argument('--regenerate', action='store_true',
+			help='(Re-)Regenerate build')
+phase_selection_mechanism.add_argument('--reconfigure', action='store_true',
+			help='Reconfigure, recompile and reinstall build')
+phase_selection_mechanism.add_argument('--configure', action='store_true',
+			help='(Re-)Configure build')
+phase_selection_mechanism.add_argument('--recompile', action='store_true',
+			help='Recompile and reinstall build')
+phase_selection_mechanism.add_argument('--compile', action='store_true',
+			help='(Re-)Compile build')
+phase_selection_mechanism.add_argument('--reinstall', action='store_true',
+			help='Reinstall build')
+phase_selection_mechanism.add_argument('--install', action='store_true',
+			help='(Re-)Install build')
+phase_selection_parser.add_argument('-f', action='store_true',
+			help='Confirm (re-)checkout')
+
+# ---------------------------------------------------------------------------------------
 # Basic commands.
 # ---------------------------------------------------------------------------------------
 
