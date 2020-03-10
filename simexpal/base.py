@@ -700,6 +700,25 @@ class Build:
 		rev = self._get_dev_build_suffix()
 		return os.path.join(self._cfg.basedir, 'develop', self.name + rev)
 
+	def is_checked_out(self):
+		if self.revision.is_dev_build:
+			return os.access(os.path.join(self.source_dir, 'checkedout.simexpal'), os.F_OK)
+		return os.access(os.path.join(self.clone_dir, 'checkedout.simexpal'), os.F_OK)
+
+	def is_regenerated(self):
+		if self.revision.is_dev_build:
+			return os.access(os.path.join(self.source_dir, 'regenerated.simexpal'), os.F_OK)
+		return os.access(os.path.join(self.clone_dir, 'regenerated.simexpal'), os.F_OK)
+
+	def is_configured(self):
+		return os.access(os.path.join(self.compile_dir, 'configured.simexpal'), os.F_OK)
+
+	def is_compiled(self):
+		return os.access(os.path.join(self.compile_dir, 'compiled.simexpal'), os.F_OK)
+
+	def is_installed(self):
+		return os.access(os.path.join(self.prefix_dir, 'installed.simexpal'), os.F_OK)
+
 def extract_process_settings(yml):
 	if 'num_nodes' not in yml:
 		return None
