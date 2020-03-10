@@ -9,6 +9,8 @@ import yaml
 from . import instances
 from . import util
 
+DEFAULT_DEV_BUILD_NAME = '_dev'
+
 def get_aux_subdir(base_dir, experiment, variation, revision):
 	var = ''
 	if variation:
