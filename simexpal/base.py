@@ -624,6 +624,8 @@ class Revision:
 
 	@property
 	def name(self):
+		if 'name' not in self.revision_yml:
+			return DEFAULT_DEV_BUILD_NAME
 		return self.revision_yml['name']
 
 	@property
