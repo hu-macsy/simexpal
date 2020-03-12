@@ -9,6 +9,8 @@ import yaml
 from . import instances
 from . import util
 
+DEFAULT_DEV_BUILD_NAME = '_dev'
+
 def get_aux_subdir(base_dir, experiment, variation, revision):
 	var = ''
 	if variation:
@@ -118,6 +120,10 @@ class Config:
 		self._variants = OrderedDict()
 		self._exp_infos = OrderedDict()
 
+		def check_for_reserved_name(name):
+			if name.startswith('_'):
+				raise RuntimeError(f"Names starting with an underscore are reserved for internal simexpal objects: {name}")
+
 		def construct_instances():
 			if 'instances' in self.yml:
 				for inst_yml in self.yml['instances']:
@@ -127,7 +133,11 @@ class Config:
 		def construct_variants():
 			if 'variants' in self.yml:
 				for axis_yml in self.yml['variants']:
+					check_for_reserved_name(axis_yml['axis'])
+
 					for variant_yml in axis_yml['items']:
+						check_for_reserved_name(variant_yml['name'])
+
 						yield Variant(self, axis_yml['axis'], variant_yml)
 
 		for inst in sorted(construct_instances(), key=lambda inst: inst.shortname):
@@ -137,15 +147,24 @@ class Config:
 
 		if 'builds' in self.yml:
 			for build_yml in sorted(self.yml['builds'], key=lambda y: y['name']):
+				check_for_reserved_name(build_yml['name'])
+
 				if build_yml['name'] in self._build_infos:
 					raise RuntimeError("The build name '{}' is ambiguous".format(build_yml['name']))
 				self._build_infos[build_yml['name']] = BuildInfo(self, build_yml)
 
 		if 'revisions' in self.yml:
-			for revision_yml in sorted(self.yml['revisions'], key=lambda y: y['name']):
-				if revision_yml['name'] in self._revisions:
-					raise RuntimeError("The revision name '{}' is ambiguous".format(revision_yml['name']))
-				self._revisions[revision_yml['name']] = Revision(self, revision_yml)
+			revision_list = []
+
+			for revision_yml in self.yml['revisions']:
+				if 'name' in revision_yml:
+					check_for_reserved_name(revision_yml['name'])
+				revision_list.append(Revision(self, revision_yml))
+
+			for revision in sorted(revision_list, key=lambda y: y.name):
+				if revision.name in self._revisions:
+					raise RuntimeError("The revision name '{}' is ambiguous".format(revision.name))
+				self._revisions[revision.name] = revision
 
 		for variant in sorted(construct_variants(), key=lambda variant: variant.name):
 			if variant.name in self._variants:
@@ -154,6 +173,8 @@ class Config:
 
 		if 'experiments' in self.yml:
 			for exp_yml in sorted(self.yml['experiments'], key=lambda y: y['name']):
+				check_for_reserved_name(exp_yml['name'])
+
 				if exp_yml['name'] in self._exp_infos:
 					raise RuntimeError("The experiment name '{}' is ambiguous".format(exp_yml['name']))
 				self._exp_infos[exp_yml['name']] = ExperimentInfo(self, exp_yml)
@@ -536,10 +557,6 @@ class BuildInfo:
 		return self._build_yml['name']
 
 	@property
-	def repo_dir(self):
-		return os.path.join(self._cfg.basedir, 'builds', self.name + '.repo')
-
-	@property
 	def requirements(self):
 		if 'requires' in self._build_yml:
 			if isinstance(self._build_yml['requires'], list):
@@ -607,6 +624,8 @@ class Revision:
 
 	@property
 	def name(self):
+		if 'name' not in self.revision_yml:
+			return DEFAULT_DEV_BUILD_NAME
 		return self.revision_yml['name']
 
 	@property
@@ -615,6 +634,14 @@ class Revision:
 
 	def version_for_build(self, build_name):
 		return self.revision_yml['build_version'][build_name]
+
+	@property
+	def is_dev_build(self):
+		return self.revision_yml.get('develop', False)
+
+	@property
+	def is_default_dev_build(self):
+		return self.name == DEFAULT_DEV_BUILD_NAME
 
 class Build:
 	def __init__(self, cfg, info, revision):
@@ -626,20 +653,71 @@ class Build:
 	def name(self):
 		return self.info.name
 
+	def _get_dev_build_suffix(self):
+		if self.revision.is_default_dev_build:
+			return ''
+		else:
+			return '@' + self.revision.name
+
+	@property
+	def repo_dir(self):
+		# Use the source_dir property for dev-build revisions
+		assert not self.revision.is_dev_build
+
+		return os.path.join(self._cfg.basedir, 'builds', self.name + '.repo')
+
 	@property
 	def clone_dir(self):
+		# Use the source_dir property for dev-build revisions
+		assert not self.revision.is_dev_build
+
 		rev = '@' + self.revision.name
 		return os.path.join(self._cfg.basedir, 'builds', self.name + rev + '.clone')
 
 	@property
 	def compile_dir(self):
+		if self.revision.is_dev_build:
+			rev = self._get_dev_build_suffix()
+			return os.path.join(self._cfg.basedir, 'dev-builds', self.name + rev + '.compile')
 		rev = '@' + self.revision.name
 		return os.path.join(self._cfg.basedir, 'builds', self.name + rev + '.compile')
 
 	@property
 	def prefix_dir(self):
+		if self.revision.is_dev_build:
+			rev = self._get_dev_build_suffix()
+			return os.path.join(self._cfg.basedir, 'dev-builds', self.name + rev)
 		rev = '@' + self.revision.name
 		return os.path.join(self._cfg.basedir, 'builds', self.name + rev)
+
+	@property
+	def source_dir(self):
+		"""
+			dev-builds only have a source directory instead of a repo and clone directory
+		"""
+		assert self.revision.is_dev_build
+
+		rev = self._get_dev_build_suffix()
+		return os.path.join(self._cfg.basedir, 'develop', self.name + rev)
+
+	def is_checked_out(self):
+		if self.revision.is_dev_build:
+			return os.access(os.path.join(self.source_dir, 'checkedout.simexpal'), os.F_OK)
+		return os.access(os.path.join(self.clone_dir, 'checkedout.simexpal'), os.F_OK)
+
+	def is_regenerated(self):
+		if self.revision.is_dev_build:
+			return os.access(os.path.join(self.source_dir, 'regenerated.simexpal'), os.F_OK)
+		return os.access(os.path.join(self.clone_dir, 'regenerated.simexpal'), os.F_OK)
+
+	def is_configured(self):
+		return os.access(os.path.join(self.compile_dir, 'configured.simexpal'), os.F_OK)
+
+	def is_compiled(self):
+		return os.access(os.path.join(self.compile_dir, 'compiled.simexpal'), os.F_OK)
+
+	def is_installed(self):
+		return os.access(os.path.join(self.prefix_dir, 'installed.simexpal'), os.F_OK)
 
 def extract_process_settings(yml):
 	if 'num_nodes' not in yml:
