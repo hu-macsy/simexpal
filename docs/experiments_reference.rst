@@ -1,14 +1,21 @@
 The "experiments.yml" reference
 ===============================
 
-Simexpal needs an "experiments.yml" file to execute the experiments.
-In this page we describe how to write the "experiments.yml" file it to automatically
-execute your experiments on the desired instances.
-The "experiments.yml" is a YAML file that contains a dictionary with two keys:
+Simexpal needs an "experiments.yml" file to to automatically execute your experiments
+on the desired instances. In this page we describe the structure of the "experiments.yml"
+file. The "experiments.yml" is a YAML file that contains a dictionary with several keys:
 
-- instances: lists all the instances that will be used for the experiments.
+- instances: list of all the instances that will be used for the experiments.
 - instdir: path to the directory that stores all the instances.
-- experiments: lists all the experiments that will be executed on each instance.
+- experiments: list of all the experiments that will be executed on the instances.
+
+There are also further keys that allow for customization of the experiments and to
+automatically build the binaries the experiments run from:
+
+- builds: list of Git builds, which also include build instructions.
+- revisions: list of Git revisions of builds.
+- variants: list of additional input parameters for experiments.
+- matrix: specifies which combinations of experiments, instances, variants and revisions are run.
 
 Instances
 ---------
