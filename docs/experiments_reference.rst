@@ -17,21 +17,7 @@ automatically build the binaries the experiments run from:
 - variants: list of additional input parameters for experiments.
 - matrix: specifies which combinations of experiments, instances, variants and revisions are run.
 
-Instances
----------
-Because instances can be managed automatically if they are taken from public repositories,
-the value associated to this key is a list of dictionaries with two keys:
 
-- repo: the source repository of the instances. Use "local" if dealing with local instances.
-- items: a list of instances.
-
-An example of how to list a local set of instances is:
-
-.. literalinclude:: ./experiments.yml.example
-   :linenos:
-   :lines: 1-7
-   :language: yaml
-   :caption: How to list instances in the experiments.yml file.
 
 Experiments
 -----------
