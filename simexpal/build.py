@@ -166,8 +166,6 @@ def make_build_in_order(cfg, build, wanted_builds, wanted_phases):
 			for (var, value) in step_yml['environ'].items():
 				environ[var] = util.expand_at_params(value, substitute)
 
-		shell = None
-		args = None
 		if isinstance(step_yml['args'], list):
 			shell = False
 			args = [util.expand_at_params(arg, substitute) for arg in step_yml['args']]
@@ -226,8 +224,7 @@ def make_build_in_order(cfg, build, wanted_builds, wanted_phases):
 
 		util.touch(os.path.join(checkout_dir, 'checkedout.simexpal'))
 
-		recursive_clone = build.info.recursive_clone
-		if recursive_clone:
+		if build.info.recursive_clone:
 			# Clone submodules recursively
 			subprocess.check_call(['git', 'submodule',
 					'update', '--init', '--recursive'], cwd=checkout_dir)

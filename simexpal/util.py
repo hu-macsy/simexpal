@@ -53,7 +53,7 @@ def try_rmtree(path):
 			raise
 
 def touch(path):
-	with open(path, 'w') as f:
+	with open(path, 'w'):
 		pass
 
 did_warn_libyaml = False

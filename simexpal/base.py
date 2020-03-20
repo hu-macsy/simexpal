@@ -384,7 +384,6 @@ class Config:
 
 		res = [ ]
 		for run in self.discover_all_runs():
-			exp = run.experiment
 			finished = os.access(run.output_file_path('status'), os.F_OK)
 			if not finished:
 				print("Skipping unfinished run {}/{}[{}]".format(run.experiment.name,
@@ -539,7 +538,6 @@ class Instance:
 		os.rename(partial_path + '.post{}'.format(stage), partial_path)
 
 	def run_transform(self, transform, out_path):
-		stage = 0
 		assert transform == 'to_edgelist'
 		instances.convert_to_edgelist(self._inst_yml,
 				self.fullpath, out_path + '.transf1');
