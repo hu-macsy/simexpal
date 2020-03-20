@@ -118,17 +118,20 @@ def make_build_in_order(cfg, build, wanted_builds, wanted_phases):
 	base_environ = os.environ.copy()
 	base_environ['PKG_CONFIG_PATH'] = prepend_env('PKG_CONFIG_PATH', pkgconfig_paths)
 
+	def skip_phase(phase):
+		return phase > max(wanted_phases)
+
 	done_phases = set()
 	if build.name in wanted_builds:
-		if build.is_installed() and Phase.INSTALL not in wanted_phases:
+		if (build.is_installed() or skip_phase(Phase.INSTALL)) and Phase.INSTALL not in wanted_phases:
 			done_phases.add(Phase.INSTALL)
-		if build.is_compiled() and Phase.COMPILE not in wanted_phases:
+		if (build.is_compiled() or skip_phase(Phase.COMPILE)) and Phase.COMPILE not in wanted_phases:
 			done_phases.add(Phase.COMPILE)
-		if build.is_configured() and Phase.CONFIGURE not in wanted_phases:
+		if (build.is_configured() or skip_phase(Phase.CONFIGURE)) and Phase.CONFIGURE not in wanted_phases:
 			done_phases.add(Phase.CONFIGURE)
-		if build.is_regenerated() and Phase.REGENERATE not in wanted_phases:
+		if (build.is_regenerated() or skip_phase(Phase.REGENERATE)) and Phase.REGENERATE not in wanted_phases:
 			done_phases.add(Phase.REGENERATE)
-		if build.is_checked_out() and Phase.CHECKOUT not in wanted_phases:
+		if (build.is_checked_out() or skip_phase(Phase.CHECKOUT)) and Phase.CHECKOUT not in wanted_phases:
 			done_phases.add(Phase.CHECKOUT)
 	else:
 		if build.is_installed():
