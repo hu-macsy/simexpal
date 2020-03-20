@@ -236,7 +236,7 @@ def make_build_in_order(cfg, build, wanted_builds, wanted_phases):
 
 		regenerate_args = util.ensure_list_type(build.info.regenerate)
 		for step_yml in regenerate_args:
-			do_step(step_yml, checkout_dir)
+			do_step(step_yml, default_workdir=checkout_dir)
 		util.touch(os.path.join(checkout_dir, 'regenerated.simexpal'))
 		did_work = True
 
