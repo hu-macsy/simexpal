@@ -17,7 +17,19 @@ automatically build the binaries the experiments run from:
 - variants: list of additional input parameters for experiments.
 - matrix: specifies which combinations of experiments, instances, variants and revisions are run.
 
+Instances
+---------
+This entry is a list of instances that will be used for experiments. The following keys are
+used for specifying instances:
 
+- ``extensions``: list of extensions that the instance has
+- ``files``: list of files the instance consists of
+- ``items``: list of instances
+- ``name``: name of the instance (used when dealing with instances that consist of unrelated files)
+- ``repo``: source of instances
+- ``set``: list of sets the instance belongs to
+
+For detailed usage examples, see the :ref:`Instances` page.
 
 Experiments
 -----------
