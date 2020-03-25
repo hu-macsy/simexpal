@@ -287,6 +287,9 @@ class Config:
 
 		return [make_variation(prod) for prod in itertools.product(*variation_bundle)]
 
+	def all_experiment_infos(self):
+		yield from self._exp_infos.values()
+
 	def get_experiment_info(self, name):
 		if name not in self._exp_infos:
 			raise RuntimeError("Experiment {} does not exist".format(name))
