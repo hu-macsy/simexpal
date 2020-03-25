@@ -234,6 +234,11 @@ class Config:
 	def all_variants(self):
 		yield from self._variants.values()
 
+	def all_variants_for_axis(self, axis):
+		for var in self.all_variants():
+			if var.axis == axis:
+				yield var
+
 	def get_variant(self, name):
 		if name not in self._variants:
 			raise RuntimeError("Variant {} does not exist".format(name))
