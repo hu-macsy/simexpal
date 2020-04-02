@@ -223,39 +223,34 @@ class Config:
 			yield Experiment(self, experiment_info, revision, variation)
 
 	def discover_all_runs(self):
-		for exp in self.all_experiments():
-			def extract(selection):
-				# TODO (for Duy): in a new commit, refactor this.
-				#      We expand the matrix once for each experiment. This is inefficient.
-				#      Instead, let this extract() function return tuples of
-				#      (experiment, revision, variation, instance, repetition)
-				#      and do only one _expand_matrix().
 
-				if self.get_experiment_info(exp.name) not in selection.experiments:
-					return
-
-				selected_revision_names = [revision.name for revision in selection.revisions]
-				if exp.revision is not None and selected_revision_names != ['_none']:
-					if self.get_revision(exp.revision.name) not in selection.revisions:
-						return
-
-				variation = tuple(self.get_variant(var.name) for var in exp.variation)
-				if variation not in selection.variations:
-					return
-
-				for instance in selection.instances:
-					if selection.repetitions is not None:
-						reps = range(0, selection.repetitions)
-					elif 'repeat' in exp.info._exp_yml:
-						reps = range(0, exp.info._exp_yml['repeat'])
+		def extract(selection):
+			# Helper to find all selected revisions for a given experiment.
+			def revisions_for_experiment(exp_info):
+				if 'use_builds' in exp_info._exp_yml:
+					if [rev.name for rev in selection.revisions] != ['_none']:
+						yield from selection.revisions
 					else:
-						reps = range(0, 1)
-					for rep in reps:
-						yield (instance, rep)
+						yield from self.all_revisions()
+				else:
+					yield Revision(self, {'name': '_none'})
 
-			key = lambda t: (t[0].shortname, t[1])
-			for instance, rep in self._expand_matrix(extract, key=key):
-				yield Run(self, exp, instance, rep)
+			for exp_info in selection.experiments:
+				for revision in revisions_for_experiment(exp_info):
+					for variation in selection.variations:
+						for instance in selection.instances:
+							if selection.repetitions is not None:
+								reps = range(0, selection.repetitions)
+							elif 'repeat' in exp_info._exp_yml:
+								reps = range(0, exp_info._exp_yml['repeat'])
+							else:
+								reps = range(0, 1)
+							for rep in reps:
+								yield (Experiment(self, exp_info, revision, variation), instance, rep)
+
+		key = lambda t: (t[0].name, t[0].revision.name, [sub_var.name for sub_var in t[0].variation], t[1].shortname, t[2])
+		for experiment, instance, rep in self._expand_matrix(extract, key=key):
+			yield Run(self, experiment, instance, rep)
 
 	def collect_successful_results(self, parse_fn):
 		"""
@@ -359,10 +354,9 @@ class Config:
 	# Determine all experiments selected by a scope.
 	def _get_selected_experiments(self, scope):
 		if scope.experiments is not None:
-			for experiment in scope.experiments:
-				yield self.get_experiment_info(experiment)
+			return [self.get_experiment_info(experiment) for experiment in scope.experiments]
 		else:
-			yield from self.all_experiment_infos()
+			return list(self.all_experiment_infos())
 
 	# Determine all revisions selected by a scope.
 	def _get_selected_revisions(self, scope):
@@ -373,12 +367,9 @@ class Config:
 	# Determine all instances selected by a scope.
 	def _get_selected_instances(self, scope):
 		if scope.instsets is not None:
-			for inst in self.all_instances():
-				if scope.instsets.isdisjoint(inst.instsets):
-					continue
-				yield inst
+			return [inst for inst in self.all_instances() if not scope.instsets.isdisjoint(inst.instsets)]
 		else:
-			yield from self.all_instances()
+			return list(self.all_instances())
 
 	# Determine the number of repetitions selected by a scope.
 	def _get_selected_repetitions(self, scope):
