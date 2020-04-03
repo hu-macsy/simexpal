@@ -95,6 +95,10 @@ def make_build_in_order(cfg, build, wanted_builds, wanted_phases):
 			return other_build.clone_dir
 		return other_build.source_dir
 
+	def get_compile_dir_for(build_name):
+		other_build = cfg.get_build(build_name, build.revision)
+		return other_build.compile_dir
+
 	def substitute(var):
 		# 'THIS_SOURCE_DIR' is prefered, 'THIS_CLONE_DIR' is deprecated
 		if var in ['THIS_CLONE_DIR', 'THIS_SOURCE_DIR']:
@@ -108,6 +112,8 @@ def make_build_in_order(cfg, build, wanted_builds, wanted_phases):
 			return build.prefix_dir
 		elif var.startswith('SOURCE_DIR_FOR:'):
 			return get_source_dir_for(var.split(':')[1])
+		elif var.startswith('COMPILE_DIR_FOR:'):
+			return get_compile_dir_for(var.split(':')[1])
 		elif var == 'PARALLELISM':
 			return str(get_concurrency())
 
