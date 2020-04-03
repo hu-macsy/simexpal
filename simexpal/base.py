@@ -178,7 +178,7 @@ class Config:
 		for build in self.all_builds(): # TODO: Avoid a quadratic blowup.
 			if build.name == name and build.revision == revision:
 				return build
-		raise RuntimeError("Build {} does not exist".format(name))
+		raise RuntimeError("Build '{}' does not exist in revision '{}'".format(name, revision.name))
 
 	def all_variants(self):
 		yield from self._variants.values()
