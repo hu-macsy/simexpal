@@ -276,7 +276,7 @@ def invoke_run(manifest):
 	def substitute(p):
 		if p == 'INSTANCE':
 			return manifest.instance_dir + '/' + manifest.instance_yml_name
-		elif p[:9] == 'INSTANCE:':
+		elif p.startswith('INSTANCE:'):
 			return get_qualified_filename(p.split(':')[1])
 		elif p == 'REPETITION':
 			return str(manifest.repetition)
