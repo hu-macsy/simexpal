@@ -96,6 +96,8 @@ def make_build_in_order(cfg, build, wanted_builds, wanted_phases):
 				return build.clone_dir
 			else:
 				return build.source_dir
+		elif var == 'THIS_COMPILE_DIR':
+			return build.compile_dir
 		elif var == 'THIS_PREFIX_DIR':
 			return build.prefix_dir
 		elif var == 'PARALLELISM':
