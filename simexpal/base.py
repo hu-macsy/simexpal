@@ -42,69 +42,18 @@ def get_output_file_name(ext, instance, repetition):
 	return instance + '.' + ext + rep
 
 class MatrixScope:
-	@staticmethod
-	def walk_matrix(cfg, root_yml, expand):
-		outmost = MatrixScope(cfg, None)
+	__slots__ = ['experiments', 'revisions', 'axes', 'variants', 'instsets', 'repetitions']
 
-		result = set()
-		if 'matrix' not in root_yml:
-			result.update(expand(outmost))
-		else:
-			for item_yml in root_yml['matrix']['include']:
-				scope = MatrixScope(cfg, outmost)
-				scope.select(item_yml)
-				result.update(expand(scope))
+	def __init__(self):
+		self.experiments = None
+		self.revisions = None
+		self.axes = None
+		self.variants = None
+		self.instsets = None
+		self.repetitions = None
 
-		return result
-
-	def __init__(self, cfg, outer):
-		self.cfg = cfg
-
-		if outer is not None:
-			self.selected_exps = copy.copy(outer.selected_exps)
-			self.selected_revs = copy.copy(outer.selected_revs)
-			self.selected_axes = copy.copy(outer.selected_axes)
-			self.selected_variants = copy.deepcopy(outer.selected_variants)
-			self.selected_instsets = copy.copy(outer.selected_instsets)
-			self.num_repetitions = outer.num_repetitions
-		else:
-			self.selected_exps = None
-			self.selected_revs = None
-			self.selected_axes = None
-			self.selected_variants = {}
-			self.selected_instsets = None
-			self.num_repetitions = None
-
-	def select(self, item_yml):
-		if 'experiments' in item_yml:
-			if self.selected_exps is None:
-				self.selected_exps = set()
-			self.selected_exps.update(item_yml['experiments'])
-
-		if 'revisions' in item_yml:
-			if self.selected_revs is None:
-				self.selected_revs = set()
-			self.selected_revs.update(item_yml['revisions'])
-
-		if 'axes' in item_yml:
-			if self.selected_axes is None:
-				self.selected_axes = set()
-			self.selected_axes.update(item_yml['axes'])
-
-		if 'variants' in item_yml:
-			for name in item_yml['variants']:
-				variant = self.cfg.get_variant(name)
-				if variant.axis not in self.selected_variants:
-					self.selected_variants[variant.axis] = set()
-				self.selected_variants[variant.axis].add(variant.name)
-
-		if 'instsets' in item_yml:
-			if self.selected_instsets is None:
-				self.selected_instsets = set()
-			self.selected_instsets.update(item_yml['instsets'])
-
-		if 'repeat' in item_yml:
-			self.num_repetitions = item_yml['repeat']
+class MatrixSelection:
+	__slots__ = ['experiments', 'revisions', 'variations', 'instances', 'repetitions']
 
 class Config:
 	"""Represents the entire configuration (i.e., an experiments.yml file)."""
@@ -234,53 +183,18 @@ class Config:
 	def all_variants(self):
 		yield from self._variants.values()
 
+	def all_variants_for_axis(self, axis):
+		for var in self.all_variants():
+			if var.axis == axis:
+				yield var
+
 	def get_variant(self, name):
 		if name not in self._variants:
 			raise RuntimeError("Variant {} does not exist".format(name))
 		return self._variants[name]
 
-	def _test_variation_id_in_scope(self, variation_id, scope):
-		if scope.selected_axes is not None:
-			for name in variation_id:
-				variant = self.get_variant(name)
-				if variant.axes not in scope.selected_axes:
-					return False
-		if scope.selected_variants is not None:
-			for name in variation_id:
-				variant = self.get_variant(name)
-				if variant.axis in scope.selected_variants:
-					if variant.name not in scope.selected_variants[variant.axis]:
-						return False
-		return True
-
-	# Determine all variations selected by a scope.
-	def _expand_variation_ids_in_scope(self, scope):
-		if scope.selected_axes is None:
-			axes = {var.axis for var in self.all_variants()}
-		else:
-			axes = scope.selected_axes
-
-		variants = {}
-		for axis in axes:
-			if scope.selected_variants is None or axis not in scope.selected_variants:
-				variants[axis] = {var.name for var in self.all_variants() if var.axis == axis}
-			else:
-				variants[axis] = scope.selected_variants[axis]
-
-		variation_bundle = [ ]
-		for axis_variants in variants.values():
-			# Sort once so that variation order is deterministic.
-			variant_list = sorted(axis_variants, key=lambda name: name if name is not None else '')
-			variation_bundle.append(variant_list)
-
-		# A variation is defined as a tuple of variants.
-		def make_variation(prod):
-			variant_filter = filter(lambda name: name is not None, prod)
-			# Sort again so that order of the variants does not depend on the axes.
-			variant_list = sorted(variant_filter)
-			return tuple(variant_list)
-
-		return [make_variation(prod) for prod in itertools.product(*variation_bundle)]
+	def all_experiment_infos(self):
+		yield from self._exp_infos.values()
 
 	def get_experiment_info(self, name):
 		if name not in self._exp_infos:
@@ -288,90 +202,55 @@ class Config:
 		return self._exp_infos[name]
 
 	def all_experiments(self):
-		for exp_name, rev_name, var_names in self._expand_experiment_matrix():
-			revision = self.get_revision(rev_name)
-			variation = [self.get_variant(var_name) for var_name in var_names]
-			yield Experiment(self, self.get_experiment_info(exp_name), revision, variation)
-
-	def _expand_experiment_matrix(self):
-		def expand(scope):
-			# Determine all experiments selected by this scope.
-			if scope.selected_exps is None:
-				experiments = [exp_yml['name'] for exp_yml in self.yml['experiments']]
-			else:
-				experiments = scope.selected_exps
-
+		def extract(selection):
 			# Helper to find all selected revisions for a given experiment.
-			def revisions_for_experiment(exp_name):
-				if scope.selected_revs is None:
-					if 'use_builds' in self.get_experiment_info(exp_name)._exp_yml:
-						for revision in self.all_revisions():
-							yield revision.name
+			def revisions_for_experiment(exp_info):
+				if 'use_builds' in exp_info._exp_yml:
+					if [rev.name for rev in selection.revisions] != ['_none']:
+						yield from selection.revisions
 					else:
-						yield None
+						yield from self.all_revisions()
 				else:
-					yield from scope.selected_revs
+					yield Revision(self, {'name': '_none'})
 
-			variation_ids = self._expand_variation_ids_in_scope(scope)
-			for exp_name in experiments:
-				yield from itertools.product([exp_name], revisions_for_experiment(exp_name),
-						variation_ids)
+			for exp_info in selection.experiments:
+				yield from itertools.product([exp_info], revisions_for_experiment(exp_info),
+						selection.variations)
 
-		expansion = MatrixScope.walk_matrix(self, self.yml, expand)
-		return sorted(expansion)
-
-	def _experiment_matches_item(self, item_yml, name, revision):
-		if 'experiments' in item_yml:
-			if name not in item_yml['experiments']:
-				return False
-		if revision is None:
-			if 'revisions' in item_yml:
-				return False
-		else:
-			if 'revisions' in item_yml:
-				if revision.name not in item_yml['revisions']:
-					return False
-		return True
+		key = lambda x: (x[0].name, x[1].name, [sub_var.name for sub_var in x[2]])
+		for experiment_info, revision, variation in self._expand_matrix(extract, key=key):
+			revision = revision if revision.name != '_none' else None
+			yield Experiment(self, experiment_info, revision, variation)
 
 	def discover_all_runs(self):
-		for exp in self.all_experiments():
-			for inst_name, rep in self._expand_run_matrix(exp):
-				instance = self.get_instance(inst_name)
-				yield Run(self, exp, instance, rep)
 
-	def _expand_run_matrix(self, exp):
-		def expand(scope):
-			if scope.selected_exps is not None:
-				if exp.name not in scope.selected_exps:
-					return
-			if scope.selected_revs is not None:
-				if exp.revision.name not in scope.selected_revs:
-					return
-			if scope.selected_variants is not None:
-				variation_id = tuple(var.name for var in exp.variation)
-				if variation_id not in self._expand_variation_ids_in_scope(scope):
-					return
+		def extract(selection):
+			# Helper to find all selected revisions for a given experiment.
+			def revisions_for_experiment(exp_info):
+				if 'use_builds' in exp_info._exp_yml:
+					if [rev.name for rev in selection.revisions] != ['_none']:
+						yield from selection.revisions
+					else:
+						yield from self.all_revisions()
+				else:
+					yield Revision(self, {'name': '_none'})
 
-			if scope.selected_instsets is not None:
-				instsets = scope.selected_instsets
-			else:
-				instset_combinations = [instance.instsets for instance in self.all_instances()]
-				instsets = set().union(*instset_combinations)
+			for exp_info in selection.experiments:
+				for revision in revisions_for_experiment(exp_info):
+					for variation in selection.variations:
+						for instance in selection.instances:
+							if selection.repetitions is not None:
+								reps = range(0, selection.repetitions)
+							elif 'repeat' in exp_info._exp_yml:
+								reps = range(0, exp_info._exp_yml['repeat'])
+							else:
+								reps = range(0, 1)
+							for rep in reps:
+								yield (Experiment(self, exp_info, revision, variation), instance, rep)
 
-			for instance in self.all_instances():
-				if instsets.isdisjoint(instance.instsets):
-					continue
-
-				reps = range(0, 1)
-				if scope.num_repetitions is not None:
-					reps = range(0, scope.num_repetitions)
-				elif 'repeat' in exp.info._exp_yml:
-					reps = range(0, exp.info._exp_yml['repeat'])
-				for rep in reps:
-					yield (instance.shortname, rep)
-
-		expansion = MatrixScope.walk_matrix(self, self.yml, expand)
-		return sorted(expansion)
+		key = lambda t: (t[0].name, t[0].revision.name, [sub_var.name for sub_var in t[0].variation], t[1].shortname, t[2])
+		for experiment, instance, rep in self._expand_matrix(extract, key=key):
+			yield Run(self, experiment, instance, rep)
 
 	def collect_successful_results(self, parse_fn):
 		"""
@@ -401,6 +280,139 @@ class Config:
 			with open(run.output_file_path('out'), 'r') as f:
 				res.append(parse_fn(run, f))
 		return res
+
+	# -----------------------------------------------------------------------------------
+	# Matrix expansion.
+	# -----------------------------------------------------------------------------------
+
+	# Main function to expand information from the matrix.
+	# Calls the 'extract' function on all scopes of the matrix and returns the union
+	# of all iterables that were produced by 'extract'.
+	# Sorts (and deduplicates) the output according to the key.
+	def _expand_matrix(self, extract, key=None):
+		if key is None:
+			key = lambda ent: ent
+
+		def extract_included(parent, yml):
+			scope = self._restrict_scope(parent, yml)
+
+			if 'include' in yml:
+				for incl_yml in yml['include']:
+					yield from extract_included(scope, incl_yml)
+			else:
+				sel = self._get_selection_from_scope(scope)
+				yield from extract(sel)
+
+		def generate_unordered_expansion():
+			scope = MatrixScope()
+
+			if 'matrix' in self.yml:
+				# TODO: validate the global matrix scope.
+				yield from extract_included(scope, self.yml['matrix'])
+			else:
+				sel = self._get_selection_from_scope(scope)
+				yield from extract(sel)
+
+		# Perform sorting and deduplication according to the key.
+		ordered = sorted(generate_unordered_expansion(), key=key)
+		return (next(grp) for _, grp in itertools.groupby(ordered, key=key))
+
+	def _restrict_scope(self, parent, yml):
+		def restrict_set(broad, narrow):
+			if narrow is None:
+				return broad
+			if broad is None:
+				return set(narrow)
+			return broad.intersection(narrow)
+
+		scope = MatrixScope()
+		scope.experiments = restrict_set(parent.experiments,
+				yml.get('experiments', None))
+		scope.revisions = restrict_set(parent.revisions,
+				yml.get('revisions', None))
+		scope.axes = restrict_set(parent.axes,
+				yml.get('axes', None))
+		scope.variants = restrict_set(parent.variants,
+				yml.get('variants', None))
+		scope.instsets = restrict_set(parent.instsets,
+				yml.get('instsets', None))
+		scope.repetitions = restrict_set(parent.repetitions,
+				range(yml['repetitions']) if 'repetitions' in yml else None)
+		return scope
+
+	# Finds all experiments, revisions, etc. that are selected by a given scope.
+	def _get_selection_from_scope(self, scope):
+		sel = MatrixSelection()
+		sel.experiments = self._get_selected_experiments(scope)
+		sel.revisions = self._get_selected_revisions(scope)
+		sel.instances = self._get_selected_instances(scope)
+		sel.repetitions = self._get_selected_repetitions(scope)
+		sel.variations = self._get_selected_variations(scope)
+
+		return sel
+
+	# Determine all experiments selected by a scope.
+	def _get_selected_experiments(self, scope):
+		if scope.experiments is not None:
+			return [self.get_experiment_info(experiment) for experiment in scope.experiments]
+		else:
+			return list(self.all_experiment_infos())
+
+	# Determine all revisions selected by a scope.
+	def _get_selected_revisions(self, scope):
+		if scope.revisions is not None:
+			return [self.get_revision(revision) for revision in scope.revisions]
+		return [Revision(self, {'name': '_none'})]
+
+	# Determine all instances selected by a scope.
+	def _get_selected_instances(self, scope):
+		if scope.instsets is not None:
+			return [inst for inst in self.all_instances() if not scope.instsets.isdisjoint(inst.instsets)]
+		else:
+			return list(self.all_instances())
+
+	# Determine the number of repetitions selected by a scope.
+	def _get_selected_repetitions(self, scope):
+		if scope.repetitions is not None:
+			return len(scope.repetitions)
+		return None
+
+	# Determine all variations selected by a scope.
+	def _get_selected_variations(self, scope):
+
+		def scope_selects_all_variants_of_axis(axis):
+			if scope.variants is not None:
+				for var in self.all_variants_for_axis(axis):
+					if var.name in scope.variants:
+						return False
+			return True
+
+		if scope.axes is None:
+			axes = {var.axis for var in self.all_variants()}
+		else:
+			axes = scope.axes
+
+		variants = {}
+		for axis in axes:
+			if scope.variants is None or scope_selects_all_variants_of_axis(axis):
+				variants[axis] = {var.name for var in self.all_variants_for_axis(axis)}
+			else:
+				variants[axis] = {var_name for var_name in scope.variants if self.get_variant(var_name).axis == axis}
+
+		variation_bundle = [ ]
+		for axis_variants in variants.values():
+			# Sort once so that variation order is deterministic.
+			variant_list = sorted(axis_variants, key=lambda name: name if name is not None else '')
+			variation_bundle.append(variant_list)
+
+		# A variation is defined as a tuple of variants.
+		def make_variation(prod):
+			variant_filter = filter(lambda name: name is not None, prod)
+			# Sort again so that order of the variants does not depend on the axes.
+			variant_list = sorted(variant_filter)
+			return tuple([self.get_variant(variant) for variant in variant_list])
+
+		return [make_variation(prod) for prod in itertools.product(*variation_bundle)]
 
 class Instance:
 	"""Represents a single instance"""
