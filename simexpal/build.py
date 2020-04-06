@@ -140,17 +140,20 @@ def make_build_in_order(cfg, build, wanted_builds, wanted_phases):
 	base_environ = os.environ.copy()
 	base_environ['PKG_CONFIG_PATH'] = prepend_env('PKG_CONFIG_PATH', pkgconfig_paths)
 
+	def skip_phase(phase):
+		return phase > max(wanted_phases)
+
 	done_phases = set()
 	if build.name in wanted_builds:
-		if build.is_installed() and Phase.INSTALL not in wanted_phases:
+		if (build.is_installed() or skip_phase(Phase.INSTALL)) and Phase.INSTALL not in wanted_phases:
 			done_phases.add(Phase.INSTALL)
-		if build.is_compiled() and Phase.COMPILE not in wanted_phases:
+		if (build.is_compiled() or skip_phase(Phase.COMPILE)) and Phase.COMPILE not in wanted_phases:
 			done_phases.add(Phase.COMPILE)
-		if build.is_configured() and Phase.CONFIGURE not in wanted_phases:
+		if (build.is_configured() or skip_phase(Phase.CONFIGURE)) and Phase.CONFIGURE not in wanted_phases:
 			done_phases.add(Phase.CONFIGURE)
-		if build.is_regenerated() and Phase.REGENERATE not in wanted_phases:
+		if (build.is_regenerated() or skip_phase(Phase.REGENERATE)) and Phase.REGENERATE not in wanted_phases:
 			done_phases.add(Phase.REGENERATE)
-		if build.is_checked_out() and Phase.CHECKOUT not in wanted_phases:
+		if (build.is_checked_out() or skip_phase(Phase.CHECKOUT)) and Phase.CHECKOUT not in wanted_phases:
 			done_phases.add(Phase.CHECKOUT)
 	else:
 		if build.is_installed():
@@ -185,8 +188,6 @@ def make_build_in_order(cfg, build, wanted_builds, wanted_phases):
 			for (var, value) in step_yml['environ'].items():
 				environ[var] = util.expand_at_params(value, substitute)
 
-		shell = None
-		args = None
 		if isinstance(step_yml['args'], list):
 			shell = False
 			args = [util.expand_at_params(arg, substitute) for arg in step_yml['args']]
@@ -245,8 +246,7 @@ def make_build_in_order(cfg, build, wanted_builds, wanted_phases):
 
 		util.touch(os.path.join(checkout_dir, 'checkedout.simexpal'))
 
-		recursive_clone = build.info.recursive_clone
-		if recursive_clone:
+		if build.info.recursive_clone:
 			# Clone submodules recursively
 			subprocess.check_call(['git', 'submodule',
 					'update', '--init', '--recursive'], cwd=checkout_dir)
@@ -258,7 +258,7 @@ def make_build_in_order(cfg, build, wanted_builds, wanted_phases):
 
 		regenerate_args = util.ensure_list_type(build.info.regenerate)
 		for step_yml in regenerate_args:
-			do_step(step_yml, checkout_dir)
+			do_step(step_yml, default_workdir=checkout_dir)
 		util.touch(os.path.join(checkout_dir, 'regenerated.simexpal'))
 		did_work = True
 

@@ -38,7 +38,7 @@ def lock_run(run):
 def create_run_file(run):
 
 	# Create the .run file. This signals that the run has been submitted.
-	with open(run.aux_file_path('run.tmp'), "w") as f:
+	with open(run.aux_file_path('run.tmp'), "w"):
 		pass
 	os.rename(run.aux_file_path('run.tmp'), run.aux_file_path('run'))
 

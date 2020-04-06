@@ -74,7 +74,6 @@ def download_instance(inst_yml, instances_dir, filename, partial_path, ext):
 def convert_to_edgelist(inst_yml, in_path, out_path):
 	repo = inst_yml['repo']
 
-	lines = []
 	if repo == 'konect':
 		separator = ' '
 		commentPrefix = '%'
