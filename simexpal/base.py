@@ -178,7 +178,7 @@ class Config:
 		for build in self.all_builds(): # TODO: Avoid a quadratic blowup.
 			if build.name == name and build.revision == revision:
 				return build
-		raise RuntimeError("Build {} does not exist".format(name))
+		raise RuntimeError("Build '{}' does not exist in revision '{}'".format(name, revision.name))
 
 	def all_variants(self):
 		yield from self._variants.values()
@@ -206,20 +206,20 @@ class Config:
 			# Helper to find all selected revisions for a given experiment.
 			def revisions_for_experiment(exp_info):
 				if 'use_builds' in exp_info._exp_yml:
-					if [rev.name for rev in selection.revisions] != ['_none']:
+					if selection.revisions is not None:
 						yield from selection.revisions
 					else:
 						yield from self.all_revisions()
 				else:
-					yield Revision(self, {'name': '_none'})
+					yield None
 
 			for exp_info in selection.experiments:
 				yield from itertools.product([exp_info], revisions_for_experiment(exp_info),
 						selection.variations)
 
-		key = lambda x: (x[0].name, x[1].name, [sub_var.name for sub_var in x[2]])
+		key = lambda x: (x[0].name, x[1].name if x[1] is not None else '_none',
+						 [sub_var.name for sub_var in x[2]])
 		for experiment_info, revision, variation in self._expand_matrix(extract, key=key):
-			revision = revision if revision.name != '_none' else None
 			yield Experiment(self, experiment_info, revision, variation)
 
 	def discover_all_runs(self):
@@ -228,12 +228,12 @@ class Config:
 			# Helper to find all selected revisions for a given experiment.
 			def revisions_for_experiment(exp_info):
 				if 'use_builds' in exp_info._exp_yml:
-					if [rev.name for rev in selection.revisions] != ['_none']:
+					if selection.revisions is not None:
 						yield from selection.revisions
 					else:
 						yield from self.all_revisions()
 				else:
-					yield Revision(self, {'name': '_none'})
+					yield None
 
 			for exp_info in selection.experiments:
 				for revision in revisions_for_experiment(exp_info):
@@ -248,7 +248,8 @@ class Config:
 							for rep in reps:
 								yield (Experiment(self, exp_info, revision, variation), instance, rep)
 
-		key = lambda t: (t[0].name, t[0].revision.name, [sub_var.name for sub_var in t[0].variation], t[1].shortname, t[2])
+		key = lambda t: (t[0].name, t[0].revision.name if t[0].revision is not None else '_none',
+						 [sub_var.name for sub_var in t[0].variation], t[1].shortname, t[2])
 		for experiment, instance, rep in self._expand_matrix(extract, key=key):
 			yield Run(self, experiment, instance, rep)
 
@@ -362,7 +363,7 @@ class Config:
 	def _get_selected_revisions(self, scope):
 		if scope.revisions is not None:
 			return [self.get_revision(revision) for revision in scope.revisions]
-		return [Revision(self, {'name': '_none'})]
+		return None
 
 	# Determine all instances selected by a scope.
 	def _get_selected_instances(self, scope):
