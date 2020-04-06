@@ -1,4 +1,4 @@
-Usage Guide
+Quick Start
 ===========
 
 .. highlight:: none

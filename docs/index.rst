@@ -9,8 +9,9 @@ Welcome to simexpal's documentation!
 .. toctree::
    :caption: Contents:
 
-   Usage Guide <user_guide>
+   Quick Start <quick_start>
    Reference for experiments.yml file <experiments_reference>
+   Instances <instances>
    Command-line Reference <command_line_reference>
    Python API <python_api>
    Recipes <recipes>
