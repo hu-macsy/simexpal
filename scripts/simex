@@ -17,6 +17,8 @@ import simexpal.launch.slurm
 import simexpal.launch.sge
 import simexpal.queuesock
 import simexpal.util as util
+from simexpal.base import Status
+from itertools import zip_longest
 import yaml
 
 colors = {
@@ -282,6 +284,9 @@ dev_builds_parser.add_argument('builds', nargs='+', type=str)
 # ---------------------------------------------------------------------------------------
 
 def do_experiments(args):
+	args.detailed = False
+	args.compact = False
+
 	return do_experiments_list(args, as_default_subcmd=True)
 
 experiments_parser = main_subcmds.add_parser('experiments', help='Manage experiments',
@@ -300,6 +305,59 @@ def do_experiments_list(args, as_default_subcmd=False):
 			return colors['red']
 		return ''
 
+	def show_compact_list():
+
+		def print_experiment_statistics():
+
+			def _get_table_entries(status_list, include_status_string=False):
+				entry_list = []
+				for s in status_list:
+					if status_dict[s] > 0:
+						prefix = ''
+						if include_status_string:
+							prefix = str(s) + ': '
+
+						entry_list.append(prefix + str(status_dict[s]) + '/' + str(num_runs))
+
+				return entry_list
+
+			started_statistics = _get_table_entries([Status.STARTED])
+			finished_statistics = _get_table_entries([Status.FINISHED])
+			failures_statistics = _get_table_entries([status for status in Status if status.is_negative],
+													include_status_string=True)
+			other_statistics = _get_table_entries([Status.NOT_SUBMITTED, Status.IN_SUBMISSION, Status.SUBMITTED],
+												include_status_string=True)
+
+			for e_entry, s_entry, fin_entry, fail_entry, o_entry in zip_longest(
+				[exp_name], started_statistics, finished_statistics, failures_statistics, other_statistics, fillvalue=''):
+
+				print('{:30.30} {:10.10} {:10.10} {:20.20} {}'.format(e_entry, s_entry, fin_entry, fail_entry, o_entry))
+
+		print('{:30.30} {:10.10} {:10.10} {:20.20} {}'.format(
+			'Experiment', 'started', 'finished', 'failures', 'other'))
+		print('{:30.30} {:10.10} {:10.10} {:20.20} {}'.format(
+			'----------', '-------', '--------', '--------', '-----'))
+
+		exp_name = None
+		status_dict = {}
+		for run in selection:
+			cur_exp_name, cur_status = (run.experiment.name, run.get_status())
+
+			if cur_exp_name != exp_name:  # this check assumes that the runs are sorted by their experiment names
+				if exp_name is not None:
+					print_experiment_statistics()
+
+				# Reset statistics for new experiment
+				exp_name = cur_exp_name
+				for status in simexpal.base.Status:
+					status_dict[status] = 0
+				num_runs = 0  # number of runs of current experiment
+
+			status_dict[cur_status] += 1
+			num_runs += 1
+
+		print_experiment_statistics()
+
 	def show_detailed_list():
 		print('{:45.45} {:35.35} {}'.format('Experiment', 'Instance', 'Status'))
 		print('{:45.45} {:35.35} {}'.format('----------', '--------', '------'))
@@ -317,12 +375,23 @@ def do_experiments_list(args, as_default_subcmd=False):
 	else:
 		selection = select_runs_from_cli(cfg, args)
 
-	show_detailed_list()
+	if args.detailed:
+		show_detailed_list()
+	elif args.compact:
+		show_compact_list()
+	else:
+		selection = list(selection)
+		if len(selection) < simexpal.base.EXPERIMENTS_LIST_THRESHOLD:
+			show_detailed_list()
+		else:
+			show_compact_list()
 
 
 experiments_list_parser = experiments_subcmds.add_parser('list',
 		parents=[run_selection_parser])
 experiments_list_parser.set_defaults(cmd=do_experiments_list)
+experiments_list_parser.add_argument('--compact', action='store_true')
+experiments_list_parser.add_argument('--detailed', action='store_true')
 
 def do_experiments_launch(args):
 	cfg = extl.base.config_for_dir()
