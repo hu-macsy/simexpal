@@ -290,6 +290,22 @@ experiments_parser.set_defaults(cmd=do_experiments)
 experiments_subcmds = experiments_parser.add_subparsers(dest='experiments_subcmd')
 
 def do_experiments_list(args, as_default_subcmd=False):
+
+	def show_detailed_list():
+		print('{:45.45} {:35.35} {}'.format('Experiment', 'Instance', 'Status'))
+		print('{:45.45} {:35.35} {}'.format('----------', '--------', '------'))
+		for run in selection:
+			exp, instance, status = (run.experiment, run.instance.shortname, run.get_status())
+
+			if status.is_neutral:
+				print(colors['yellow'], end='')
+			elif status.is_positive:
+				print(colors['green'], end='')
+			elif status.is_negative:
+				print(colors['red'], end='')
+			print('{:45.45} {:35.35} [{}] {}'.format(exp.display_name, instance, run.repetition, str(status)))
+			print(colors['reset'], end='')
+
 	cfg = extl.base.config_for_dir()
 
 	if as_default_subcmd:
@@ -297,19 +313,8 @@ def do_experiments_list(args, as_default_subcmd=False):
 	else:
 		selection = select_runs_from_cli(cfg, args)
 
-	print('{:45.45} {:35.35} {}'.format('Experiment', 'Instance', 'Status'))
-	print('{:45.45} {:35.35} {}'.format('----------', '--------', '------'))
-	for run in selection:
-		exp, instance, status = (run.experiment, run.instance.shortname, run.get_status())
+	show_detailed_list()
 
-		if status.is_neutral:
-			print(colors['yellow'], end='')
-		elif status.is_positive:
-			print(colors['green'], end='')
-		elif status.is_negative:
-			print(colors['red'], end='')
-		print('{:45.45} {:35.35} [{}] {}'.format(exp.display_name, instance, run.repetition, str(status)))
-		print(colors['reset'], end='')
 
 experiments_list_parser = experiments_subcmds.add_parser('list',
 		parents=[run_selection_parser])
