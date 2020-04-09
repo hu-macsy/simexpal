@@ -10,6 +10,7 @@ from . import instances
 from . import util
 
 DEFAULT_DEV_BUILD_NAME = '_dev'
+EXPERIMENTS_LIST_THRESHOLD = 30
 
 def get_aux_subdir(base_dir, experiment, variation, revision):
 	var = ''
