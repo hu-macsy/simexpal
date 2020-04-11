@@ -427,36 +427,17 @@ def do_experiments_purge(args):
 			if args.f:
 				print("Purging experiment '{}', instance '{}' [{}]".format(
 						exp.name, instance, run.repetition))
-				try:
-					os.unlink(run.aux_file_path('lock'))
-				except FileNotFoundError:
-					pass
-				try:
-					os.unlink(run.aux_file_path('run'))
-				except FileNotFoundError:
-					pass
-				try:
-					os.unlink(run.aux_file_path('stderr'))
-				except FileNotFoundError:
-					pass
-				try:
-					os.unlink(run.aux_file_path('run.tmp'))
-				except FileNotFoundError:
-					pass
-				try:
-					os.unlink(run.output_file_path('out'))
-				except FileNotFoundError:
-					pass
-				try:
-					os.unlink(run.output_file_path('status'))
-				except FileNotFoundError:
-					pass
-				try:
-					os.unlink(run.output_file_path('status.tmp'))
-				except FileNotFoundError:
-					pass
+
+				util.try_rmfile(run.aux_file_path('lock'))
+				util.try_rmfile(run.aux_file_path('run'))
+				util.try_rmfile(run.aux_file_path('stderr'))
+				util.try_rmfile(run.aux_file_path('run.tmp'))
+				util.try_rmfile(run.output_file_path('out'))
+				util.try_rmfile(run.output_file_path('status'))
+				util.try_rmfile(run.output_file_path('status.tmp'))
+
 			else:
-				print("This would purge experiment '{}', instance '{}' [{}]".format(
+				print("This would purge experiment '{}', instance '{}' [{}]. Use '-f' to confirm this action.".format(
 						exp.name, instance, run.repetition))
 
 experiments_purge_parser = experiments_subcmds.add_parser('purge',
