@@ -750,6 +750,15 @@ class Build:
 	def is_installed(self):
 		return os.access(os.path.join(self.prefix_dir, 'installed.simexpal'), os.F_OK)
 
+	def purge(self, delete_source=False):
+		if not self.revision.is_dev_build:
+			util.try_rmtree(self.clone_dir)
+		elif delete_source:
+			util.try_rmtree(self.source_dir)
+
+		util.try_rmtree(self.compile_dir)
+		util.try_rmtree(self.prefix_dir)
+
 def extract_process_settings(yml):
 	if 'num_nodes' not in yml:
 		return None
