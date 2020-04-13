@@ -286,6 +286,7 @@ dev_builds_parser.add_argument('builds', nargs='+', type=str)
 def do_experiments(args):
 	args.detailed = False
 	args.compact = False
+	args.full = False
 
 	return do_experiments_list(args, as_default_subcmd=True)
 
@@ -305,7 +306,7 @@ def do_experiments_list(args, as_default_subcmd=False):
 			return colors['red']
 		return ''
 
-	def show_compact_list():
+	def show_compact_list(calc_exp_len=False):
 
 		def print_experiment_statistics():
 
@@ -329,14 +330,19 @@ def do_experiments_list(args, as_default_subcmd=False):
 												include_status_string=True)
 
 			for e_entry, s_entry, fin_entry, fail_entry, o_entry in zip_longest(
-				[exp_name], started_statistics, finished_statistics, failures_statistics, other_statistics, fillvalue=''):
+					[exp_name], started_statistics, finished_statistics, failures_statistics, other_statistics, fillvalue=''):
 
-				print('{:30.30} {:10.10} {:10.10} {:20.20} {}'.format(e_entry, s_entry, fin_entry, fail_entry, o_entry))
+				print('{:30.30} {:10.10} {:10.10} {:20.20} {}'.format(e_entry, s_entry, fin_entry, fail_entry, o_entry,	len=exp_len))
 
-		print('{:30.30} {:10.10} {:10.10} {:20.20} {}'.format(
-			'Experiment', 'started', 'finished', 'failures', 'other'))
-		print('{:30.30} {:10.10} {:10.10} {:20.20} {}'.format(
-			'----------', '-------', '--------', '--------', '-----'))
+		if calc_exp_len:
+			exp_len = max([len(run.experiment.name) for run in selection])
+		else:
+			exp_len = 30
+
+		print('{:{len}.{len}} {:10.10} {:10.10} {:20.20} {}'.format(
+			'Experiment', 'started', 'finished', 'failures', 'other', len=exp_len))
+		print('{:{len}.{len}} {:10.10} {:10.10} {:20.20} {}'.format(
+			'----------', '-------', '--------', '--------', '-----', len=exp_len))
 
 		exp_name = None
 		status_dict = {}
@@ -358,40 +364,44 @@ def do_experiments_list(args, as_default_subcmd=False):
 
 		print_experiment_statistics()
 
-	def show_detailed_list():
-		print('{:45.45} {:35.35} {}'.format('Experiment', 'Instance', 'Status'))
-		print('{:45.45} {:35.35} {}'.format('----------', '--------', '------'))
+	def show_detailed_list(calc_exp_len=False):
+		if calc_exp_len:
+			exp_len = max([len(run.experiment.display_name) for run in selection])
+		else:
+			exp_len = 45
+
+		print('{:{len}.{len}} {:35.35} {}'.format('Experiment', 'Instance', 'Status', len=exp_len))
+		print('{:{len}.{len}} {:35.35} {}'.format('----------', '--------', '------', len=exp_len))
 		for run in selection:
 			exp, instance, status = (run.experiment, run.instance.shortname, run.get_status())
 
 			print(color_for_status(status), end='')
-			print('{:45.45} {:35.35} [{}] {}'.format(exp.display_name, instance, run.repetition, str(status)))
+			print('{:{len}.{len}} {:35.35} [{}] {}'.format(exp.display_name, instance, run.repetition, str(status), len=exp_len))
 			print(colors['reset'], end='')
 
 	cfg = extl.base.config_for_dir()
 
 	if as_default_subcmd:
-		selection = cfg.discover_all_runs()
+		selection = list(cfg.discover_all_runs())
 	else:
-		selection = select_runs_from_cli(cfg, args)
+		selection = list(select_runs_from_cli(cfg, args))
 
 	if args.detailed:
-		show_detailed_list()
+		show_detailed_list(args.full)
 	elif args.compact:
-		show_compact_list()
+		show_compact_list(args.full)
 	else:
-		selection = list(selection)
 		if len(selection) < simexpal.base.EXPERIMENTS_LIST_THRESHOLD:
-			show_detailed_list()
+			show_detailed_list(args.full)
 		else:
-			show_compact_list()
-
+			show_compact_list(args.full)
 
 experiments_list_parser = experiments_subcmds.add_parser('list',
 		parents=[run_selection_parser])
 experiments_list_parser.set_defaults(cmd=do_experiments_list)
 experiments_list_parser.add_argument('--compact', action='store_true')
 experiments_list_parser.add_argument('--detailed', action='store_true')
+experiments_list_parser.add_argument('--full', action='store_true')
 
 def do_experiments_launch(args):
 	cfg = extl.base.config_for_dir()
