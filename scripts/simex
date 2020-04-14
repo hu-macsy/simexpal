@@ -318,7 +318,9 @@ def do_experiments_list(args, as_default_subcmd=False):
 						if include_status_string:
 							prefix = str(s) + ': '
 
-						entry_list.append(prefix + str(status_dict[s]) + '/' + str(num_runs))
+						entry_list.append((color_for_status(s),
+											prefix + str(status_dict[s]) + '/' + str(num_runs),
+											colors['reset']))
 
 				return entry_list
 
@@ -330,9 +332,11 @@ def do_experiments_list(args, as_default_subcmd=False):
 												include_status_string=True)
 
 			for e_entry, s_entry, fin_entry, fail_entry, o_entry in zip_longest(
-					[exp_name], started_statistics, finished_statistics, failures_statistics, other_statistics, fillvalue=''):
-
-				print('{:30.30} {:10.10} {:10.10} {:20.20} {}'.format(e_entry, s_entry, fin_entry, fail_entry, o_entry,	len=exp_len))
+					[('', exp_name, '')], started_statistics, finished_statistics, failures_statistics, other_statistics,
+					fillvalue=('', '', '')):
+				
+				print('{}{:{len}{}.{len}} {}{:10.10}{} {}{:10.10}{} {}{:20.20}{} {}{}{}'.format(
+					*e_entry, *s_entry, *fin_entry, *fail_entry, *o_entry, len=exp_len))
 
 		if calc_exp_len:
 			exp_len = max([len(run.experiment.name) for run in selection])
