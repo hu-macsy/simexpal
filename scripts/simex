@@ -291,18 +291,22 @@ experiments_subcmds = experiments_parser.add_subparsers(dest='experiments_subcmd
 
 def do_experiments_list(args, as_default_subcmd=False):
 
+	def color_for_status(status):
+		if status.is_neutral:
+			return colors['yellow']
+		elif status.is_positive:
+			return colors['green']
+		elif status.is_negative:
+			return colors['red']
+		return ''
+
 	def show_detailed_list():
 		print('{:45.45} {:35.35} {}'.format('Experiment', 'Instance', 'Status'))
 		print('{:45.45} {:35.35} {}'.format('----------', '--------', '------'))
 		for run in selection:
 			exp, instance, status = (run.experiment, run.instance.shortname, run.get_status())
 
-			if status.is_neutral:
-				print(colors['yellow'], end='')
-			elif status.is_positive:
-				print(colors['green'], end='')
-			elif status.is_negative:
-				print(colors['red'], end='')
+			print(color_for_status(status), end='')
 			print('{:45.45} {:35.35} [{}] {}'.format(exp.display_name, instance, run.repetition, str(status)))
 			print(colors['reset'], end='')
 
