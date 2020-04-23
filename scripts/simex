@@ -116,6 +116,18 @@ def select_builds_from_cli(args, broad):
 
 	return sorted(narrow, key=lambda rev: rev.name), narrow
 
+def purge_builds_from(args, selection):
+	ordered_revisions, sel = select_builds_from_cli(args, selection)
+	for revision in ordered_revisions:
+		for build in sel[revision]:
+			if not args.f:
+				print("This would purge build '{}' of revision '{}'. Use '-f' to confirm this action.".format(
+					build.name, build.revision.name))
+				continue
+			else:
+				print("Purging build '{}' of revision '{}'".format(build.name, build.revision.name))
+				build.purge()
+
 build_selection_parser = argparse.ArgumentParser(add_help=False)
 build_selection_parser.add_argument('--revisions', nargs='*', type=str, default=[])
 build_selection_parser.add_argument('builds', nargs='*', type=str)
@@ -273,6 +285,15 @@ def do_builds_make(args):
 
 builds_make_parser = builds_subcmds.add_parser('make')
 builds_make_parser.set_defaults(cmd=do_builds_make)
+
+def do_builds_purge(args):
+	cfg = extl.base.config_for_dir()
+
+	purge_builds_from(args, cfg.all_non_dev_builds())
+
+builds_purge_parser = builds_subcmds.add_parser('purge', parents=[build_selection_parser])
+builds_purge_parser.set_defaults(cmd=do_builds_purge)
+builds_purge_parser.add_argument('-f', action='store_true', help='Execute purge')
 
 # ---------------------------------------------------------------------------------------
 
