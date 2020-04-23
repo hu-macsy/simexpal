@@ -116,7 +116,7 @@ def select_builds_from_cli(args, broad):
 
 	return sorted(narrow, key=lambda rev: rev.name), narrow
 
-def purge_builds_from(args, selection):
+def purge_builds_from(args, selection, delete_source=False):
 	ordered_revisions, sel = select_builds_from_cli(args, selection)
 	for revision in ordered_revisions:
 		for build in sel[revision]:
@@ -126,7 +126,7 @@ def purge_builds_from(args, selection):
 				continue
 			else:
 				print("Purging build '{}' of revision '{}'".format(build.name, build.revision.name))
-				build.purge()
+				build.purge(delete_source)
 
 build_selection_parser = argparse.ArgumentParser(add_help=False)
 build_selection_parser.add_argument('--revisions', nargs='*', type=str, default=[])
@@ -304,16 +304,22 @@ def do_develop(args):
 	if not wanted_phases:
 		return
 
-	ordered_revisions, sel = select_builds_from_cli(args, cfg.all_dev_builds())
-	for revision in ordered_revisions:
+	if args.purge:
+		purge_builds_from(args, cfg.all_dev_builds(), args.delete_source)
 
-		simexpal.build.make_builds(cfg, revision,
-				[build.info for build in sel[revision]], [build.name for build in sel[revision]], wanted_phases)
+	else:
+		ordered_revisions, sel = select_builds_from_cli(args, cfg.all_dev_builds())
+		for revision in ordered_revisions:
+
+			simexpal.build.make_builds(cfg, revision,
+					[build.info for build in sel[revision]], [build.name for build in sel[revision]], wanted_phases)
 
 dev_builds_parser = main_subcmds.add_parser('develop', help='Build local programs',
 		aliases=['d'], parents=[phase_selection_parser, build_selection_parser])
 dev_builds_parser.set_defaults(cmd=do_develop)
+dev_builds_parser.add_argument('--purge', action='store_true', help='Purge selected dev-builds')
 dev_builds_parser.add_argument('-f', action='store_true', help='Confirm action')
+dev_builds_parser.add_argument('--delete-source', action='store_true', help='Deletes the source directory when purging')
 
 # ---------------------------------------------------------------------------------------
 
