@@ -97,6 +97,31 @@ run_selection_parser.add_argument('--unfinished', action='store_true')
 
 # ---------------------------------------------------------------------------------------
 
+def cli_selects_build(args, build):
+	if len(args.revisions) > 0 and build.revision.name not in args.revisions:
+		return False
+	if len(args.builds) > 0 and build.name not in args.builds:
+		return False
+
+	return True
+
+def select_builds_from_cli(args, broad):
+	narrow = dict()
+	for build in broad:
+		if cli_selects_build(args, build):
+			if build.revision not in narrow:
+				narrow[build.revision] = [build]
+			else:
+				narrow[build.revision].append(build)
+
+	return sorted(narrow, key=lambda rev: rev.name), narrow
+
+build_selection_parser = argparse.ArgumentParser(add_help=False)
+build_selection_parser.add_argument('--revisions', nargs='*', type=str, default=[])
+build_selection_parser.add_argument('builds', nargs='*', type=str)
+
+# ---------------------------------------------------------------------------------------
+
 def select_phases_from_cli(args):
 
 	def subsequent_phases(start_phase):
