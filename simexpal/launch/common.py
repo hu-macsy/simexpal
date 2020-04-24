@@ -155,6 +155,21 @@ class RunManifest:
 				paths.append(os.path.join(build_yml['prefix'], export))
 		return paths
 
+	def get_source_dir_for(self, build_name):
+		if build_name not in self.yml['builds']:
+			raise RuntimeError("The experiment '{}' does not use the build '{}'".format(self.yml['experiment'], build_name))
+		return self.yml['builds'][build_name]['source']
+
+	def get_compile_dir_for(self, build_name):
+		if build_name not in self.yml['builds']:
+			raise RuntimeError("The experiment '{}' does not use the build '{}'".format(self.yml['experiment'], build_name))
+		return self.yml['builds'][build_name]['compile']
+
+	def get_prefix_dir_for(self, build_name):
+		if build_name not in self.yml['builds']:
+			raise RuntimeError("The experiment '{}' does not use the build '{}'".format(self.yml['experiment'], build_name))
+		return self.yml['builds'][build_name]['prefix']
+
 def compile_manifest(run):
 	exp = run.experiment
 
@@ -284,6 +299,12 @@ def invoke_run(manifest):
 			return str(manifest.repetition)
 		elif p == 'OUTPUT':
 			return manifest.output_file_path('out')
+		elif p.startswith('SOURCE_DIR_FOR:'):
+			return manifest.get_source_dir_for(p.split(':')[1])
+		elif p.startswith('COMPILE_DIR_FOR:'):
+			return manifest.get_compile_dir_for(p.split(':')[1])
+		elif p.startswith('PREFIX_DIR_FOR:'):
+			return manifest.get_prefix_dir_for(p.split(':')[1])
 		else:
 			return None
 
