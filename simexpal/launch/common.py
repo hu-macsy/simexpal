@@ -189,6 +189,8 @@ def compile_manifest(run):
 	builds_dict = {}
 	for build in recursive_builds:
 		builds_dict[build.name] = {
+			'source': build.source_dir if build.revision.is_dev_build else build.clone_dir,
+			'compile': build.compile_dir,
 			'prefix': build.prefix_dir,
 			'exports_python': build.info.exports_python
 		}
