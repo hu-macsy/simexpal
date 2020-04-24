@@ -137,20 +137,20 @@ class RunManifest:
 
 	def get_paths(self):
 		paths = []
-		for build_yml in self.yml['builds']:
+		for build_yml in self.yml['builds'].values():
 			paths.append(os.path.join(build_yml['prefix'], 'bin'))
 		return paths
 
 	def get_ldso_paths(self):
 		paths = []
-		for build_yml in self.yml['builds']:
+		for build_yml in self.yml['builds'].values():
 			paths.append(os.path.join(build_yml['prefix'], 'lib64'))
 			paths.append(os.path.join(build_yml['prefix'], 'lib'))
 		return paths
 
 	def get_python_paths(self):
 		paths = []
-		for build_yml in self.yml['builds']:
+		for build_yml in self.yml['builds'].values():
 			for export in build_yml['exports_python']:
 				paths.append(os.path.join(build_yml['prefix'], export))
 		return paths
@@ -186,12 +186,12 @@ def compile_manifest(run):
 	elif run.instance.has_multi_ext:
 		instance_extensions = run.instance.extensions
 
-	builds_yml = []
+	builds_dict = {}
 	for build in recursive_builds:
-		builds_yml.append({
+		builds_dict[build.name] = {
 			'prefix': build.prefix_dir,
 			'exports_python': build.info.exports_python
-		})
+		}
 
 	# Collect extra arguments from variants
 	variants_yml = []
@@ -228,7 +228,7 @@ def compile_manifest(run):
 		'instance_extensions': instance_extensions,
 		'instance_files': instance_files,
 		'repetition': run.repetition,
-		'builds': builds_yml,
+		'builds': builds_dict,
 		'args': exp.info._exp_yml['args'],
 		'timeout': timeout,
 		'environ': environ,
