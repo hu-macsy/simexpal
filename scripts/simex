@@ -278,12 +278,13 @@ builds_subcmds.required = True
 def do_builds_make(args):
 	cfg = extl.base.config_for_dir()
 
-	for revision in cfg.all_revisions():
-		if not revision.is_dev_build:
-			simexpal.build.make_builds(cfg, revision,
-					[build.info for build in cfg.all_builds_for_revision(revision)], [], [])
+	ordered_revisions, sel = select_builds_from_cli(args, cfg.all_non_dev_builds())
+	for revision in ordered_revisions:
 
-builds_make_parser = builds_subcmds.add_parser('make')
+		simexpal.build.make_builds(cfg, revision,
+				[build.info for build in sel[revision]], [], [])
+
+builds_make_parser = builds_subcmds.add_parser('make', parents=[build_selection_parser])
 builds_make_parser.set_defaults(cmd=do_builds_make)
 
 def do_builds_purge(args):
