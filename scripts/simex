@@ -296,6 +296,21 @@ builds_purge_parser = builds_subcmds.add_parser('purge', parents=[build_selectio
 builds_purge_parser.set_defaults(cmd=do_builds_purge)
 builds_purge_parser.add_argument('-f', action='store_true', help='Execute purge')
 
+def do_builds_remake(args):
+	cfg = extl.base.config_for_dir()
+	args.recheckout = True
+	args.f = True
+
+	wanted_phases = select_phases_from_cli(args)
+	ordered_revisions, sel = select_builds_from_cli(args, cfg.all_non_dev_builds())
+	for revision in ordered_revisions:
+
+		simexpal.build.make_builds(cfg, revision,
+				[build.info for build in sel[revision]], [build.name for build in sel[revision]], wanted_phases)
+
+builds_remake_parser = builds_subcmds.add_parser('remake', parents=[build_selection_parser])
+builds_remake_parser.set_defaults(cmd=do_builds_remake)
+
 # ---------------------------------------------------------------------------------------
 
 def do_develop(args):
