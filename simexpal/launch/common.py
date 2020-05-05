@@ -137,23 +137,38 @@ class RunManifest:
 
 	def get_paths(self):
 		paths = []
-		for build_yml in self.yml['builds']:
+		for build_yml in self.yml['builds'].values():
 			paths.append(os.path.join(build_yml['prefix'], 'bin'))
 		return paths
 
 	def get_ldso_paths(self):
 		paths = []
-		for build_yml in self.yml['builds']:
+		for build_yml in self.yml['builds'].values():
 			paths.append(os.path.join(build_yml['prefix'], 'lib64'))
 			paths.append(os.path.join(build_yml['prefix'], 'lib'))
 		return paths
 
 	def get_python_paths(self):
 		paths = []
-		for build_yml in self.yml['builds']:
+		for build_yml in self.yml['builds'].values():
 			for export in build_yml['exports_python']:
 				paths.append(os.path.join(build_yml['prefix'], export))
 		return paths
+
+	def get_source_dir_for(self, build_name):
+		if build_name not in self.yml['builds']:
+			raise RuntimeError("The experiment '{}' does not use the build '{}'".format(self.yml['experiment'], build_name))
+		return self.yml['builds'][build_name]['source']
+
+	def get_compile_dir_for(self, build_name):
+		if build_name not in self.yml['builds']:
+			raise RuntimeError("The experiment '{}' does not use the build '{}'".format(self.yml['experiment'], build_name))
+		return self.yml['builds'][build_name]['compile']
+
+	def get_prefix_dir_for(self, build_name):
+		if build_name not in self.yml['builds']:
+			raise RuntimeError("The experiment '{}' does not use the build '{}'".format(self.yml['experiment'], build_name))
+		return self.yml['builds'][build_name]['prefix']
 
 def compile_manifest(run):
 	exp = run.experiment
@@ -186,12 +201,14 @@ def compile_manifest(run):
 	elif run.instance.has_multi_ext:
 		instance_extensions = run.instance.extensions
 
-	builds_yml = []
+	builds_dict = {}
 	for build in recursive_builds:
-		builds_yml.append({
+		builds_dict[build.name] = {
+			'source': build.source_dir if build.revision.is_dev_build else build.clone_dir,
+			'compile': build.compile_dir,
 			'prefix': build.prefix_dir,
 			'exports_python': build.info.exports_python
-		})
+		}
 
 	# Collect extra arguments from variants
 	variants_yml = []
@@ -228,7 +245,7 @@ def compile_manifest(run):
 		'instance_extensions': instance_extensions,
 		'instance_files': instance_files,
 		'repetition': run.repetition,
-		'builds': builds_yml,
+		'builds': builds_dict,
 		'args': exp.info._exp_yml['args'],
 		'timeout': timeout,
 		'environ': environ,
@@ -282,6 +299,12 @@ def invoke_run(manifest):
 			return str(manifest.repetition)
 		elif p == 'OUTPUT':
 			return manifest.output_file_path('out')
+		elif p.startswith('SOURCE_DIR_FOR:'):
+			return manifest.get_source_dir_for(p.split(':')[1])
+		elif p.startswith('COMPILE_DIR_FOR:'):
+			return manifest.get_compile_dir_for(p.split(':')[1])
+		elif p.startswith('PREFIX_DIR_FOR:'):
+			return manifest.get_prefix_dir_for(p.split(':')[1])
 		else:
 			return None
 
