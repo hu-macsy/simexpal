@@ -190,12 +190,16 @@ instances_subcmds = instances_parser.add_subparsers(dest='instances_subcmd')
 def do_instances_list(args):
 	cfg = extl.base.config_for_dir()
 
+	print('{:40.40} {:60.60}'.format('Instance short name', 'Instance sets'))
+	print('{:40.40} {:60.60}'.format('-------------------', '-------------'))
 	for instance in cfg.all_instances():
 		if instance.check_available():
 			print(colors['green'], end='')
 		else:
 			print(colors['red'], end='')
-		print(instance.shortname, end='')
+
+		cur_instsets = ', '.join([str(s) for s in sorted(instance.instsets)]) if instance.instsets != {None} else ''
+		print('{:40.40} {:60.60}'.format(instance.shortname, cur_instsets), end='')
 		print(colors['reset'])
 
 instances_list_parser = instances_subcmds.add_parser('list')
