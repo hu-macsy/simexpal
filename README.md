@@ -15,6 +15,6 @@ the Python package can be employed when more extensive customization is necessar
 
 ## Documentation
 
-Please refer to the [user guide](https://simexpal.readthedocs.io/en/latest/user_guide.html) for further information about
+Please refer to the [quick start guide](https://simexpal.readthedocs.io/en/latest/quick_start.html) for further information about
 how to install and use simexpal.
 
