@@ -305,6 +305,8 @@ def invoke_run(manifest):
 			return manifest.get_compile_dir_for(p.split(':')[1])
 		elif p.startswith('PREFIX_DIR_FOR:'):
 			return manifest.get_prefix_dir_for(p.split(':')[1])
+		elif p == 'OUTPUT_SUBDIR':
+			return manifest.output_subdir
 		else:
 			return None
 
@@ -353,7 +355,8 @@ def invoke_run(manifest):
 				self._out.close()
 
 	start = time.perf_counter()
-	cwd = manifest.workdir if manifest.workdir is not None else manifest.base_dir
+	cwd = (util.expand_at_params(manifest.workdir, substitute)
+			if manifest.workdir is not None else manifest.base_dir)
 	child = subprocess.Popen(cmd, cwd=cwd, env=environ,
 			stdout=stdout, stderr=stderr)
 	sel = selectors.DefaultSelector()
@@ -407,4 +410,3 @@ def invoke_run(manifest):
 	with open(manifest.output_file_path('status.tmp'), "w") as f:
 		yaml.dump(status_dict, f)
 	os.rename(manifest.output_file_path('status.tmp'), manifest.output_file_path('status'))
-
