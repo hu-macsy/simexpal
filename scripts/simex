@@ -417,6 +417,7 @@ def do_experiments_list(args, as_default_subcmd=False):
 			show_detailed_list(args.full)
 		else:
 			show_compact_list(args.full)
+	print(len(selection), "experiments in total")
 
 experiments_list_parser = experiments_subcmds.add_parser('list',
 		parents=[run_selection_parser])
