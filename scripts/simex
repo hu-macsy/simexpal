@@ -51,6 +51,16 @@ def cli_selects_run(args, run):
 		if (run.experiment.revision is None
 				or args.revision != run.experiment.revision.name):
 			return False
+	if args.variants is not None:
+		exp_variants = [var.name for var in run.experiment.variation]
+		for wanted_var in args.variants:
+			if wanted_var not in exp_variants:
+				return False
+	if args.axes is not None:
+		exp_axes = [var.axis for var in run.experiment.variation]
+		for wanted_axis in args.axes:
+			if wanted_axis not in exp_axes:
+				return False
 	if args.instset is not None:
 		if args.instset not in run.instance.instsets:
 			return False
@@ -61,7 +71,8 @@ def cli_selects_run(args, run):
 		if not run.get_status().is_negative:
 			return False
 	elif args.unfinished:
-		if not run.get_status().is_neutral:
+		status = run.get_status()
+		if not (status.is_neutral or status == Status.NOT_SUBMITTED):
 			return False
 
 	return True
@@ -80,6 +91,8 @@ def can_select_runs_from_cli(args):
 			or args.instance is not None
 			or args.revision is not None
 			or args.instset is not None
+			or args.variants is not None
+			or args.axes is not None
 			or args.run is not None
 			or args.all
 			or args.failed
@@ -92,7 +105,9 @@ run_selection_parser.add_argument('--instset', type=str)
 run_selection_parser.add_argument('--experiment', type=str)
 run_selection_parser.add_argument('--instance', type=str)
 run_selection_parser.add_argument('--revision', type=str)
-run_selection_parser.add_argument('--run', type=str)
+run_selection_parser.add_argument('--variants', type=str, nargs='+', help='name of different variants (space separated)')
+run_selection_parser.add_argument('--axes', type=str, nargs='+', help='name of different variant axes (space separated)')
+run_selection_parser.add_argument('--run', type=str, help='given as experiment/instance')
 run_selection_parser.add_argument('--all', action='store_true')
 run_selection_parser.add_argument('--failed', action='store_true')
 run_selection_parser.add_argument('--unfinished', action='store_true')
@@ -176,12 +191,16 @@ instances_subcmds = instances_parser.add_subparsers(dest='instances_subcmd')
 def do_instances_list(args):
 	cfg = extl.base.config_for_dir()
 
+	print('{:40.40} {:60.60}'.format('Instance short name', 'Instance sets'))
+	print('{:40.40} {:60.60}'.format('-------------------', '-------------'))
 	for instance in cfg.all_instances():
 		if instance.check_available():
 			print(colors['green'], end='')
 		else:
 			print(colors['red'], end='')
-		print(instance.shortname, end='')
+
+		cur_instsets = ', '.join([str(s) for s in sorted(instance.instsets)]) if instance.instsets != {None} else ''
+		print('{:40.40} {:60.60}'.format(instance.shortname, cur_instsets), end='')
 		print(colors['reset'])
 
 instances_list_parser = instances_subcmds.add_parser('list')
@@ -410,6 +429,7 @@ def do_experiments_list(args, as_default_subcmd=False):
 			show_detailed_list(args.full)
 		else:
 			show_compact_list(args.full)
+	print(len(selection), "experiments in total")
 
 experiments_list_parser = experiments_subcmds.add_parser('list',
 		parents=[run_selection_parser])
@@ -417,6 +437,49 @@ experiments_list_parser.set_defaults(cmd=do_experiments_list)
 experiments_list_parser.add_argument('--compact', action='store_true')
 experiments_list_parser.add_argument('--detailed', action='store_true')
 experiments_list_parser.add_argument('--full', action='store_true')
+
+def do_experiments_info(args):
+	cfg = extl.base.config_for_dir()
+
+	selection = select_runs_from_cli(cfg, args)
+
+	exp_name_set = set()
+	instance_name_set = set()
+	instset_name_set = set()
+	variants_name_set = set()
+	axis_name_set = set()
+
+	for run in selection:
+		exp_name_set.add(run.experiment.name)
+
+		for iset in run.instance.instsets:
+			if iset is not None:
+				instset_name_set.add(iset)
+		instance_name_set.add(run.instance.shortname)
+		for var in run.experiment.variation:
+			variants_name_set.add(var.name)
+		for var in run.experiment.variation:
+			axis_name_set.add(var.axis)
+
+	print("All related experiments are:")
+	for exp in sorted(list(exp_name_set)):
+		print('\t', exp)
+	print("All related instsets are:")
+	for instset in sorted(list(instset_name_set)):
+		print('\t', instset)
+	print("All related instances are:")
+	for inst in sorted(list(instance_name_set)):
+		print('\t', inst)
+	print("All related axes are:")
+	for ax in sorted(list(axis_name_set)):
+		print('\t', ax)
+	print("All related variants are:")
+	for v in sorted(list(variants_name_set)):
+		print('\t', v)
+
+experiments_info_parser = experiments_subcmds.add_parser('info',
+		parents=[run_selection_parser])
+experiments_info_parser.set_defaults(cmd=do_experiments_info)
 
 def do_experiments_launch(args):
 	cfg = extl.base.config_for_dir()
