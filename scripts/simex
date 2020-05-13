@@ -332,14 +332,14 @@ def do_experiments_list(args, as_default_subcmd=False):
 												include_status_string=True)
 
 			for e_entry, s_entry, fin_entry, fail_entry, o_entry in zip_longest(
-					[('', exp_name, '')], started_statistics, finished_statistics, failures_statistics, other_statistics,
+					[('', exp_display_name, '')], started_statistics, finished_statistics, failures_statistics, other_statistics,
 					fillvalue=('', '', '')):
 				
 				print('{}{:{len}{}.{len}} {}{:10.10}{} {}{:10.10}{} {}{:20.20}{} {}{}{}'.format(
 					*e_entry, *s_entry, *fin_entry, *fail_entry, *o_entry, len=exp_len))
 
 		if calc_exp_len:
-			exp_len = max([len(run.experiment.name) for run in selection])
+			exp_len = max([len(run.experiment.display_name) for run in selection])
 		else:
 			exp_len = 30
 
@@ -349,16 +349,27 @@ def do_experiments_list(args, as_default_subcmd=False):
 			'----------', '-------', '--------', '--------', '-----', len=exp_len))
 
 		exp_name = None
+		exp_vars = None
+		exp_rev = None
+		exp_display_name = None
 		status_dict = {}
 		for run in selection:
-			cur_exp_name, cur_status = (run.experiment.name, run.get_status())
+			cur_exp_name = run.experiment.name
+			cur_exp_rev = run.experiment.revision.name if run.experiment.revision is not None else None
+			cur_exp_vars = [var.name for var in run.experiment.variation]
+			cur_status = run.get_status()
+			cur_exp_display_name = run.experiment.display_name
 
-			if cur_exp_name != exp_name:  # this check assumes that the runs are sorted by their experiment names
+			# this check assumes that the runs are sorted by their experiment name, revision name and variation names
+			if cur_exp_name != exp_name or cur_exp_rev != exp_rev or cur_exp_vars != exp_vars:
 				if exp_name is not None:
 					print_experiment_statistics()
 
 				# Reset statistics for new experiment
 				exp_name = cur_exp_name
+				exp_rev = cur_exp_rev
+				exp_vars = cur_exp_vars
+				exp_display_name = cur_exp_display_name
 				for status in simexpal.base.Status:
 					status_dict[status] = 0
 				num_runs = 0  # number of runs of current experiment
