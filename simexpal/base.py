@@ -70,6 +70,11 @@ class Config:
 		self._variants = OrderedDict()
 		self._exp_infos = OrderedDict()
 
+		self._experiments_discovered = False
+		self._experiments = OrderedDict()
+		self._runs_discovered = False
+		self._runs = OrderedDict()
+
 		def check_for_reserved_name(name):
 			if name.startswith('_'):
 				raise RuntimeError(f"Names starting with an underscore are reserved for internal simexpal objects: {name}")
@@ -202,9 +207,9 @@ class Config:
 			raise RuntimeError("Experiment {} does not exist".format(name))
 		return self._exp_infos[name]
 
-	def all_experiments(self):
-		def extract(selection):
-			# Helper to find all selected revisions for a given experiment.
+	def _fill_experiments(self):
+
+		def extract_experiments(selection):
 			def revisions_for_experiment(exp_info):
 				if 'use_builds' in exp_info._exp_yml:
 					if selection.revisions is not None:
@@ -215,17 +220,26 @@ class Config:
 					yield None
 
 			for exp_info in selection.experiments:
-				yield from itertools.product([exp_info], revisions_for_experiment(exp_info),
-						selection.variations)
+				yield from itertools.product([exp_info], revisions_for_experiment(exp_info), selection.variations)
 
 		key = lambda x: (x[0].name, x[1].name if x[1] is not None else '_none',
-						 [sub_var.name for sub_var in x[2]])
-		for experiment_info, revision, variation in self._expand_matrix(extract, key=key):
-			yield Experiment(self, experiment_info, revision, variation)
+						[sub_var.name for sub_var in x[2]])
 
-	def discover_all_runs(self):
+		for exp_info, revision, variation in self._expand_matrix(extract_experiments, key=key):
+			self._experiments[(exp_info, revision, variation)] = Experiment(self, exp_info, revision, variation)
 
-		def extract(selection):
+		self._experiments_discovered = True
+
+	def all_experiments(self):
+
+		if not self._experiments_discovered:
+			self._fill_experiments()
+
+		yield from self._experiments.values()
+
+	def _fill_runs(self):
+
+		def extract_runs(selection):
 			# Helper to find all selected revisions for a given experiment.
 			def revisions_for_experiment(exp_info):
 				if 'use_builds' in exp_info._exp_yml:
@@ -247,12 +261,25 @@ class Config:
 							else:
 								reps = range(0, 1)
 							for rep in reps:
-								yield (Experiment(self, exp_info, revision, variation), instance, rep)
-
+								yield (self._experiments[(exp_info, revision, variation)], instance, rep)
 		key = lambda t: (t[0].name, t[0].revision.name if t[0].revision is not None else '_none',
-						 [sub_var.name for sub_var in t[0].variation], t[1].shortname, t[2])
-		for experiment, instance, rep in self._expand_matrix(extract, key=key):
-			yield Run(self, experiment, instance, rep)
+						[sub_var.name for sub_var in t[0].variation], t[1].shortname, t[2])
+
+		if not self._experiments_discovered:
+			self._fill_experiments()
+
+		for experiment, instance, rep in self._expand_matrix(extract_runs, key=key):
+			self._runs[(experiment, instance, rep)] = Run(self, experiment, instance, rep)
+
+		self._runs_discovered = True
+
+	def discover_all_runs(self):
+
+		if not self._runs_discovered:
+			self._fill_runs()
+
+		yield from self._runs.values()
+
 
 	def collect_successful_results(self, parse_fn):
 		"""
