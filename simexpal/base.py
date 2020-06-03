@@ -666,6 +666,10 @@ class BuildInfo:
 	def regenerate(self):
 		return self._build_yml.get('regenerate', [])
 
+	@property
+	def extra_paths(self):
+		return self._build_yml.get('extra_paths', [])
+
 class Revision:
 	def __init__(self, cfg, revision_yml):
 		self._cfg = cfg
