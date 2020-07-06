@@ -49,6 +49,17 @@ used for specifying builds:
 
 For detailed usage examples, see the :ref:`Builds` page.
 
+Revisions
+---------
+This entry is a list of revisions that will be used for experiments. The following keys are
+used for specifying revisions:
+
+- ``build_version``: dictionary of (build, SHA-1 hash/branch)-pairs
+- ``develop``: boolean (``true``/``false``) - whether this revision is a develop revision or not
+- ``name``: (arbitrary) name of the revision
+
+For detailed usage examples, see the :ref:`Revisions` page.
+
 Experiments
 -----------
 This entry is a list of experiments that will be executed on all the instances.

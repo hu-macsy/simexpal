@@ -13,6 +13,7 @@ Welcome to simexpal's documentation!
    Reference for experiments.yml file <experiments_reference>
    Instances <instances>
    Builds <builds>
+   Revisions <revisions>
    Command-line Reference <command_line_reference>
    Python API <python_api>
    Recipes <recipes>
