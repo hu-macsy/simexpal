@@ -31,6 +31,24 @@ used for specifying instances:
 
 For detailed usage examples, see the :ref:`Instances` page.
 
+Builds
+------
+This entry is a list of builds that will be used for revisions. The following keys are
+used for specifying builds:
+
+- ``configure``: list of dictionaries containing configuration parameters
+- ``compile``: list of dictionaries containing compilation parameters
+- ``environ``: dictionary of (environment variable, value)-pairs
+- ``git``: link to the Git repository
+- ``install``: list of dictionaries containing installation parameters
+- ``name``: (arbitrary) name of the build
+- ``recursive-clone``: boolean (``true``/``false``) - whether to pull git submodules recursively or not
+- ``regenerate``: list of dictionaries containing regeneration parameters
+- ``requires``: list of required builds
+- ``workdir``: path of the working directory
+
+For detailed usage examples, see the :ref:`Builds` page.
+
 Experiments
 -----------
 This entry is a list of experiments that will be executed on all the instances.

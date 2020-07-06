@@ -12,6 +12,7 @@ Welcome to simexpal's documentation!
    Quick Start <quick_start>
    Reference for experiments.yml file <experiments_reference>
    Instances <instances>
+   Builds <builds>
    Command-line Reference <command_line_reference>
    Python API <python_api>
    Recipes <recipes>
