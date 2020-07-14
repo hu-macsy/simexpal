@@ -542,7 +542,14 @@ class Instance:
 				return
 
 		partial_path = os.path.join(self._cfg.instance_dir(), self.unique_filename)
-		if 'repo' in self._inst_yml:
+		if 'gitrepo' in self._inst_yml:
+			assert 'url' in self._inst_yml['gitrepo']
+			print("Downloading instance '{}' from {} repository".format(self.unique_filename,
+					self._inst_yml['gitrepo']['url']))
+			
+			instances.download_instance_git(self._inst_yml,
+					self.config.instance_dir(), self.unique_filename, partial_path, '.post0')
+		elif 'repo' in self._inst_yml:
 			print("Downloading instance '{}' from {} repository".format(self.unique_filename,
 					self._inst_yml['repo']))
 
