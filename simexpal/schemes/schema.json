@@ -1,0 +1,244 @@
+{
+	"$schema": "http://json-schema.org/draft-07/schema#",
+	"title": "Validation Schema for Simexpal",
+	"description": "Schema for an experiments.yml used by simexpal",
+
+	"definitions": {
+		"str_list": {
+			"type": "array",
+			"items": {"type": "string"}
+		},
+		"str_or_str_list": {
+			"oneOf": [
+				{ "type": "string"},
+				{ "$ref": "#/definitions/str_list"}
+			]
+		},
+		"dict_list": {
+			"type": "array",
+			"items": {
+				"type": "object"
+			}
+		},
+		"build_arguments": {
+			"type": "array",
+			"items": {
+				"type": "object",
+				"properties": {
+					"args": {"$ref": "#/definitions/str_or_str_list"},
+					"environ": {"type": "object"},
+					"workdir": {"type": "string"}
+				},
+				"additionalProperties": false
+			}
+		}
+	},
+
+	"type": "object",
+	"dependencies": {
+		"builds": ["revisions"]
+	},
+	"properties": {
+		"builds": {
+			"description": "list of builds",
+			"type": "array",
+			"items": {
+				"type": "object",
+				"required": ["name", "git"],
+				"properties": {
+					"name": {"type": "string"},
+					"git": {"type":  "string"},
+					"recursive-clone": {"type": "boolean"},
+					"requires": {"$ref": "#/definitions/str_or_str_list"},
+					"regenerate": {"$ref": "#/definitions/build_arguments"},
+					"configure": {"$ref": "#/definitions/build_arguments"},
+					"compile": {"$ref": "#/definitions/build_arguments"},
+					"install": {"$ref": "#/definitions/build_arguments"},
+					"exports_python": {"type": "string"}
+				},
+				"additionalProperties": false
+			}
+		},
+		"revisions": {
+			"description": "list of revisions",
+			"type": "array",
+			"items": {
+				"type": "object",
+				"required": ["build_version"],
+				"properties": {
+					"name": {"type": "string"},
+					"build_version": {"type": "object"},
+					"develop": {"type":  "boolean"}
+				},
+				"additionalProperties": false
+			}
+		},
+		"instdir": {
+			"description": "path to the directory containing the experiment instances",
+			"type": "string"
+		},
+		"instances": {
+			"description": "list of instances",
+			"type": "array",
+			"items": {
+				"type": "object",
+				"required": ["items"],
+				"properties": {
+					"repo": {
+						"type": "string",
+						"enum": ["local", "konect", "snap"]
+					},
+					"generator": {"type": "object"},
+					"extensions": {"$ref": "#/definitions/str_list"},
+					"items": {
+						"oneOf": [
+							{"$ref": "#/definitions/dict_list"},
+							{"$ref": "#/definitions/str_list"}
+						]
+					},
+					"set": {"$ref": "#/definitions/str_or_str_list"}
+				},
+				"additionalProperties": false,
+				"if": {
+					"properties": {
+						"generator": {"type": "object"}
+					},
+					"required": ["generator"]
+				},
+				"then": {
+					"properties": {
+						"generator": {
+							"type": "object",
+							"required": ["args"],
+							"properties": {
+								"args": {"$ref": "#/definitions/str_list"},
+								"postprocess": {"const": "to_edgelist"}
+							},
+							"additionalProperties": false
+						},
+						"items": {"$ref": "#/definitions/str_list"},
+						"repo": false,
+						"extensions": false
+					}
+				},
+				"else": {
+					"if": {
+						"properties": {
+							"repo": {"const": "local"}
+						},
+						"required": ["repo"]
+					},
+					"then": {
+						"if": {
+							"properties": {
+								"items": {"$ref": "#/definitions/dict_list"}
+							}
+						},
+						"then": {
+							"properties": {
+								"items": {
+									"type": "array",
+									"items": {
+										"type": "object",
+										"required": ["name","files"],
+										"properties": {
+											"name": {"type": "string"},
+											"files": {"$ref": "#/definitions/str_list"}
+										}
+									}
+								},
+								"extensions": false,
+								"generator": false
+							}
+						},
+						"else": {
+							"properties": {
+								"extensions": {"$ref": "#/definitions/str_list"},
+								"items": {"$ref": "#/definitions/str_list"},
+								"generator": false
+							}
+						}
+					},
+					"else": {
+						"properties": {
+							"items": {"$ref": "#/definitions/str_list"},
+							"generator": false
+						}
+					}
+				}
+			}
+		},
+		"experiments": {
+			"description": "list of experiments",
+			"type": "array",
+			"items": {
+				"type": "object",
+				"required": ["name", "args"],
+				"properties": {
+					"name": {"type": "string"},
+					"args": {"$ref": "#/definitions/str_list"},
+					"use_builds": {"$ref": "#/definitions/str_list"},
+					"output": {"type": "string"},
+					"num_nodes": {"type": "integer"},
+					"procs_per_node": {"type":  "integer"},
+					"num_threads": {"type": "integer"},
+					"timeout": {"type": "integer"},
+					"environ": {"type": "object"},
+					"repeat": {"type": "integer"}
+				},
+				"additionalProperties": false
+			}
+		},
+		"variants": {
+			"description": "list of variants",
+			"type": "array",
+			"items": {
+				"type": "object",
+				"required": ["axis", "items"],
+				"properties": {
+					"axis": {"type": "string"},
+					"items": {
+						"type": "array",
+						"items": {
+							"type": "object",
+							"required": ["name", "extra_args"],
+							"properties": {
+								"name": {"type": "string"},
+								"extra_args": {"$ref":  "#/definitions/str_list"},
+								"num_nodes": {"type": "integer"},
+								"procs_per_node": {"type":  "integer"},
+								"num_threads": {"type": "integer"},
+								"environ": {"type": "object"}
+							},
+							"additionalProperties": false
+						}
+					}
+				},
+				"additionalProperties": false
+			}
+		},
+		"matrix": {
+			"description": "run matrix",
+			"type": "object",
+			"properties": {
+				"include": {
+					"type": "array",
+					"items": {
+						"type": "object",
+						"properties": {
+							"experiments": {"$ref": "#/definitions/str_list"},
+							"revisions": {"$ref": "#/definitions/str_list"},
+							"axes": {"$ref": "#/definitions/str_list"},
+							"variants": {"$ref": "#/definitions/str_list"},
+							"instsets": {"$ref": "#/definitions/str_list"},
+							"repetitions": {"type": "integer"}
+						},
+						"additionalProperties": false
+					}
+				}
+			},
+			"additionalProperties": false
+		}
+	},
+	"additionalProperties": false
+}

@@ -5,6 +5,8 @@ import re
 import shutil
 import sys
 import yaml
+import json
+from jsonschema import Draft7Validator
 
 def expand_at_params(s, fn, listfn=None):
 	def subfn(m):
@@ -82,6 +84,22 @@ def validate_setup_file(setup_file):
 	"""
 
 	setup_dict = read_setup_file(setup_file)
+
+	cur_file_path = os.path.abspath(os.path.dirname(__file__))
+	schema_path = os.path.join(cur_file_path, "schemes", "schema.json")
+	with open(schema_path, 'r') as f:
+		schema = json.load(f)
+
+	validator = Draft7Validator(schema)
+	validation_errors = list(validator.iter_errors(setup_dict))
+
+	if len(validation_errors) > 0:
+		for err in validation_errors:
+			err_source = "[{}]".format("][".join(str(x) for x in err.absolute_path))
+
+			print("simexpal: Validation error in experiments.yml at {}:\n{}\n{}".format(
+				err_source, err.instance, err.message), file=sys.stderr, end="\n\n")
+		sys.exit(1)
 
 	if 'instdir' not in setup_dict:
 		setup_dict['instdir'] = './instances';
