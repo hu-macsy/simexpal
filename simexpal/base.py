@@ -1,16 +1,26 @@
 
 from collections import OrderedDict
 from enum import IntEnum
-import copy
 import itertools
 import os
 import yaml
+import sys
 
 from . import instances
 from . import util
 
 DEFAULT_DEV_BUILD_NAME = '_dev'
 EXPERIMENTS_LIST_THRESHOLD = 30
+
+did_warn_libyaml = False
+YmlLoader = yaml.SafeLoader
+try:
+	YmlLoader = yaml.CSafeLoader
+except AttributeError:
+	if not did_warn_libyaml:
+		print('simexpal: Using pure Python YAML parser.'
+				' Installing libyaml will improve performance.', file=sys.stderr)
+		did_warn_libyaml = True
 
 def get_aux_subdir(base_dir, experiment, variation, revision):
 	var = ''
@@ -299,7 +309,7 @@ class Config:
 				continue
 
 			with open(run.output_file_path('status'), "r") as f:
-				status_dict = yaml.load(f, Loader=yaml.Loader)
+				status_dict = yaml.load(f, Loader=YmlLoader)
 			if status_dict['timeout'] or status_dict['signal'] or status_dict['status'] > 0:
 				print("Skipping failed run {}/{}[{}]".format(run.experiment.name,
 						run.instance.shortname, run.repetition))
@@ -949,7 +959,7 @@ class Run:
 	def get_status(self):
 		if os.access(self.output_file_path('status'), os.F_OK):
 			with open(self.output_file_path('status'), "r") as f:
-				status_dict = yaml.load(f, Loader=yaml.Loader)
+				status_dict = yaml.load(f, Loader=YmlLoader)
 
 			if status_dict['timeout']:
 				return Status.TIMEOUT

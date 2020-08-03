@@ -18,6 +18,7 @@ import simexpal.launch.sge
 import simexpal.queuesock
 import simexpal.util as util
 from simexpal.base import Status
+from simexpal.base import YmlLoader
 from itertools import zip_longest
 import yaml
 
@@ -514,7 +515,7 @@ def do_experiments_launch(args):
 		pass
 	else:
 		with f:
-			lf_yml = yaml.load(f, Loader=yaml.Loader)
+			lf_yml = yaml.load(f, Loader=YmlLoader)
 	
 			# Find the default launcher.
 			# TODO: Raise some "syntax error" exception here.
@@ -728,7 +729,7 @@ def do_invoke(args, basedir=None):
 		for run in cfg.discover_all_runs():
 			if args.specfile is not None:
 				with open(args.specfile, 'r') as f:
-					spec_yml = yaml.load(f, Loader=yaml.Loader)
+					spec_yml = yaml.load(f, Loader=YmlLoader)
 
 				assert args.sge_index
 				index = int(os.environ['SGE_TASK_ID'])

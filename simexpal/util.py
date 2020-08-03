@@ -56,8 +56,6 @@ def touch(path):
 	with open(path, 'w'):
 		pass
 
-did_warn_libyaml = False
-
 def yaml_to_string(yml):
 	return yaml.dump(yml, Dumper=yaml.SafeDumper)
 
@@ -65,25 +63,18 @@ def write_yaml_file(f, yml):
 	return yaml.dump(yml, f, Dumper=yaml.SafeDumper)
 
 def yaml_from_string(string):
-	return yaml.load(string, Loader=yaml.SafeLoader)
+	from simexpal.base import YmlLoader
+	return yaml.load(string, Loader=YmlLoader)
 
 def read_yaml_file(f):
-	return yaml.load(f, Loader=yaml.SafeLoader)
+	from simexpal.base import YmlLoader
+	return yaml.load(f, Loader=YmlLoader)
 
 def read_setup_file(setup_file):
-	global did_warn_libyaml
+	from simexpal.base import YmlLoader
 
 	with open(setup_file, 'r') as f:
-		Loader = yaml.SafeLoader
-		try:
-			Loader = yaml.CSafeLoader
-		except AttributeError:
-			if not did_warn_libyaml:
-				print('simexpal: Using pure Python YAML parser.'
-						' Installing libyaml will improve performance.', file=sys.stderr)
-				did_warn_libyaml = True
-
-		setup_dict = yaml.load(f, Loader=Loader)
+		setup_dict = yaml.load(f, Loader=YmlLoader)
 	return setup_dict
 
 def validate_setup_file(setup_file):
