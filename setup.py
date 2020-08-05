@@ -23,7 +23,8 @@ setup(
 	install_requires=[
 		'argcomplete',
 		'requests',
-		'pyyaml'
+		'pyyaml',
+		'jsonschema'
 	]
 )
 
