@@ -121,6 +121,10 @@ class RunManifest:
 	def workdir(self):
 		return self.yml['workdir']
 
+	@property
+	def builds(self):
+		return self.yml['builds']
+
 	def aux_file_path(self, ext):
 		return os.path.join(self.aux_subdir,
 				base.get_aux_file_name(ext, self.instance, self.repetition))
@@ -207,7 +211,8 @@ def compile_manifest(run):
 			'source': build.source_dir if build.revision.is_dev_build else build.clone_dir,
 			'compile': build.compile_dir,
 			'prefix': build.prefix_dir,
-			'exports_python': build.info.exports_python
+			'exports_python': build.info.exports_python,
+			'extra_paths': util.ensure_list_type(build.info.extra_paths)
 		}
 
 	# Collect extra arguments from variants
@@ -324,8 +329,28 @@ def invoke_run(manifest):
 			return ':'.join(items) + ':' + os.environ[var]
 		return ':'.join(items)
 
+	def substitute_extra_paths(p):
+		if p in ['THIS_CLONE_DIR', 'THIS_SOURCE_DIR']:
+			return build_yml['source']
+		elif p == 'THIS_COMPILE_DIR':
+			return build_yml['compile']
+		elif p == 'THIS_PREFIX_DIR':
+			return build_yml['prefix']
+		elif p.startswith('SOURCE_DIR_FOR:'):
+			return manifest.get_source_dir_for(p.split(':')[1])
+		elif p.startswith('COMPILE_DIR_FOR:'):
+			return manifest.get_compile_dir_for(p.split(':')[1])
+		elif p.startswith('PREFIX_DIR_FOR:'):
+			return manifest.get_prefix_dir_for(p.split(':')[1])
+		else:
+			return None
 	environ = os.environ.copy()
-	environ['PATH'] = prepend_env('PATH', manifest.get_paths())
+
+	extra_paths = manifest.get_paths()
+	for build_yml in manifest.builds.values():
+		extra_paths.extend(util.expand_at_params(build_yml['extra_paths'], substitute_extra_paths))
+
+	environ['PATH'] = prepend_env('PATH', extra_paths)
 	environ['LD_LIBRARY_PATH'] = prepend_env('LD_LIBRARY_PATH', manifest.get_ldso_paths())
 	environ['PYTHONPATH'] = prepend_env('PYTHONPATH', manifest.get_python_paths())
 	environ.update(manifest.environ)
