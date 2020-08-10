@@ -290,34 +290,41 @@ class Config:
 
 		yield from self._runs.values()
 
-
-	def collect_successful_results(self, parse_fn):
+	def collect_successful_results(self, parse_fn=None):
 		"""
-		Collects all success runs and parses their output.
+		Collects all successful runs and optionally parses their output.
 
-		:param: parse_fn: Function to parse the output. Takes two parameters
-			(run, f) where run is a :class:`simexpal.base.Run` object and f
-			is a Python file object.
+		:param parse_fn: Function to parse the output. Takes two parameters
+			``(run, f)`` where ``run`` is a :class:`simexpal.base.Run` object
+			and ``f`` is a Python file object.
+		:return: list of parsed outputs if ``parse_fn`` is given,
+			generator of successful :class:`simexpal.base.Run` objects otherwise
 		"""
 
-		res = [ ]
-		for run in self.discover_all_runs():
-			finished = os.access(run.output_file_path('status'), os.F_OK)
-			if not finished:
-				print("Skipping unfinished run {}/{}[{}]".format(run.experiment.name,
-						run.instance.shortname, run.repetition))
-				continue
+		def successful_runs(verbose=False):
+			for run in self.discover_all_runs():
+				finished = os.access(run.output_file_path('status'), os.F_OK)
+				if not finished:
+					if verbose:
+						print("Skipping unfinished run {}/{}[{}]".format(run.experiment.name,
+																		run.instance.shortname, run.repetition))
+					continue
 
-			with open(run.output_file_path('status'), "r") as f:
-				status_dict = yaml.load(f, Loader=YmlLoader)
-			if status_dict['timeout'] or status_dict['signal'] or status_dict['status'] > 0:
-				print("Skipping failed run {}/{}[{}]".format(run.experiment.name,
-						run.instance.shortname, run.repetition))
-				continue
+				if run.get_status().is_negative:
+					if verbose:
+						print("Skipping failed run {}/{}[{}]".format(run.experiment.name,
+																	run.instance.shortname, run.repetition))
+					continue
+				yield run
 
-			with open(run.output_file_path('out'), 'r') as f:
-				res.append(parse_fn(run, f))
-		return res
+		if parse_fn:
+			res = []
+			for run in successful_runs(verbose=True):
+				with open(run.output_file_path('out'), 'r') as f:
+					res.append(parse_fn(run, f))
+			return res
+		else:
+			return successful_runs()
 
 	# -----------------------------------------------------------------------------------
 	# Matrix expansion.
