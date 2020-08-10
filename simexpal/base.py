@@ -977,6 +977,13 @@ class Run:
 
 		return Status.NOT_SUBMITTED
 
+	def open_output_file(self):
+		try:
+			return open(self.output_file_path('out'))
+		except FileNotFoundError:
+			raise RuntimeError("The experiment '{}' with instance '{}' has not been started yet".format(
+				self.experiment.display_name, self.instance.shortname))
+
 def read_and_validate_setup(basedir='.', setup_file='experiments.yml'):
 	return util.validate_setup_file(os.path.join(basedir, setup_file))
 
