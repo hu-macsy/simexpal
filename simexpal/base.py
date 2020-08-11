@@ -5,9 +5,12 @@ import itertools
 import os
 import yaml
 import sys
+import warnings
 
 from . import instances
 from . import util
+
+warnings.simplefilter(action='default', category=DeprecationWarning)  # do not ignore DeprecationWarnings
 
 DEFAULT_DEV_BUILD_NAME = '_dev'
 EXPERIMENTS_LIST_THRESHOLD = 30
@@ -318,6 +321,11 @@ class Config:
 				yield run
 
 		if parse_fn:
+			msg = "Calling 'Config.collect_successful_results()' with a parse function is deprecated and will be " \
+					"removed in future versions. Instead, call it without any parameters and it will return a " \
+					"generator of successful simexpal.base.Run objects."
+			warnings.warn(msg, DeprecationWarning)
+
 			res = []
 			for run in successful_runs(verbose=True):
 				with open(run.output_file_path('out'), 'r') as f:
@@ -469,8 +477,6 @@ class Instance:
 
 	@property
 	def filename(self):
-		import warnings
-		warnings.simplefilter(action='default', category=DeprecationWarning)
 		msg = "The 'Instance.filename' attribute is deprecated and will be removed in future versions."
 		warnings.warn(msg, DeprecationWarning)
 
