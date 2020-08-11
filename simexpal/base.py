@@ -5,9 +5,12 @@ import itertools
 import os
 import yaml
 import sys
+import warnings
 
 from . import instances
 from . import util
+
+warnings.simplefilter(action='default', category=DeprecationWarning)  # do not ignore DeprecationWarnings
 
 DEFAULT_DEV_BUILD_NAME = '_dev'
 EXPERIMENTS_LIST_THRESHOLD = 30
@@ -290,34 +293,46 @@ class Config:
 
 		yield from self._runs.values()
 
-
-	def collect_successful_results(self, parse_fn):
+	def collect_successful_results(self, parse_fn=None):
 		"""
-		Collects all success runs and parses their output.
+		Collects all successful runs and optionally parses their output.
 
-		:param: parse_fn: Function to parse the output. Takes two parameters
-			(run, f) where run is a :class:`simexpal.base.Run` object and f
-			is a Python file object.
+		:param parse_fn: Function to parse the output. Takes two parameters
+			``(run, f)`` where ``run`` is a :class:`simexpal.base.Run` object
+			and ``f`` is a Python file object.
+		:return: list of parsed outputs if ``parse_fn`` is given,
+			generator of successful :class:`simexpal.base.Run` objects otherwise
 		"""
 
-		res = [ ]
-		for run in self.discover_all_runs():
-			finished = os.access(run.output_file_path('status'), os.F_OK)
-			if not finished:
-				print("Skipping unfinished run {}/{}[{}]".format(run.experiment.name,
-						run.instance.shortname, run.repetition))
-				continue
+		def successful_runs(verbose=False):
+			for run in self.discover_all_runs():
+				finished = os.access(run.output_file_path('status'), os.F_OK)
+				if not finished:
+					if verbose:
+						print("Skipping unfinished run {}/{}[{}]".format(run.experiment.name,
+																		run.instance.shortname, run.repetition))
+					continue
 
-			with open(run.output_file_path('status'), "r") as f:
-				status_dict = yaml.load(f, Loader=YmlLoader)
-			if status_dict['timeout'] or status_dict['signal'] or status_dict['status'] > 0:
-				print("Skipping failed run {}/{}[{}]".format(run.experiment.name,
-						run.instance.shortname, run.repetition))
-				continue
+				if run.get_status().is_negative:
+					if verbose:
+						print("Skipping failed run {}/{}[{}]".format(run.experiment.name,
+																	run.instance.shortname, run.repetition))
+					continue
+				yield run
 
-			with open(run.output_file_path('out'), 'r') as f:
-				res.append(parse_fn(run, f))
-		return res
+		if parse_fn:
+			msg = "Calling 'Config.collect_successful_results()' with a parse function is deprecated and will be " \
+					"removed in future versions. Instead, call it without any parameters and it will return a " \
+					"generator of successful simexpal.base.Run objects."
+			warnings.warn(msg, DeprecationWarning)
+
+			res = []
+			for run in successful_runs(verbose=True):
+				with open(run.output_file_path('out'), 'r') as f:
+					res.append(parse_fn(run, f))
+			return res
+		else:
+			return successful_runs()
 
 	# -----------------------------------------------------------------------------------
 	# Matrix expansion.
@@ -462,8 +477,6 @@ class Instance:
 
 	@property
 	def filename(self):
-		import warnings
-		warnings.simplefilter(action='default', category=DeprecationWarning)
 		msg = "The 'Instance.filename' attribute is deprecated and will be removed in future versions."
 		warnings.warn(msg, DeprecationWarning)
 
@@ -976,6 +989,13 @@ class Run:
 			return Status.IN_SUBMISSION
 
 		return Status.NOT_SUBMITTED
+
+	def open_output_file(self):
+		try:
+			return open(self.output_file_path('out'))
+		except FileNotFoundError:
+			raise RuntimeError("The experiment '{}' with instance '{}' has not been started yet".format(
+				self.experiment.display_name, self.instance.shortname))
 
 def read_and_validate_setup(basedir='.', setup_file='experiments.yml'):
 	return util.validate_setup_file(os.path.join(basedir, setup_file))

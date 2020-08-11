@@ -15,5 +15,10 @@ def parse(run, f):
 	}
 
 cfg = simexpal.config_for_dir()
-df = pandas.DataFrame(cfg.collect_successful_results(parse))
+results = []
+for successful_run in cfg.collect_successful_results():
+	with successful_run.open_output_file() as f:
+		results.append(parse(successful_run, f))
+
+df = pandas.DataFrame(results)
 print(df.groupby('experiment').agg('mean'))
