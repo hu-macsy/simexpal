@@ -122,10 +122,9 @@ on multiple inputs.
         bubble-sort        499500.0  253437.333333  0.091776
         insertion-sort     241891.0  257609.000000  0.039501
 
-    ``eval.py`` is a simple 20 line script that uses the simexpal Python interface
-    (i.e., the function ``collect_successful_results()``) to gather all
-    results. It uses ``pandas`` to aggregate statistics
-    over all experiments.
+    ``eval.py`` is a simple 25 line script that uses the simexpal Python interface
+    (i.e., the functions ``collect_successful_results()`` and ``open_output_file()``)
+    to gather all results. It uses ``pandas`` to aggregate statistics over all experiments.
 
 Running Experiments
 -------------------
@@ -209,24 +208,14 @@ formats and appropriate libraries.
 The example below (i.e., ``eval.py`` from ``examples/sorting/``)
 demonstrates this concept. It uses the simexpal Python package
 to obtain all output files and meta data about them. In particular,
-it uses the function ``collect_successful_results()`` for this purpose.
+it uses the functions ``collect_successful_results()`` and
+``open_output_file()`` for this purpose.
 A user-supplied parsing function is employed to parse the output files.
 
-.. code-block:: python
-
-    def parse(run, f):
-        output = yaml.load(f, Loader=yaml.Loader)
-        return {
-            'experiment': run.experiment.name,
-            'instance': run.instance.shortname,
-            'comparisons': output['comparisons'],
-            'swaps': output['swaps'],
-            'time': output['time']
-        }
-
-    cfg = simexpal.config_for_dir()
-    df = pandas.DataFrame(cfg.collect_successful_results(parse))
-    print(df.groupby('experiment').agg('mean'))
+.. literalinclude:: ../examples/sorting/eval.py
+   :linenos:
+   :lines: 7-24
+   :language: python
 
 Managing Instances
 ------------------
