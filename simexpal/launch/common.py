@@ -224,9 +224,8 @@ def compile_manifest(run):
 		})
 
 	environ = {}
-	if 'environ' in exp.info._exp_yml:
-		for (k, v) in exp.info._exp_yml['environ'].items():
-			environ[k] = str(v)
+	for (k, v) in exp.info.environ.items():
+		environ[k] = str(v)
 
 	return RunManifest({
 		'config': {

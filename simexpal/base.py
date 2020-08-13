@@ -857,6 +857,10 @@ class ExperimentInfo:
 	def args(self):
 		return self._exp_yml.get('args')
 
+	@property
+	def environ(self):
+		return self._exp_yml.get('environ', {})
+
 class Experiment:
 	"""
 	Represents an experiment (see below).
