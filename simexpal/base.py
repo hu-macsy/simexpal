@@ -849,6 +849,10 @@ class ExperimentInfo:
 	def output(self):
 		return self._exp_yml.get('output', None)
 
+	@property
+	def workdir(self):
+		return self._exp_yml.get('workdir', None)
+
 class Experiment:
 	"""
 	Represents an experiment (see below).
