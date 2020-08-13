@@ -22,7 +22,7 @@ def lock_run(run):
 	# We will try to launch the experiment.
 	# First, create a .lock file. If that is successful, we are the process that
 	# gets to launch the experiment. Afterwards, concurrent access to our files
-	# can be considered a bug (or deliberate misuse) and will lead to hard failues.
+	# can be considered a bug (or deliberate misuse) and will lead to hard failures.
 	try:
 		lockfd = os.open(run.aux_file_path('lock'),
 				os.O_RDONLY | os.O_CREAT | os.O_EXCL, mode=0)
@@ -183,7 +183,7 @@ def compile_manifest(run):
 		recursive_builds.append(build)
 		builds_visited.add(name)
 
-	i = 0 # Need index-based loop as recursive_builds is mutated in the loop.
+	i = 0  # Need index-based loop as recursive_builds is mutated in the loop.
 	while i < len(recursive_builds):
 		build = recursive_builds[i]
 		for req_name in build.info.requirements:
@@ -315,7 +315,7 @@ def invoke_run(manifest):
 
 	# Build the environment.
 	def prepend_env(var, items):
-		if(var in os.environ):
+		if var in os.environ:
 			return ':'.join(items) + ':' + os.environ[var]
 		return ':'.join(items)
 

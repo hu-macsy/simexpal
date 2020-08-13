@@ -112,4 +112,3 @@ def stop_queue():
 	sendrecv({
 		'action': 'stop'
 	})
-
