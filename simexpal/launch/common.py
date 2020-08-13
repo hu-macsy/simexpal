@@ -223,10 +223,6 @@ def compile_manifest(run):
 			'environ': environ
 		})
 
-	timeout = None
-	if 'timeout' in exp.info._exp_yml:
-		timeout = float(exp.info._exp_yml['timeout'])
-
 	environ = {}
 	if 'environ' in exp.info._exp_yml:
 		for (k, v) in exp.info._exp_yml['environ'].items():
@@ -247,7 +243,7 @@ def compile_manifest(run):
 		'repetition': run.repetition,
 		'builds': builds_dict,
 		'args': exp.info._exp_yml['args'],
-		'timeout': timeout,
+		'timeout': float(exp.info.timeout) if exp.info.timeout is not None else exp.info.timeout,
 		'environ': environ,
 		'output': exp.info._exp_yml.get('output', None),
 		'workdir': exp.info._exp_yml.get('workdir', None)

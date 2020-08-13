@@ -839,7 +839,11 @@ class ExperimentInfo:
 
 	@property
 	def slurm_args(self):
-		return self._exp_yml.get('slurm_args',[])
+		return self._exp_yml.get('slurm_args', [])
+
+	@property
+	def timeout(self):
+		return self._exp_yml.get('timeout', None)
 
 class Experiment:
 	"""
