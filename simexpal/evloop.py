@@ -1,5 +1,4 @@
 
-import os
 import selectors
 import weakref
 

@@ -4,7 +4,6 @@ import os
 import subprocess
 import sys
 import tempfile
-import yaml
 
 from .. import util
 from . import common
