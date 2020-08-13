@@ -102,7 +102,7 @@ class EventLoop:
 			# Do not block if there are any pending descriptors.
 			if pd:
 				timeout = 0
-			events = self._sel.select(timeout);
+			events = self._sel.select(timeout)
 			for key, mask in events:
 				desc = key.data
 				desc.mask = mask

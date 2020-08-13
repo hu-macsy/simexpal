@@ -595,7 +595,7 @@ class Instance:
 		if 'postprocess' in self._inst_yml:
 			assert self._inst_yml['postprocess'] == 'to_edgelist'
 			instances.convert_to_edgelist(self._inst_yml,
-					partial_path + '.post0', partial_path + '.post1');
+					partial_path + '.post0', partial_path + '.post1')
 			os.unlink(partial_path + '.post0')
 			stage = 1
 
@@ -604,7 +604,7 @@ class Instance:
 	def run_transform(self, transform, out_path):
 		assert transform == 'to_edgelist'
 		instances.convert_to_edgelist(self._inst_yml,
-				self.fullpath, out_path + '.transf1');
+				self.fullpath, out_path + '.transf1')
 		stage = 1
 
 		os.rename(out_path + '.transf{}'.format(stage), out_path)
