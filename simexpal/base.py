@@ -845,6 +845,10 @@ class ExperimentInfo:
 	def timeout(self):
 		return self._exp_yml.get('timeout', None)
 
+	@property
+	def output(self):
+		return self._exp_yml.get('output', None)
+
 class Experiment:
 	"""
 	Represents an experiment (see below).

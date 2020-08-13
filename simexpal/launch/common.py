@@ -245,7 +245,7 @@ def compile_manifest(run):
 		'args': exp.info._exp_yml['args'],
 		'timeout': float(exp.info.timeout) if exp.info.timeout is not None else exp.info.timeout,
 		'environ': environ,
-		'output': exp.info._exp_yml.get('output', None),
+		'output': exp.info.output,
 		'workdir': exp.info._exp_yml.get('workdir', None)
 	})
 
