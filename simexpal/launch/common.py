@@ -242,7 +242,7 @@ def compile_manifest(run):
 		'instance_files': instance_files,
 		'repetition': run.repetition,
 		'builds': builds_dict,
-		'args': exp.info._exp_yml['args'],
+		'args': exp.info.args,
 		'timeout': float(exp.info.timeout) if exp.info.timeout is not None else exp.info.timeout,
 		'environ': environ,
 		'output': exp.info.output,
