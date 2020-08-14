@@ -360,7 +360,6 @@ class Config:
 			scope = MatrixScope()
 
 			if 'matrix' in self.yml:
-				# TODO: validate the global matrix scope.
 				yield from extract_included(scope, self.yml['matrix'])
 			else:
 				sel = self._get_selection_from_scope(scope)
