@@ -374,7 +374,12 @@ def invoke_run(manifest):
 
 		elapsed = time.perf_counter() - start
 		if manifest.timeout is not None and elapsed > manifest.timeout:
-			child.send_signal(signal.SIGXCPU)
+			# Programs can catch the SIGXCPU signal and keep running.
+			# Thus, the kill command ensures that the time limit is respected (with a grace period).
+			if elapsed > manifest.timeout + base.TIMEOUT_GRACE_PERIOD:
+				child.kill()
+			else:
+				child.send_signal(signal.SIGXCPU)
 
 		# Consume any output that might be ready.
 		events = sel.select(timeout=1)
