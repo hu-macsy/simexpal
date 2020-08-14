@@ -14,6 +14,7 @@ warnings.simplefilter(action='default', category=DeprecationWarning)  # do not i
 
 DEFAULT_DEV_BUILD_NAME = '_dev'
 EXPERIMENTS_LIST_THRESHOLD = 30
+TIMEOUT_GRACE_PERIOD = 30
 
 did_warn_libyaml = False
 YmlLoader = yaml.SafeLoader
