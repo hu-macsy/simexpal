@@ -54,7 +54,8 @@
 					"configure": {"$ref": "#/definitions/build_arguments"},
 					"compile": {"$ref": "#/definitions/build_arguments"},
 					"install": {"$ref": "#/definitions/build_arguments"},
-					"exports_python": {"type": "string"}
+					"exports_python": {"type": "string"},
+					"extra_paths": {"$ref": "#/definitions/str_or_str_list"}
 				},
 				"additionalProperties": false
 			}
