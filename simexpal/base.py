@@ -914,8 +914,8 @@ class Experiment:
 
 class Status(IntEnum):
 	NOT_SUBMITTED = 0
-	SUBMITTED = 1
-	IN_SUBMISSION = 2
+	IN_SUBMISSION = 1
+	SUBMITTED = 2
 	STARTED = 3
 	FINISHED = 4
 	TIMEOUT = 5
