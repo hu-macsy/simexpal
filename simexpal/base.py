@@ -335,6 +335,43 @@ class Config:
 		else:
 			return successful_runs()
 
+	def export_experiments(self, included_statuses=None):
+		"""
+		Exports experiments based on their status.
+
+		:param included_statuses: List of :class:`simexpal.base.Status` objects which get exported.
+			Alternatively an integer list can be used, where the following translation is used:
+			0 - not submitted,
+			1 - in submission,
+			2 - submitted,
+			3 - started,
+			4 - finished,
+			5 - timeout,
+			6 - killed,
+			7 - failed.
+
+		:return: List of (``exp_name``, ``variation-tuple``, ``inst_shortname``, ``status``)-tuples
+		"""
+		experiment_list = []
+
+		if included_statuses is not None:
+			for run in self.discover_all_runs():
+				status = run.get_status()
+				if status in included_statuses:
+					experiment_list.append((
+						run.experiment.name,
+						tuple(variant.name for variant in run.experiment.variation),
+						run.instance.shortname,
+						str(status)
+					))
+		return experiment_list
+
+	def export_successful_experiments(self):
+		return self.export_experiments([s for s in Status if s.is_positive])
+
+	def export_failed_experiments(self):
+		return self.export_experiments([s for s in Status if s.is_negative])
+
 	# -----------------------------------------------------------------------------------
 	# Matrix expansion.
 	# -----------------------------------------------------------------------------------
