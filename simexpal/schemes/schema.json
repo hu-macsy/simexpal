@@ -89,6 +89,7 @@
 						"type": "string",
 						"enum": ["local", "konect", "snap"]
 					},
+					"repo-subdir": {"type": "string"},
 					"generator": {"type": "object"},
 					"extensions": {"$ref": "#/definitions/str_list"},
 					"items": {
