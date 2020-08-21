@@ -186,7 +186,8 @@
 					"num_threads": {"type": "integer"},
 					"timeout": {"type": "integer"},
 					"environ": {"type": "object"},
-					"repeat": {"type": "integer"}
+					"repeat": {"type": "integer"},
+					"slurm_args": {"$ref": "#/definitions/str_or_str_list"}
 				},
 				"additionalProperties": false
 			}
