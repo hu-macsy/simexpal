@@ -181,12 +181,27 @@
 					"args": {"$ref": "#/definitions/str_list"},
 					"use_builds": {"$ref": "#/definitions/str_list"},
 					"output": {"type": "string"},
-					"num_nodes": {"type": "integer"},
-					"procs_per_node": {"type":  "integer"},
-					"num_threads": {"type": "integer"},
-					"timeout": {"type": "integer"},
+					"num_nodes": {
+						"type": "integer",
+						"minimum": 1
+					},
+					"procs_per_node": {
+						"type": "integer",
+						"minimum": 1
+					},
+					"num_threads": {
+						"type": "integer",
+						"minimum": 1
+					},
+					"timeout": {
+						"type": "integer",
+						"minimum": 0
+					},
 					"environ": {"type": "object"},
-					"repeat": {"type": "integer"},
+					"repeat": {
+						"type": "integer",
+						"minimum": 0
+					},
 					"slurm_args": {"$ref": "#/definitions/str_or_str_list"}
 				},
 				"additionalProperties": false
@@ -208,9 +223,18 @@
 							"properties": {
 								"name": {"type": "string"},
 								"extra_args": {"$ref":  "#/definitions/str_list"},
-								"num_nodes": {"type": "integer"},
-								"procs_per_node": {"type":  "integer"},
-								"num_threads": {"type": "integer"},
+								"num_nodes": {
+									"type": "integer",
+									"minimum": 1
+								},
+								"procs_per_node": {
+									"type":  "integer",
+									"minimum": 1
+								},
+								"num_threads": {
+									"type": "integer",
+									"minimum": 1
+								},
 								"environ": {"type": "object"}
 							},
 							"additionalProperties": false
@@ -234,7 +258,10 @@
 							"axes": {"$ref": "#/definitions/str_list"},
 							"variants": {"$ref": "#/definitions/str_list"},
 							"instsets": {"$ref": "#/definitions/str_list"},
-							"repetitions": {"type": "integer"}
+							"repetitions": {
+								"type": "integer",
+								"minimum": 0
+							}
 						},
 						"additionalProperties": false
 					}
