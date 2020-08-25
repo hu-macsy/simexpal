@@ -172,6 +172,16 @@ class Config:
 	def all_revisions(self):
 		yield from self._revisions.values()
 
+	def all_non_dev_revisions(self):
+		for revision in self.all_revisions():
+			if not revision.is_dev_build:
+				yield revision
+
+	def all_dev_revisions(self):
+		for revision in self.all_revisions():
+			if revision.is_dev_build:
+				yield revision
+
 	def get_revision(self, name):
 		if name is None: # TODO: Questionable special case.
 			return None
@@ -188,6 +198,16 @@ class Config:
 						continue
 					# TODO: Exclude the build if not all requirements are specified in spec_set.
 					yield Build(self, self.get_build_info(build_yml['name']), revision)
+
+	def all_non_dev_builds(self):
+		for build in self.all_builds():
+			if not build.revision.is_dev_build:
+				yield build
+
+	def all_dev_builds(self):
+		for build in self.all_builds():
+			if build.revision.is_dev_build:
+				yield build
 
 	def all_builds_for_revision(self, revision):
 		for build in self.all_builds():
@@ -785,6 +805,15 @@ class Build:
 
 	def is_installed(self):
 		return os.access(os.path.join(self.prefix_dir, 'installed.simexpal'), os.F_OK)
+
+	def purge(self, delete_source=False):
+		if not self.revision.is_dev_build:
+			util.try_rmtree(self.clone_dir)
+		elif delete_source:
+			util.try_rmtree(self.source_dir)
+
+		util.try_rmtree(self.compile_dir)
+		util.try_rmtree(self.prefix_dir)
 
 def extract_process_settings(yml):
 	if 'num_nodes' not in yml:

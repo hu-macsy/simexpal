@@ -115,6 +115,43 @@ run_selection_parser.add_argument('--unfinished', action='store_true')
 
 # ---------------------------------------------------------------------------------------
 
+def cli_selects_build(args, build):
+	if len(args.revisions) > 0 and build.revision.name not in args.revisions:
+		return False
+	if len(args.builds) > 0 and build.name not in args.builds:
+		return False
+
+	return True
+
+def select_builds_from_cli(args, broad):
+	narrow = dict()
+	for build in broad:
+		if cli_selects_build(args, build):
+			if build.revision not in narrow:
+				narrow[build.revision] = [build]
+			else:
+				narrow[build.revision].append(build)
+
+	return sorted(narrow, key=lambda rev: rev.name), narrow
+
+def purge_builds_from(args, selection, delete_source=False):
+	ordered_revisions, sel = select_builds_from_cli(args, selection)
+	for revision in ordered_revisions:
+		for build in sel[revision]:
+			if not args.f:
+				print("This would purge build '{}' of revision '{}'. Use '-f' to confirm this action.".format(
+					build.name, build.revision.name))
+				continue
+			else:
+				print("Purging build '{}' of revision '{}'".format(build.name, build.revision.name))
+				build.purge(delete_source)
+
+build_selection_parser = argparse.ArgumentParser(add_help=False)
+build_selection_parser.add_argument('--revisions', nargs='*', type=str, default=[])
+build_selection_parser.add_argument('builds', nargs='*', type=str)
+
+# ---------------------------------------------------------------------------------------
+
 def select_phases_from_cli(args):
 
 	def subsequent_phases(start_phase):
@@ -174,8 +211,6 @@ phase_selection_mechanism.add_argument('--reinstall', action='store_true',
 			help='Reinstall build')
 phase_selection_mechanism.add_argument('--install', action='store_true',
 			help='(Re-)Install build')
-phase_selection_parser.add_argument('-f', action='store_true',
-			help='Confirm (re-)checkout')
 
 # ---------------------------------------------------------------------------------------
 # Basic commands.
@@ -265,41 +300,64 @@ builds_subcmds.required = True
 def do_builds_make(args):
 	cfg = extl.base.config_for_dir()
 
-	for revision in cfg.all_revisions():
-		if not revision.is_dev_build:
-			simexpal.build.make_builds(cfg, revision,
-					[build.info for build in cfg.all_builds_for_revision(revision)], [], [])
+	ordered_revisions, sel = select_builds_from_cli(args, cfg.all_non_dev_builds())
+	for revision in ordered_revisions:
 
-builds_make_parser = builds_subcmds.add_parser('make')
+		simexpal.build.make_builds(cfg, revision,
+				[build.info for build in sel[revision]], [], [])
+
+builds_make_parser = builds_subcmds.add_parser('make', parents=[build_selection_parser])
 builds_make_parser.set_defaults(cmd=do_builds_make)
+
+def do_builds_purge(args):
+	cfg = extl.base.config_for_dir()
+
+	purge_builds_from(args, cfg.all_non_dev_builds())
+
+builds_purge_parser = builds_subcmds.add_parser('purge', parents=[build_selection_parser])
+builds_purge_parser.set_defaults(cmd=do_builds_purge)
+builds_purge_parser.add_argument('-f', action='store_true', help='Execute purge')
+
+def do_builds_remake(args):
+	cfg = extl.base.config_for_dir()
+	args.recheckout = True
+	args.f = True
+
+	wanted_phases = select_phases_from_cli(args)
+	ordered_revisions, sel = select_builds_from_cli(args, cfg.all_non_dev_builds())
+	for revision in ordered_revisions:
+
+		simexpal.build.make_builds(cfg, revision,
+				[build.info for build in sel[revision]], [build.name for build in sel[revision]], wanted_phases)
+
+builds_remake_parser = builds_subcmds.add_parser('remake', parents=[build_selection_parser])
+builds_remake_parser.set_defaults(cmd=do_builds_remake)
 
 # ---------------------------------------------------------------------------------------
 
 def do_develop(args):
 	cfg = extl.base.config_for_dir()
 
-	if args.revision is not None:
-		revision = cfg.get_revision(args.revision)
-	else:
-		revision = cfg.get_revision(simexpal.base.DEFAULT_DEV_BUILD_NAME)
-
-	if not revision.is_dev_build:
-		print("Revision '{}' is not a dev-build.".format(revision.name), file=sys.stderr)
+	wanted_phases = select_phases_from_cli(args)
+	if not wanted_phases:
 		return
+
+	if args.purge:
+		purge_builds_from(args, cfg.all_dev_builds(), args.delete_source)
+
 	else:
-		wanted_phases = select_phases_from_cli(args)
+		ordered_revisions, sel = select_builds_from_cli(args, cfg.all_dev_builds())
+		for revision in ordered_revisions:
 
-		if not wanted_phases:
-			return
-
-		simexpal.build.make_builds(cfg, revision,
-				[cfg.get_build(build, revision).info for build in args.builds], args.builds, wanted_phases)
+			simexpal.build.make_builds(cfg, revision,
+					[build.info for build in sel[revision]], [build.name for build in sel[revision]], wanted_phases)
 
 dev_builds_parser = main_subcmds.add_parser('develop', help='Build local programs',
-		aliases=['d'], parents=[phase_selection_parser])
+		aliases=['d'], parents=[phase_selection_parser, build_selection_parser])
 dev_builds_parser.set_defaults(cmd=do_develop)
-dev_builds_parser.add_argument('--revision', type=str)
-dev_builds_parser.add_argument('builds', nargs='+', type=str)
+dev_builds_parser.add_argument('--purge', action='store_true', help='Purge selected dev-builds')
+dev_builds_parser.add_argument('-f', action='store_true', help='Confirm action')
+dev_builds_parser.add_argument('--delete-source', action='store_true', help='Deletes the source directory when purging')
 
 # ---------------------------------------------------------------------------------------
 
@@ -594,36 +652,17 @@ def do_experiments_purge(args):
 			if args.f:
 				print("Purging experiment '{}', instance '{}' [{}]".format(
 						exp.name, instance, run.repetition))
-				try:
-					os.unlink(run.aux_file_path('lock'))
-				except FileNotFoundError:
-					pass
-				try:
-					os.unlink(run.aux_file_path('run'))
-				except FileNotFoundError:
-					pass
-				try:
-					os.unlink(run.aux_file_path('stderr'))
-				except FileNotFoundError:
-					pass
-				try:
-					os.unlink(run.aux_file_path('run.tmp'))
-				except FileNotFoundError:
-					pass
-				try:
-					os.unlink(run.output_file_path('out'))
-				except FileNotFoundError:
-					pass
-				try:
-					os.unlink(run.output_file_path('status'))
-				except FileNotFoundError:
-					pass
-				try:
-					os.unlink(run.output_file_path('status.tmp'))
-				except FileNotFoundError:
-					pass
+
+				util.try_rmfile(run.aux_file_path('lock'))
+				util.try_rmfile(run.aux_file_path('run'))
+				util.try_rmfile(run.aux_file_path('stderr'))
+				util.try_rmfile(run.aux_file_path('run.tmp'))
+				util.try_rmfile(run.output_file_path('out'))
+				util.try_rmfile(run.output_file_path('status'))
+				util.try_rmfile(run.output_file_path('status.tmp'))
+
 			else:
-				print("This would purge experiment '{}', instance '{}' [{}]".format(
+				print("This would purge experiment '{}', instance '{}' [{}]. Use '-f' to confirm this action.".format(
 						exp.name, instance, run.repetition))
 
 experiments_purge_parser = experiments_subcmds.add_parser('purge',

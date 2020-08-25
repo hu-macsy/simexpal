@@ -203,6 +203,27 @@ def make_build_in_order(cfg, build, wanted_builds, wanted_phases):
 
 		if not build.revision.is_dev_build:
 
+			def git_ref_changed():
+				local_hash = subprocess.check_output(['git', 'rev-parse', generic_tag], cwd=build.repo_dir)
+				local_hash = local_hash.strip().decode()
+
+				if local_hash == git_ref:
+					return False
+				else:
+					remote_refs = subprocess.check_output(['git', 'ls-remote', build.info.git_repo, git_ref]).decode().splitlines()
+
+					if len(remote_refs) == 0:
+						raise RuntimeError("Git reference '{}' does not exist". format(git_ref))
+					elif len(remote_refs) > 1:
+						raise RuntimeError("Git reference '{}' is ambiguous". format(git_ref))
+					else:
+						remote_hash, _ = remote_refs[0].split('\t')
+
+						if local_hash == remote_hash:
+							return False
+
+				return True
+
 			git_ref = build.revision.version_for_build(build.name)
 			generic_tag = 'refs/tags/simexpal-rev/' + build.revision.name
 
@@ -220,7 +241,8 @@ def make_build_in_order(cfg, build, wanted_builds, wanted_phases):
 			verify_ref_result = subprocess.call(['git', '--git-dir', build.repo_dir,
 					'rev-parse', '-q', '--verify', generic_tag],
 				stdout=subprocess.DEVNULL)
-			if verify_ref_result != 0:
+
+			if verify_ref_result != 0 or git_ref_changed():
 				# As we create generic_tag, we can add --no-tags here.
 				subprocess.check_call(['git', '--git-dir', build.repo_dir,
 						'fetch', '--depth=1', '--no-tags',
