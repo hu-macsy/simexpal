@@ -1,10 +1,8 @@
-import errno
+
 import gzip
 import os
 import requests
-import shutil
 import tarfile
-import yaml
 import zipfile
 
 from .util import try_mkdir

@@ -4,12 +4,11 @@ import os
 import subprocess
 import sys
 import tempfile
-import yaml
 
 from .. import util
 from . import common
 
-script_template='''#!/bin/sh
+script_template = '''#!/bin/sh
 @SIMEX@ internal-invoke @MODE@ @SPECFILE@
 '''
 
@@ -104,8 +103,8 @@ class SlurmLauncher(common.Launcher):
 				print("Submitting experiment '{}', instance '{}' to default slurm partition".format(
 						run.experiment.name, run.instance.shortname))
 
-		process = subprocess.Popen(sbatch_args, stdin=subprocess.PIPE);
-		process.communicate(sbatch_script.encode()) # Assume UTF-8 encoding here.
+		process = subprocess.Popen(sbatch_args, stdin=subprocess.PIPE)
+		process.communicate(sbatch_script.encode())  # Assume UTF-8 encoding here.
 		assert process.returncode == 0
 
 		for run in locked:

@@ -22,7 +22,7 @@ def lock_run(run):
 	# We will try to launch the experiment.
 	# First, create a .lock file. If that is successful, we are the process that
 	# gets to launch the experiment. Afterwards, concurrent access to our files
-	# can be considered a bug (or deliberate misuse) and will lead to hard failues.
+	# can be considered a bug (or deliberate misuse) and will lead to hard failures.
 	try:
 		lockfd = os.open(run.aux_file_path('lock'),
 				os.O_RDONLY | os.O_CREAT | os.O_EXCL, mode=0)
@@ -187,7 +187,7 @@ def compile_manifest(run):
 		recursive_builds.append(build)
 		builds_visited.add(name)
 
-	i = 0 # Need index-based loop as recursive_builds is mutated in the loop.
+	i = 0  # Need index-based loop as recursive_builds is mutated in the loop.
 	while i < len(recursive_builds):
 		build = recursive_builds[i]
 		for req_name in build.info.requirements:
@@ -228,14 +228,9 @@ def compile_manifest(run):
 			'environ': environ
 		})
 
-	timeout = None
-	if 'timeout' in exp.info._exp_yml:
-		timeout = float(exp.info._exp_yml['timeout'])
-
 	environ = {}
-	if 'environ' in exp.info._exp_yml:
-		for (k, v) in exp.info._exp_yml['environ'].items():
-			environ[k] = str(v)
+	for (k, v) in exp.info.environ.items():
+		environ[k] = str(v)
 
 	return RunManifest({
 		'config': {
@@ -251,11 +246,11 @@ def compile_manifest(run):
 		'instance_files': instance_files,
 		'repetition': run.repetition,
 		'builds': builds_dict,
-		'args': exp.info._exp_yml['args'],
-		'timeout': timeout,
+		'args': exp.info.args,
+		'timeout': float(exp.info.timeout) if exp.info.timeout is not None else exp.info.timeout,
 		'environ': environ,
-		'output': exp.info._exp_yml.get('output', None),
-		'workdir': exp.info._exp_yml.get('workdir', None)
+		'output': exp.info.output,
+		'workdir': exp.info.workdir
 	})
 
 def invoke_run(manifest):
@@ -325,7 +320,7 @@ def invoke_run(manifest):
 
 	# Build the environment.
 	def prepend_env(var, items):
-		if(var in os.environ):
+		if var in os.environ:
 			return ':'.join(items) + ':' + os.environ[var]
 		return ':'.join(items)
 

@@ -4,7 +4,6 @@ import functools
 import os
 import socket
 
-from . import base
 from . import launch
 from .launch import common
 from . import util
@@ -113,4 +112,3 @@ def stop_queue():
 	sendrecv({
 		'action': 'stop'
 	})
-

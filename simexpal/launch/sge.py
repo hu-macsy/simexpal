@@ -68,7 +68,7 @@ class SgeLauncher(common.Launcher):
 			invoke_args.extend(['--specfile', specfile, '--sge-index'])
 
 		if not dry_run:
-			subprocess.check_call(sge_args + invoke_args);
+			subprocess.check_call(sge_args + invoke_args)
 		else:
 			print("Would invoke SGE as:", sge_args + invoke_args)
 			if single_task:

@@ -381,7 +381,6 @@ class Config:
 			scope = MatrixScope()
 
 			if 'matrix' in self.yml:
-				# TODO: validate the global matrix scope.
 				yield from extract_included(scope, self.yml['matrix'])
 			else:
 				sel = self._get_selection_from_scope(scope)
@@ -616,7 +615,7 @@ class Instance:
 		if 'postprocess' in self._inst_yml:
 			assert self._inst_yml['postprocess'] == 'to_edgelist'
 			instances.convert_to_edgelist(self._inst_yml,
-					partial_path + '.post0', partial_path + '.post1');
+					partial_path + '.post0', partial_path + '.post1')
 			os.unlink(partial_path + '.post0')
 			stage = 1
 
@@ -625,7 +624,7 @@ class Instance:
 	def run_transform(self, transform, out_path):
 		assert transform == 'to_edgelist'
 		instances.convert_to_edgelist(self._inst_yml,
-				self.fullpath, out_path + '.transf1');
+				self.fullpath, out_path + '.transf1')
 		stage = 1
 
 		os.rename(out_path + '.transf{}'.format(stage), out_path)
@@ -873,7 +872,27 @@ class ExperimentInfo:
 
 	@property
 	def slurm_args(self):
-		return self._exp_yml.get('slurm_args',[])
+		return self._exp_yml.get('slurm_args', [])
+
+	@property
+	def timeout(self):
+		return self._exp_yml.get('timeout', None)
+
+	@property
+	def output(self):
+		return self._exp_yml.get('output', None)
+
+	@property
+	def workdir(self):
+		return self._exp_yml.get('workdir', None)
+
+	@property
+	def args(self):
+		return self._exp_yml.get('args')
+
+	@property
+	def environ(self):
+		return self._exp_yml.get('environ', {})
 
 class Experiment:
 	"""

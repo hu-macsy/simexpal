@@ -102,7 +102,7 @@ def validate_setup_file(setup_file):
 		sys.exit(1)
 
 	if 'instdir' not in setup_dict:
-		setup_dict['instdir'] = './instances';
+		setup_dict['instdir'] = './instances'
 
 	return setup_dict
 
