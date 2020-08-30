@@ -47,6 +47,8 @@ An example of how to list a local set of instances is:
 ..
     TODO: Add section on instance generators
 
+.. _RemoteInstances:
+
 Remote Instances
 ----------------
 
@@ -91,6 +93,8 @@ Below we distinguish two cases:
 1. The input filenames only differ in the extension, e.g. ``foo.graph`` and ``foo.xyz``.
 2. The input filenames are arbitrary.
 
+.. _MultipleExtensions:
+
 Multiple Extensions
 ^^^^^^^^^^^^^^^^^^^
 
@@ -116,6 +120,8 @@ difference is that we will add the following key:
 The ``experiments.yml`` file above will create the instance ``foo`` which contains the files
 ``foo.graph`` and ``foo.xyz`` and the instance ``bar`` which contains the files
 ``bar.graph`` and ``bar.xyz``.
+
+.. _ArbitraryInputFiles:
 
 Arbitrary Input Files
 ^^^^^^^^^^^^^^^^^^^^^
@@ -180,4 +186,4 @@ In this way we have created the instance set ``set1``, which contains ``instance
 and ``set2``, which contains ``instance2`` and ``instance3``.
 
 Instance sets will also be useful when using the :ref:`command line interface <CommandLineReference>` of
-simexpal and when defining the run matrix.
+simexpal and when defining the :ref:`RunMatrix`.
