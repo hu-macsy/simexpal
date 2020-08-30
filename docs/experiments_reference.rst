@@ -65,18 +65,18 @@ Experiments
 This entry is a list of experiments that will be executed on all the instances.
 Each experiment includes three keys:
 
-- name: a unique identifier of the experiment.
-- args: list of command-line arguments to run the code of the experiment.
-- output: where the result of the experiments should be saved.
 
-In the example below we show how to run two experiments (insertion-sort and bubble-sort)
-on our instances.
-demo.py is the code that executes our experiment and accepts two arguments:
-the sorting algorithm and the path of the instance.
-The resulting data will be outputted to the standard output.
+- ``args``: list of experiment arguments
+- ``environ``: dictionary of (environment variable, value)-pairs
+- ``name``: name of the experiment
+- ``num_nodes``: number of nodes on which to run
+- ``num_threads``: number of cpus required per task
+- ``output``: dictionary containing all output file extensions
+- ``procs_per_node``: number of tasks to invoke on each node
+- ``repeat``: integer - number of times an experiment is repeated
+- ``slurm_args``: list of additional ``sbatch`` arguments
+- ``stdout``: extension of the output file
+- ``timeout``: integer - timeout in seconds
+- ``use_builds``: list of used build names
 
-.. literalinclude:: ./experiments.yml.example
-   :linenos:
-   :lines: 8-
-   :language: yaml
-   :caption: How to list experiments in the experiments.yml file.
+For detailed usage examples, see the :ref:`Experiments` page.

@@ -210,6 +210,8 @@ key.
 When running an experiment that uses this build, simexpal will prepend the paths given in ``extra_paths`` to
 the ``PATH`` environment variable.
 
+.. _DependentBuilds:
+
 Dependent Builds
 ----------------
 
