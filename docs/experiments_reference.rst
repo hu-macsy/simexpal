@@ -80,3 +80,19 @@ Each experiment includes three keys:
 - ``use_builds``: list of used build names
 
 For detailed usage examples, see the :ref:`Experiments` page.
+
+Variants
+--------
+This entry is a list of variants that will be used for experiments. The following keys are
+used for specifying variants:
+
+- ``axis``: name of the variant axis
+- ``environ``: dictionary of (environment variable, value)-pairs
+- ``extra_args``: list of variant arguments
+- ``items``: list of dictionaries, which specify variants belonging to the same axis.
+- ``name``: name of the variant
+- ``num_nodes``: number of nodes on which to run
+- ``num_threads``: number of cpus required per task
+- ``procs_per_node``: number of tasks to invoke on each node
+
+For detailed usage examples, see the :ref:`Variants` page.

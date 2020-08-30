@@ -15,6 +15,7 @@ Welcome to simexpal's documentation!
    Builds <builds>
    Revisions <revisions>
    Experiments <experiments>
+   Variants <variants>
    Command-line Reference <command_line_reference>
    Python API <python_api>
    Recipes <recipes>
