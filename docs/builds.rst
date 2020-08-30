@@ -186,6 +186,30 @@ key to the respective dictionaries of the build steps.
 Specifying the working directory for other steps works analogously to specifying the working directory for the
 configuration step (as seen above).
 
+Extra Paths
+-----------
+
+For many UNIX packages it is standard to install the executable in the ``@THIS_PREFIX_DIR@/bin`` directory.
+This is why simexpal only checks those directories by default when looking for an executable. However, this
+assumption might not always be correct, for example, when using a custom build system. To cover those cases,
+we specify the
+
+- ``extra_paths``: list of extra paths, which simexpal should check when running an experiment that uses this build
+
+key.
+
+.. code-block:: YAML
+   :linenos:
+   :caption: How to specify extra paths of builds in the experiments.yml file.
+
+   builds:
+     - name: build1
+       ...
+       extra_paths: ['/path/to/executable']
+
+When running an experiment that uses this build, simexpal will prepend the paths given in ``extra_paths`` to
+the ``PATH`` environment variable.
+
 Dependent Builds
 ----------------
 
