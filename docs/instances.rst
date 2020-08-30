@@ -153,6 +153,8 @@ The ``experiments.yml`` file above will create the instance ``foo`` which contai
 ``file1`` and ``file2`` and the instance ``bar`` which contains the files
 ``file3`` and ``file4``.
 
+.. _InstanceSets:
+
 Instance Sets
 -------------
 

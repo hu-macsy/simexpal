@@ -96,3 +96,18 @@ used for specifying variants:
 - ``procs_per_node``: number of tasks to invoke on each node
 
 For detailed usage examples, see the :ref:`Variants` page.
+
+Run Matrix
+----------
+This entry is a list of desired experiment combinations. The following keys are
+used for specifying desired experiment combinations:
+
+- ``axes``: list of included axis names
+- ``experiments``: list of included experiment names
+- ``include``: list of dictionaries, which specify included experiment combinations
+- ``instsets``: list of included instance set names
+- ``repetitions``: integer - number of times all combinations of an ``include`` entry are repeated
+- ``revisions``: list of included revision names
+- ``variants``: list of included variant names
+
+For detailed usage examples, see the :ref:`RunMatrix` page.
