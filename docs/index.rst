@@ -11,6 +11,7 @@ Welcome to simexpal's documentation!
 
    Quick Start <quick_start>
    Reference for experiments.yml file <experiments_reference>
+   Reference for @-variables <at_variables_reference>
    Instances <instances>
    Builds <builds>
    Revisions <revisions>
