@@ -3,6 +3,14 @@
 Variants
 ========
 
+You might want to take a look at the following pages before exploring variants:
+
+- :ref:`QuickStart`
+- :ref:`AtVariables`
+- :ref:`Builds`
+- :ref:`Revisions`
+- :ref:`Experiments`
+
 When benchmarking algorithms, it is often useful to compare different variants or parameter
 configurations of the same algorithm. Simexpal can manage those variants without requiring
 you to duplicate the ``experiments`` stanza multiple times.
@@ -128,3 +136,9 @@ keys for each item in the ``items`` key.
 When launching your experiments with slurm, the variant ``c24`` will append
 ``-N 1 --ntasks-per-node 24 -c 2`` to the sbatch command. Analogously for the experiment with
 the variant ``c48``.
+
+Next
+----
+
+Now that you have entirely set up your experiments, you can modify the experiment combinations
+that you want to run. Visit the :ref:`RunMatrix` page for a detailed explanation.

@@ -3,6 +3,10 @@
 Instances
 =========
 
+You might want to take a look at the following pages before exploring instances:
+
+- :ref:`QuickStart`
+
 On this page we describe how to specify instances in the ``experiments.yml`` file. You can
 list local instances that consist of one file or several files. More over simexpal can download
 remote instances from the `KONECT <http://konect.cc>`_ and `SNAP <https://snap.stanford.edu/data/>`_
@@ -189,3 +193,9 @@ and ``set2``, which contains ``instance2`` and ``instance3``.
 
 Instance sets will also be useful when using the :ref:`command line interface <CommandLineReference>` of
 simexpal and when defining the :ref:`RunMatrix`.
+
+Next
+----
+
+To set up your automated builds, visit the :ref:`Builds` page. If you do not plan on using
+automated builds, you can visit the :ref:`Experiments` page to set up your experiments.

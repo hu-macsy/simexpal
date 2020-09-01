@@ -3,6 +3,15 @@
 Experiments
 ===========
 
+You might want to take a look at the following pages before exploring experiments:
+
+- :ref:`QuickStart`
+- :ref:`AtVariables`
+- :ref:`Instances`
+- :ref:`Builds`
+- :ref:`Revisions`
+- :ref:`Variants`
+
 On this page we describe how to specify experiments in our ``experiments.yml`` file. We will see how
 to use builds in experiments, redirect the output and enable options such as repeating experiments or
 setting a timeout. Moreover, we will see that simexpal can be used together with batch schedulers (e.g.
@@ -346,3 +355,10 @@ key. For example, we can set the job name of an experiment by using the ``-J`` p
      - name: experiment1
        ...
        slurm_args: ['-J', 'arbitrary_jobname']
+
+Next
+----
+
+To get a more detailed understanding of experiment variants and fully set up your experiments, you
+can visit the :ref:`Variants` page. If you do not plan on having experiments, you can visit the
+:ref:`RunMatrix` page to modify the experiment combinations that you want to run.

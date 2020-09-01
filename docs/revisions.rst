@@ -3,7 +3,11 @@
 Revisions
 =========
 
-(Make sure you checked out the page regarding :ref:`Builds` before reading this page.)
+You might want to take a look at the following pages before exploring revisions:
+
+- :ref:`QuickStart`
+- :ref:`AtVariables`
+- :ref:`Builds`
 
 Simexpal supports two kinds of revisions: "normal" (static) revisions and develop (dynamic) revisions. If you have
 a finished project and only want to run experiments, normal revisions will suffice. If your project is not finished
@@ -72,3 +76,9 @@ latest project files.
 
 .. note::
    It is possible to have normal and develop revisions at the same time.
+
+Next
+----
+
+Now that you have set up your automated builds, you can visit the :ref:`Experiments` page to define
+your experiments.

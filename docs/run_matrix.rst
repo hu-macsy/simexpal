@@ -3,6 +3,16 @@
 Run Matrix
 ==========
 
+You might want to take a look at the following pages before exploring the run matrix:
+
+- :ref:`QuickStart`
+- :ref:`AtVariables`
+- :ref:`Instances`
+- :ref:`Builds`
+- :ref:`Revisions`
+- :ref:`Experiments`
+- :ref:`Variants`
+
 Simexpal will build every possible combination of :ref:`experiment <Experiments>`,
 :ref:`instance <Instances>`, :ref:`variant <Variants>` and :ref:`revision <Revisions>`.
 There are cases where this is not desired. For example, you might only want to run certain

@@ -3,6 +3,11 @@
 Builds
 ======
 
+You might want to take a look at the following pages before exploring automated builds:
+
+- :ref:`QuickStart`
+- :ref:`AtVariables`
+
 To ensure reproducibility of experiments, it is possible to let simexpal pull programs from a VCS (currently
 only Git is supported) and build them automatically. To achieve this, we need to specify a ``builds`` and
 ``revisions`` stanza in the ``experiments.yml``.
