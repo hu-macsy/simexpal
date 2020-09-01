@@ -336,15 +336,18 @@ stanzas to ``experiments.yml``. In our example, these look like:
                                                                       # of a branch by specifying the SHA-1 hash or
                                                                       # branch name (not recommended for reproducibility reasons)
 
-Next, we have to assign the builds to their respective experiments
+Next, we have to assign the builds to their respective experiments:
 
 .. code-block:: YAML
 
     experiments:
       - name: quick-sort
         use_builds: [simexpal]  # specify which builds get used for this experiment
-        args: ['quicksort', '@INSTANCE@']
+        args: ['quicksort', '@INSTANCE@', '@EXTRA_ARGS@']
         output: stdout
+
+Simexpal resolves the ``@INSTANCE@`` variable to the instance paths and the ``@EXTRA_ARGS@``
+to the extra arguments of the variants (that we define below) during runtime.
 
 After ``experiments.yml`` has been adopted, we can run the automated build
 using
@@ -407,14 +410,14 @@ Using ``simex experiments list`` we can confirm that we got our desired experime
 
 .. code-block:: bash
 
-    Experiment                                    Instance                            Status
-    ----------                                    --------                            ------
-    quick-sort ~ ba-bubble, bs32 @ main           uniform-n1000-s1                    [0] not submitted
-    quick-sort ~ ba-bubble, bs32 @ main           uniform-n1000-s2                    [0] not submitted
-    quick-sort ~ ba-bubble, bs64 @ main           uniform-n1000-s1                    [0] not submitted
-    quick-sort ~ ba-bubble, bs64 @ main           uniform-n1000-s2                    [0] not submitted
-    quick-sort ~ ba-insert, bs32 @ main           uniform-n1000-s1                    [0] not submitted
-    quick-sort ~ ba-insert, bs32 @ main           uniform-n1000-s2                    [0] not submitted
+    Experiment                                    Instance                     Status
+    ----------                                    --------                     ------
+    quick-sort ~ ba-bubble, bs32 @ main           uniform-n1000-s1             [0] not submitted
+    quick-sort ~ ba-bubble, bs32 @ main           uniform-n1000-s2             [0] not submitted
+    quick-sort ~ ba-bubble, bs64 @ main           uniform-n1000-s1             [0] not submitted
+    quick-sort ~ ba-bubble, bs64 @ main           uniform-n1000-s2             [0] not submitted
+    quick-sort ~ ba-insert, bs32 @ main           uniform-n1000-s1             [0] not submitted
+    quick-sort ~ ba-insert, bs32 @ main           uniform-n1000-s2             [0] not submitted
 
 Launchers / Support for Batch Schedulers
 ----------------------------------------
