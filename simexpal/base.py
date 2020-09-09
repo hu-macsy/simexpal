@@ -980,7 +980,7 @@ class Experiment:
 			if not vs:
 				continue
 			if s:
-				raise RuntimeError('Process settings overriden by multiple variants')
+				raise RuntimeError('Process settings overridden by multiple variants')
 			s = vs
 		return s or self.info.process_settings
 
@@ -992,7 +992,7 @@ class Experiment:
 			if not vs:
 				continue
 			if s:
-				raise RuntimeError('Thread settings overriden by multiple variants')
+				raise RuntimeError('Thread settings overridden by multiple variants')
 			s = vs
 		return s or self.info.thread_settings
 
