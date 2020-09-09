@@ -290,8 +290,8 @@ class Config:
 						for instance in selection.instances:
 							if selection.repetitions is not None:
 								reps = range(0, selection.repetitions)
-							elif 'repeat' in exp_info._exp_yml:
-								reps = range(0, exp_info._exp_yml['repeat'])
+							elif exp_info.repeat is not None:
+								reps = range(0, exp_info.repeat)
 							else:
 								reps = range(0, 1)
 							for rep in reps:
@@ -934,6 +934,10 @@ class ExperimentInfo:
 	@property
 	def environ(self):
 		return self._exp_yml.get('environ', {})
+
+	@property
+	def repeat(self):
+		return self._exp_yml.get('repeat', None)
 
 class Experiment:
 	"""
