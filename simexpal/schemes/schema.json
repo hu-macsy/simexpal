@@ -202,7 +202,8 @@
 						"type": "integer",
 						"minimum": 0
 					},
-					"slurm_args": {"$ref": "#/definitions/str_or_str_list"}
+					"slurm_args": {"$ref": "#/definitions/str_or_str_list"},
+					"workdir": {"type": "string"}
 				},
 				"additionalProperties": false
 			}
