@@ -928,6 +928,17 @@ class ExperimentInfo:
 		return self._exp_yml.get('output', None)
 
 	@property
+	def output_extensions(self):
+		if 'output' in self._exp_yml:
+			if isinstance(self._exp_yml['output'], dict):
+				return self._exp_yml['output'].get('extensions', [])
+		return []
+
+	@property
+	def stdout(self):
+		return self._exp_yml.get('stdout', None)
+
+	@property
 	def workdir(self):
 		return self._exp_yml.get('workdir', None)
 
