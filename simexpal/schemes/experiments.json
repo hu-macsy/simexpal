@@ -215,7 +215,8 @@
 					},
 					"slurm_args": {"$ref": "#/definitions/str_or_str_list"},
 					"workdir": {"type": "string"},
-					"launcher": {"type": "string"}
+					"launcher": {"type": "string"},
+					"stdout": {"type": "string"}
 				},
 				"additionalProperties": false
 			}
