@@ -888,6 +888,10 @@ class Variant:
 	def slurm_args(self):
 		return self.variant_yml.get('slurm_args', [])
 
+	@property
+	def launcher(self):
+		return self.variant_yml.get('launcher', None)
+
 class ExperimentInfo:
 	def __init__(self, cfg, exp_yml):
 		self._cfg = cfg
@@ -939,6 +943,10 @@ class ExperimentInfo:
 	def repeat(self):
 		return self._exp_yml.get('repeat', None)
 
+	@property
+	def launcher(self):
+		return self._exp_yml.get('launcher', None)
+
 class Experiment:
 	"""
 	Represents an experiment (see below).
@@ -980,9 +988,14 @@ class Experiment:
 			if not vs:
 				continue
 			if s:
-				raise RuntimeError('Process settings overridden by multiple variants')
-			s = vs
-		return s or self.info.process_settings
+				raise RuntimeError("Process settings for experiments '{}' overridden by multiple variants: {}".format(
+					self.name, [s.name, variant.name]
+				))
+			s = variant
+
+		if s is not None:
+			return s.process_settings
+		return self.info.process_settings
 
 	@property
 	def effective_thread_settings(self):
@@ -992,9 +1005,14 @@ class Experiment:
 			if not vs:
 				continue
 			if s:
-				raise RuntimeError('Thread settings overridden by multiple variants')
-			s = vs
-		return s or self.info.thread_settings
+				raise RuntimeError("Thread settings for experiments '{}' overridden by multiple variants: {}".format(
+					self.name, [s.name, variant.name]
+				))
+			s = variant
+
+		if s is not None:
+			return s.thread_settings
+		return self.info.thread_settings
 
 	@property
 	def display_name(self):
@@ -1021,6 +1039,23 @@ class Experiment:
 		if s is not None:
 			return s.slurm_args
 		return self.info.slurm_args
+
+	@property
+	def effective_launcher(self):
+		s = None
+		for variant in self.variation:
+			variant_launcher = variant.launcher
+			if not variant_launcher:
+				continue
+			if s:
+				raise RuntimeError("Selected launcher for experiment '{}' overridden by multiple variants: {}".format(
+					self.name, [s.name, variant.name]
+				))
+			s = variant
+
+		if s is not None:
+			return s.launcher
+		return self.info.launcher
 
 class Status(IntEnum):
 	NOT_SUBMITTED = 0

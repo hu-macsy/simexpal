@@ -203,7 +203,8 @@
 						"minimum": 0
 					},
 					"slurm_args": {"$ref": "#/definitions/str_or_str_list"},
-					"workdir": {"type": "string"}
+					"workdir": {"type": "string"},
+					"launcher": {"type": "string"}
 				},
 				"additionalProperties": false
 			}
@@ -237,7 +238,8 @@
 									"minimum": 1
 								},
 								"environ": {"type": "object"},
-								"slurm_args": {"$ref": "#/definitions/str_or_str_list"}
+								"slurm_args": {"$ref": "#/definitions/str_or_str_list"},
+								"launcher": {"type": "string"}
 							},
 							"additionalProperties": false
 						}

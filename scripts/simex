@@ -412,7 +412,7 @@ def do_experiments_list(args, as_default_subcmd=False):
 			for e_entry, s_entry, fin_entry, fail_entry, o_entry in zip_longest(
 					[('', exp_display_name, '')], started_statistics, finished_statistics, failures_statistics, other_statistics,
 					fillvalue=('', '', '')):
-				
+
 				print('{}{:{len}{}.{len}} {}{:10.10}{} {}{:10.10}{} {}{:20.20}{} {}{}{}'.format(
 					*e_entry, *s_entry, *fin_entry, *fail_entry, *o_entry, len=exp_len))
 
@@ -543,15 +543,9 @@ experiments_info_parser.set_defaults(cmd=do_experiments_info)
 def do_experiments_launch(args):
 	cfg = extl.base.config_for_dir()
 
-	sel = [ ]
-	for run in select_runs_from_cli(cfg, args):
-		if not run.instance.check_available():
-			print("Skipping run {}/{}[{}] as instance is not available".format(
-					run.experiment.name, run.instance.shortname, run.repetition))
-			continue
-		sel.append(run)
+	# Key: launcher name; Value: (common.Launcher object, list of runs to be executed by the launcher)-tuple
+	launchers = {}
 
-	launcher = None
 	def create_launcher(scheduler, queue=None):
 		if scheduler == 'slurm':
 			return extl.launch.slurm.SlurmLauncher(queue)
@@ -564,8 +558,15 @@ def do_experiments_launch(args):
 		else:
 			raise RuntimeError('Unknown scheduler {}'.format(scheduler))
 
+	def append_to_launchers_dict(launcher_name, run, *args):
+		# *args contains all positional arguments of create_launcher().
+		if launcher_name not in launchers:
+			launchers[launcher_name] = (create_launcher(*args), [run])
+		else:
+			launchers[launcher_name][1].append(run)
+
 	lf_yml = None
-	default_yml = None		
+	default_yml = None
 	try:
 		file_path = os.path.expanduser('~/.simexpal/launchers.yml')
 		f = open(file_path, 'r')
@@ -574,60 +575,73 @@ def do_experiments_launch(args):
 	else:
 		with f:
 			lf_yml = yaml.load(f, Loader=YmlLoader)
-	
+
 			# Find the default launcher.
 			# TODO: Raise some "syntax error" exception here.
 			assert 'launchers' in lf_yml
 			default_yml_list = [default_yml for default_yml in lf_yml['launchers']
 								if 'default' in default_yml and default_yml['default']]
-	
+
 			if len(default_yml_list) > 1:
 				raise RuntimeError('Default launcher is not unique')
 			if default_yml_list:
-				default_yml = default_yml_list[0]	
-	
-	if args.launcher:
-		assert not args.launch_through
+				default_yml = default_yml_list[0]
 
+	def get_launcher_info_from_yml(launcher_name):
 		# Find the specified launcher.
 		# TODO: Raise some "syntax error" exception here.
 		assert 'launchers' in lf_yml
+		# If launcher_name is already in the launchers dict, we do not need the info
+		# on the launcher as the launcher already has been created for launcher_name.
+		if launcher_name in launchers:
+			return None, None
+
 		info_yml_list = [info_yml for info_yml in lf_yml['launchers']
-				if info_yml['name'] == args.launcher]
+						if info_yml['name'] == launcher_name]
 
 		if not info_yml_list:
-			raise RuntimeError('There is no launcher named {}'.format(args.launcher))
+			raise RuntimeError('There is no launcher named {}'.format(launcher_name))
 		if len(info_yml_list) > 1:
-			raise RuntimeError('Launcher {} is not unique'.format(args.launcher))
+			raise RuntimeError('Launcher {} is not unique'.format(launcher_name))
 		info_yml = info_yml_list[0]
 
-		launcher = create_launcher(info_yml['scheduler'],
-			queue=info_yml['queue'] if 'queue' in info_yml else None
-		)
-	elif args.launch_through:
-		assert not args.launcher
+		return info_yml['scheduler'], info_yml['queue'] if 'queue' in info_yml else None
 
-		launcher = create_launcher(args.launch_through,
-			queue=args.queue
-		)
-	elif default_yml:
-		# Fallback: use the default launcher.
-		launcher = create_launcher(default_yml['scheduler'],
-			queue=default_yml['queue'] if 'queue' in default_yml else None
-		)
-	else:
-		# Final fallback: use the the fork()-based launcher.
-		launcher = create_launcher(scheduler='fork')
+	for run in select_runs_from_cli(cfg, args):
+		if not run.instance.check_available():
+			print("Skipping run {}/{}[{}] as instance is not available".format(
+					run.experiment.name, run.instance.shortname, run.repetition))
+			continue
 
-	# If the launcher supports submit_multiple, we prefer that.
-	try:
-		submit_to_launcher = launcher.submit_multiple
-	except AttributeError:
-		def submit_to_launcher(cfg, runs):
-			for run in runs:
-				launcher.submit(cfg, run)
+		if args.launcher:
+			launcher_info = get_launcher_info_from_yml(args.launcher)
+			append_to_launchers_dict(args.launcher, run, *launcher_info)
 
-	submit_to_launcher(cfg, sel)
+		elif args.launch_through:
+			append_to_launchers_dict(args.launch_through, run, args.launch_through, args.queue)
+
+		elif run.experiment.effective_launcher is not None:
+			launcher_info = get_launcher_info_from_yml(run.experiment.effective_launcher)
+			append_to_launchers_dict(run.experiment.effective_launcher, run, *launcher_info)
+
+		elif default_yml:
+			# Fallback: use the default launcher.
+			queue = default_yml['queue'] if 'queue' in default_yml else None
+			append_to_launchers_dict(default_yml['name'], run, default_yml['scheduler'], queue)
+		else:
+			# Final fallback: use the the fork()-based launcher.
+			append_to_launchers_dict('_fork', run, 'fork')
+
+	for launcher, launcher_runs in launchers.values():
+		# If the launcher supports submit_multiple, we prefer that.
+		try:
+			submit_to_launcher = launcher.submit_multiple
+		except AttributeError:
+			def submit_to_launcher(cfg, runs):
+				for run in runs:
+					launcher.submit(cfg, run)
+
+		submit_to_launcher(cfg, launcher_runs)
 
 experiments_launch_parser = experiments_subcmds.add_parser('launch',
 		parents=[run_selection_parser])
