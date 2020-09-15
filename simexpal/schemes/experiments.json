@@ -180,7 +180,18 @@
 					"name": {"type": "string"},
 					"args": {"$ref": "#/definitions/str_list"},
 					"use_builds": {"$ref": "#/definitions/str_list"},
-					"output": {"type": "string"},
+					"output": {
+						"oneOf": [
+							{"type": "string"},
+							{
+								"type": "object",
+								"properties": {
+									"extensions": {"$ref": "#/definitions/str_list"}
+								},
+								"additionalProperties": false
+							}
+						]
+					},
 					"num_nodes": {
 						"type": "integer",
 						"minimum": 1
