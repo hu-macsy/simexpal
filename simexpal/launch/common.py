@@ -6,6 +6,7 @@ import subprocess
 import time
 
 import yaml
+import warnings
 
 from .. import base
 from .. import util
@@ -98,10 +99,6 @@ class RunManifest:
 		return env_vars
 
 	@property
-	def output(self):
-		return self.yml['output']
-
-	@property
 	def timeout(self):
 		return self.yml['timeout']
 
@@ -124,6 +121,18 @@ class RunManifest:
 	@property
 	def builds(self):
 		return self.yml['builds']
+
+	@property
+	def output_extensions(self):
+		return self.yml['output_extensions']
+
+	@property
+	def stdout(self):
+		return self.yml['stdout']
+
+	@property
+	def variants(self):
+		return [v['name'] for v in self.yml['variants']]
 
 	def aux_file_path(self, ext):
 		return os.path.join(self.aux_subdir,
@@ -232,6 +241,12 @@ def compile_manifest(run):
 	for (k, v) in exp.info.environ.items():
 		environ[k] = str(v)
 
+	stdout = None
+	if exp.info.stdout is not None:
+		stdout = exp.info.stdout
+	elif exp.info.output == 'stdout':
+		stdout = 'out'
+
 	return RunManifest({
 		'config': {
 			'base_dir': run.config.basedir,
@@ -249,21 +264,38 @@ def compile_manifest(run):
 		'args': exp.info.args,
 		'timeout': float(exp.info.timeout) if exp.info.timeout is not None else exp.info.timeout,
 		'environ': environ,
-		'output': exp.info.output,
+		'output_extensions': exp.info.output_extensions,
+		'stdout': stdout,
 		'workdir': exp.info.workdir
 	})
 
 def invoke_run(manifest):
-	# Create the output file. This signals that the run has been started.
+
+	def get_qualified_output_file(ext):
+		if ext not in manifest.output_extensions:
+			raise RuntimeError(
+				f"Unexpected output extension for experiment '{manifest.experiment}': .{ext}\n"
+			)
+		return manifest.output_file_path(ext)
+
 	(stdout_pipe, stdout) = (None, None)
-	with open(manifest.output_file_path('out'), "w") as f:
+	if manifest.stdout is not None:
+		stdout_path = get_qualified_output_file(manifest.stdout)
+
 		# We do not actually need to write anything to the output file.
 		# However, we might want to pipe experimental output to it.
-		if manifest.output == 'stdout':
+		with open(stdout_path, 'w') as f:
 			stdout = os.dup(f.fileno())
-		else:
-			(stdout_pipe, stdout) = os.pipe()
-			os.set_blocking(stdout_pipe, False)
+	else:
+		stdout_path = manifest.aux_file_path('stdout')
+		(stdout_pipe, stdout) = os.pipe()
+		os.set_blocking(stdout_pipe, False)
+
+	# Create all the other the output files.
+	# The creation of the output file with extension '.out' signals that the run has been started.
+	diff_set = {manifest.stdout} if manifest.stdout is not None else set()
+	for ext in manifest.output_extensions - diff_set:
+		util.touch(manifest.output_file_path(ext))
 
 	# Create the error file.
 	(stderr_pipe, stderr) = os.pipe()
@@ -298,7 +330,9 @@ def invoke_run(manifest):
 		elif p == 'REPETITION':
 			return str(manifest.repetition)
 		elif p == 'OUTPUT':
-			return manifest.output_file_path('out')
+			return stdout_path
+		elif p.startswith('OUTPUT:'):
+			return get_qualified_output_file(p.split(':')[1])
 		elif p.startswith('SOURCE_DIR_FOR:'):
 			return manifest.get_source_dir_for(p.split(':')[1])
 		elif p.startswith('COMPILE_DIR_FOR:'):
@@ -381,7 +415,7 @@ def invoke_run(manifest):
 			stdout=stdout, stderr=stderr)
 	sel = selectors.DefaultSelector()
 
-	if manifest.output != 'stdout':
+	if manifest.stdout is None:
 		stdout_writer = LazyWriter(stdout_pipe, manifest.aux_file_path('stdout'))
 		sel.register(stdout_pipe, selectors.EVENT_READ, stdout_writer)
 	stderr_writer = LazyWriter(stderr_pipe, manifest.aux_file_path('stderr'))
@@ -415,7 +449,7 @@ def invoke_run(manifest):
 				sel.unregister(sk.fd)
 		if not events:
 			break
-	if manifest.output != 'stdout':
+	if manifest.stdout is None:
 		stdout_writer.close()
 	stderr_writer.close()
 	runtime = time.perf_counter() - start
@@ -423,7 +457,7 @@ def invoke_run(manifest):
 	# Collect the status information.
 	status = None
 	sigcode = None
-	if child.returncode < 0: # Killed by a signal?
+	if child.returncode < 0:  # Killed by a signal?
 		sigcode = signal.Signals(-child.returncode).name
 	else:
 		status = child.returncode

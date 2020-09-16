@@ -10,8 +10,6 @@ import warnings
 from . import instances
 from . import util
 
-warnings.simplefilter(action='default', category=DeprecationWarning)  # do not ignore DeprecationWarnings
-
 DEFAULT_DEV_BUILD_NAME = '_dev'
 EXPERIMENTS_LIST_THRESHOLD = 30
 TIMEOUT_GRACE_PERIOD = 30
@@ -931,8 +929,8 @@ class ExperimentInfo:
 	def output_extensions(self):
 		if 'output' in self._exp_yml:
 			if isinstance(self._exp_yml['output'], dict):
-				return self._exp_yml['output'].get('extensions', [])
-		return []
+				return set(self._exp_yml['output'].get('extensions', []) + ['out'])
+		return {'out'}
 
 	@property
 	def stdout(self):
