@@ -1149,6 +1149,21 @@ class Run:
 
 		return Status.NOT_SUBMITTED
 
+	def output_file_path_from_yml(self):
+		def get_qualified_output_file(ext):
+			if ext not in self.experiment.info.output_extensions:
+				raise RuntimeError(
+					f"Unexpected output extension for experiment '{self.experiment.name}': .{ext}\n"
+				)
+			return self.output_file_path(ext)
+
+		if self.experiment.info.output == 'stdout':
+			return self.output_file_path('out')
+		elif self.experiment.info.stdout is not None:
+			return get_qualified_output_file(self.experiment.info.stdout)
+
+		return self.aux_file_path('stdout')
+
 	def open_output_file(self):
 		try:
 			return open(self.output_file_path('out'))
