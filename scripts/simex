@@ -670,10 +670,13 @@ def do_experiments_purge(args):
 				util.try_rmfile(run.aux_file_path('lock'))
 				util.try_rmfile(run.aux_file_path('run'))
 				util.try_rmfile(run.aux_file_path('stderr'))
+				util.try_rmfile(run.aux_file_path('stdout'))
 				util.try_rmfile(run.aux_file_path('run.tmp'))
-				util.try_rmfile(run.output_file_path('out'))
 				util.try_rmfile(run.output_file_path('status'))
 				util.try_rmfile(run.output_file_path('status.tmp'))
+
+				for ext in run.experiment.info.output_extensions:
+					util.try_rmfile(run.output_file_path(ext))
 
 			else:
 				print("This would purge experiment '{}', instance '{}' [{}]. Use '-f' to confirm this action.".format(
@@ -695,7 +698,7 @@ def do_experiments_print_output(args):
 		for run in select_runs_from_cli(cfg, args, default_all=False):
 			print('Experiment: {}'.format(run.experiment.name))
 			print('Instance: {}'.format(run.instance.shortname))
-			print('Output:\n\n{}\n'.format(util.read_file(run.output_file_path('out'))))
+			print('Output:\n\n{}\n'.format(util.read_file(run.output_file_path_from_yml())))
 			print('Error Output:\n\n{}\n'.format(util.read_file(run.aux_file_path('stderr'))))
 
 experiments_print_parser = experiments_subcmds.add_parser('print',

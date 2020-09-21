@@ -1166,7 +1166,7 @@ class Run:
 
 	def open_output_file(self):
 		try:
-			return open(self.output_file_path('out'))
+			return open(self.output_file_path_from_yml())
 		except FileNotFoundError:
 			raise RuntimeError("The experiment '{}' with instance '{}' has not been started yet".format(
 				self.experiment.display_name, self.instance.shortname))
