@@ -577,8 +577,6 @@ def do_experiments_launch(args):
 			lf_yml = yaml.load(f, Loader=YmlLoader)
 
 			# Find the default launcher.
-			# TODO: Raise some "syntax error" exception here.
-			assert 'launchers' in lf_yml
 			default_yml_list = [default_yml for default_yml in lf_yml['launchers']
 								if 'default' in default_yml and default_yml['default']]
 
@@ -589,8 +587,7 @@ def do_experiments_launch(args):
 
 	def get_launcher_info_from_yml(launcher_name):
 		# Find the specified launcher.
-		# TODO: Raise some "syntax error" exception here.
-		assert 'launchers' in lf_yml
+
 		# If launcher_name is already in the launchers dict, we do not need the info
 		# on the launcher as the launcher already has been created for launcher_name.
 		if launcher_name in launchers:
