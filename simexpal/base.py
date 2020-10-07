@@ -884,6 +884,10 @@ class Variant:
 	def thread_settings(self):
 		return extract_thread_settings(self.variant_yml)
 
+	@property
+	def slurm_args(self):
+		return self.variant_yml.get('slurm_args', [])
+
 class ExperimentInfo:
 	def __init__(self, cfg, exp_yml):
 		self._cfg = cfg
@@ -996,6 +1000,23 @@ class Experiment:
 		if self.revision:
 			display_name += ' @ ' + self.revision.name
 		return display_name
+
+	@property
+	def effective_slurm_args(self):
+		s = None
+		for variant in self.variation:
+			slurm_args = variant.slurm_args
+			if not slurm_args:
+				continue
+			if s:
+				raise RuntimeError("Extra slurm arguments for experiment '{}' overridden by multiple variants: {}".format(
+					self.name, [s.name, variant.name]
+				))
+			s = variant
+
+		if s is not None:
+			return s.slurm_args
+		return self.info.slurm_args
 
 class Status(IntEnum):
 	NOT_SUBMITTED = 0

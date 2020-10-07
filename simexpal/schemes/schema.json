@@ -235,7 +235,8 @@
 									"type": "integer",
 									"minimum": 1
 								},
-								"environ": {"type": "object"}
+								"environ": {"type": "object"},
+								"slurm_args": {"$ref": "#/definitions/str_or_str_list"}
 							},
 							"additionalProperties": false
 						}

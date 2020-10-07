@@ -91,7 +91,7 @@ class SlurmLauncher(common.Launcher):
 			sbatch_args.append('--array=0-' + str(len(locked) - 1))
 
 		# Add custom sbatch parameters of the user.
-		slurm_args = util.ensure_list_type(experiment.info.slurm_args)
+		slurm_args = util.ensure_list_type(experiment.effective_slurm_args)
 		sbatch_args.extend(slurm_args)
 
 		# Finally start the run.
