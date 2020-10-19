@@ -83,28 +83,38 @@ def validate_setup_file(setup_file):
 	""" Reads, validates and sanitizes the setup file
 	"""
 
-	setup_dict = read_setup_file(setup_file)
+	def _validate_dict(dictionary, source, schema_path):
+		with open(schema_path, 'r') as f:
+			schema = json.load(f)
+
+		validator = Draft7Validator(schema)
+		validation_errors = list(validator.iter_errors(dictionary))
+
+		if len(validation_errors) > 0:
+			for err in validation_errors:
+				err_source = "[{}]".format("][".join(str(x) for x in err.absolute_path))
+
+				print("simexpal: Validation error in {} at {}:\n{}\n{}".format(
+					source, err_source, err.instance, err.message), file=sys.stderr, end="\n\n")
+			sys.exit(1)
 
 	cur_file_path = os.path.abspath(os.path.dirname(__file__))
-	schema_path = os.path.join(cur_file_path, "schemes", "schema.json")
-	with open(schema_path, 'r') as f:
-		schema = json.load(f)
 
-	validator = Draft7Validator(schema)
-	validation_errors = list(validator.iter_errors(setup_dict))
+	exp_yml_dict = read_setup_file(setup_file)
+	schema_path = os.path.join(cur_file_path, "schemes", "experiments.json")
+	_validate_dict(exp_yml_dict, "experiments.yml", schema_path)
 
-	if len(validation_errors) > 0:
-		for err in validation_errors:
-			err_source = "[{}]".format("][".join(str(x) for x in err.absolute_path))
+	try:
+		launchers_yml_dict = read_setup_file(os.path.expanduser('~/.simexpal/launchers.yml'))
+		schema_path = os.path.join(cur_file_path, "schemes", "launchers.json")
+		_validate_dict(launchers_yml_dict, "launchers.yml", schema_path)
+	except FileNotFoundError:
+		pass
 
-			print("simexpal: Validation error in experiments.yml at {}:\n{}\n{}".format(
-				err_source, err.instance, err.message), file=sys.stderr, end="\n\n")
-		sys.exit(1)
+	if 'instdir' not in exp_yml_dict:
+		exp_yml_dict['instdir'] = './instances'
 
-	if 'instdir' not in setup_dict:
-		setup_dict['instdir'] = './instances'
-
-	return setup_dict
+	return exp_yml_dict
 
 def compute_network_size(path, out):
 	import networkit as nk
