@@ -180,7 +180,18 @@
 					"name": {"type": "string"},
 					"args": {"$ref": "#/definitions/str_list"},
 					"use_builds": {"$ref": "#/definitions/str_list"},
-					"output": {"type": "string"},
+					"output": {
+						"oneOf": [
+							{"type": "string"},
+							{
+								"type": "object",
+								"properties": {
+									"extensions": {"$ref": "#/definitions/str_list"}
+								},
+								"additionalProperties": false
+							}
+						]
+					},
 					"num_nodes": {
 						"type": "integer",
 						"minimum": 1
@@ -204,7 +215,8 @@
 					},
 					"slurm_args": {"$ref": "#/definitions/str_or_str_list"},
 					"workdir": {"type": "string"},
-					"launcher": {"type": "string"}
+					"launcher": {"type": "string"},
+					"stdout": {"type": "string"}
 				},
 				"additionalProperties": false
 			}

@@ -10,8 +10,6 @@ import warnings
 from . import instances
 from . import util
 
-warnings.simplefilter(action='default', category=DeprecationWarning)  # do not ignore DeprecationWarnings
-
 DEFAULT_DEV_BUILD_NAME = '_dev'
 EXPERIMENTS_LIST_THRESHOLD = 30
 TIMEOUT_GRACE_PERIOD = 30
@@ -928,6 +926,17 @@ class ExperimentInfo:
 		return self._exp_yml.get('output', None)
 
 	@property
+	def output_extensions(self):
+		if 'output' in self._exp_yml:
+			if isinstance(self._exp_yml['output'], dict):
+				return set(self._exp_yml['output'].get('extensions', []) + ['out'])
+		return {'out'}
+
+	@property
+	def stdout(self):
+		return self._exp_yml.get('stdout', None)
+
+	@property
 	def workdir(self):
 		return self._exp_yml.get('workdir', None)
 
@@ -1140,9 +1149,24 @@ class Run:
 
 		return Status.NOT_SUBMITTED
 
+	def output_file_path_from_yml(self):
+		def get_qualified_output_file(ext):
+			if ext not in self.experiment.info.output_extensions:
+				raise RuntimeError(
+					f"Unexpected output extension for experiment '{self.experiment.name}': .{ext}\n"
+				)
+			return self.output_file_path(ext)
+
+		if self.experiment.info.output == 'stdout':
+			return self.output_file_path('out')
+		elif self.experiment.info.stdout is not None:
+			return get_qualified_output_file(self.experiment.info.stdout)
+
+		return self.aux_file_path('stdout')
+
 	def open_output_file(self):
 		try:
-			return open(self.output_file_path('out'))
+			return open(self.output_file_path_from_yml())
 		except FileNotFoundError:
 			raise RuntimeError("The experiment '{}' with instance '{}' has not been started yet".format(
 				self.experiment.display_name, self.instance.shortname))

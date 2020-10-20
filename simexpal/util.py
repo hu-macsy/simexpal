@@ -7,6 +7,7 @@ import sys
 import yaml
 import json
 from jsonschema import Draft7Validator
+import warnings
 
 def expand_at_params(s, fn, listfn=None):
 	def subfn(m):
@@ -110,6 +111,14 @@ def validate_setup_file(setup_file):
 		_validate_dict(launchers_yml_dict, "launchers.yml", schema_path)
 	except FileNotFoundError:
 		pass
+
+	for exp in exp_yml_dict.get('experiments', []):
+		if exp.get('output', None) == 'stdout':
+			msg = "Specifying the stdout path via 'output: stdout' is deprecated and will be removed in future " \
+					"versions. Use 'stdout: out' instead."
+			warnings.warn(msg, DeprecationWarning)
+
+			break
 
 	if 'instdir' not in exp_yml_dict:
 		exp_yml_dict['instdir'] = './instances'
