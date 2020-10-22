@@ -3,6 +3,10 @@
 Instances
 =========
 
+You might want to take a look at the following pages before exploring instances:
+
+- :ref:`QuickStart`
+
 On this page we describe how to specify instances in the ``experiments.yml`` file. You can
 list local instances that consist of one file or several files. More over simexpal can download
 remote instances from the `KONECT <http://konect.cc>`_ and `SNAP <https://snap.stanford.edu/data/>`_
@@ -46,6 +50,8 @@ An example of how to list a local set of instances is:
 
 ..
     TODO: Add section on instance generators
+
+.. _RemoteInstances:
 
 Remote Instances
 ----------------
@@ -91,6 +97,8 @@ Below we distinguish two cases:
 1. The input filenames only differ in the extension, e.g. ``foo.graph`` and ``foo.xyz``.
 2. The input filenames are arbitrary.
 
+.. _MultipleExtensions:
+
 Multiple Extensions
 ^^^^^^^^^^^^^^^^^^^
 
@@ -116,6 +124,8 @@ difference is that we will add the following key:
 The ``experiments.yml`` file above will create the instance ``foo`` which contains the files
 ``foo.graph`` and ``foo.xyz`` and the instance ``bar`` which contains the files
 ``bar.graph`` and ``bar.xyz``.
+
+.. _ArbitraryInputFiles:
 
 Arbitrary Input Files
 ^^^^^^^^^^^^^^^^^^^^^
@@ -146,6 +156,8 @@ the ``items`` key. The dictionaries contain two keys:
 The ``experiments.yml`` file above will create the instance ``foo`` which contains the files
 ``file1`` and ``file2`` and the instance ``bar`` which contains the files
 ``file3`` and ``file4``.
+
+.. _InstanceSets:
 
 Instance Sets
 -------------
@@ -180,4 +192,10 @@ In this way we have created the instance set ``set1``, which contains ``instance
 and ``set2``, which contains ``instance2`` and ``instance3``.
 
 Instance sets will also be useful when using the :ref:`command line interface <CommandLineReference>` of
-simexpal and when defining the run matrix.
+simexpal and when defining the :ref:`RunMatrix`.
+
+Next
+----
+
+To set up your automated builds, visit the :ref:`Builds` page. If you do not plan on using
+automated builds, you can visit the :ref:`Experiments` page to set up your experiments.

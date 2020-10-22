@@ -11,9 +11,13 @@ Welcome to simexpal's documentation!
 
    Quick Start <quick_start>
    Reference for experiments.yml file <experiments_reference>
+   Reference for @-variables <at_variables_reference>
    Instances <instances>
    Builds <builds>
    Revisions <revisions>
+   Experiments <experiments>
+   Variants <variants>
+   Run Matrix <run_matrix>
    Command-line Reference <command_line_reference>
    Python API <python_api>
    Recipes <recipes>

@@ -1,21 +1,21 @@
 The "experiments.yml" reference
 ===============================
 
-Simexpal needs an "experiments.yml" file to to automatically execute your experiments
-on the desired instances. In this page we describe the structure of the "experiments.yml"
-file. The "experiments.yml" is a YAML file that contains a dictionary with several keys:
+Simexpal needs an ``experiments.yml`` file to to automatically execute your experiments
+on the desired instances. In this page we describe the structure of the ``experiments.yml``
+file. The ``experiments.yml`` is a YAML file that contains a dictionary with several keys:
 
-- instances: list of all the instances that will be used for the experiments.
-- instdir: path to the directory that stores all the instances.
-- experiments: list of all the experiments that will be executed on the instances.
+- ``instances``: list of all the instances that will be used for the experiments
+- ``instdir``: path to the directory that stores all the instances
+- ``experiments``: list of all the experiments that will be executed on the instances
 
 There are also further keys that allow for customization of the experiments and to
 automatically build the binaries the experiments run from:
 
-- builds: list of Git builds, which also include build instructions.
-- revisions: list of Git revisions of builds.
-- variants: list of additional input parameters for experiments.
-- matrix: specifies which combinations of experiments, instances, variants and revisions are run.
+- ``builds``: list of Git builds, which also include build instructions
+- ``revisions``: list of Git revisions of builds
+- ``variants``: list of additional input parameters for experiments
+- ``matrix``: specifies which combinations of experiments, instances, variants and revisions are run
 
 Instances
 ---------
@@ -65,18 +65,49 @@ Experiments
 This entry is a list of experiments that will be executed on all the instances.
 Each experiment includes three keys:
 
-- name: a unique identifier of the experiment.
-- args: list of command-line arguments to run the code of the experiment.
-- output: where the result of the experiments should be saved.
 
-In the example below we show how to run two experiments (insertion-sort and bubble-sort)
-on our instances.
-demo.py is the code that executes our experiment and accepts two arguments:
-the sorting algorithm and the path of the instance.
-The resulting data will be outputted to the standard output.
+- ``args``: list of experiment arguments
+- ``environ``: dictionary of (environment variable, value)-pairs
+- ``name``: name of the experiment
+- ``num_nodes``: number of nodes on which to run
+- ``num_threads``: number of cpus required per task
+- ``output``: dictionary containing all output file extensions
+- ``procs_per_node``: number of tasks to invoke on each node
+- ``repeat``: integer - number of times an experiment is repeated
+- ``slurm_args``: list of additional ``sbatch`` arguments
+- ``stdout``: extension of the output file
+- ``timeout``: integer - timeout in seconds
+- ``use_builds``: list of used build names
 
-.. literalinclude:: ./experiments.yml.example
-   :linenos:
-   :lines: 8-
-   :language: yaml
-   :caption: How to list experiments in the experiments.yml file.
+For detailed usage examples, see the :ref:`Experiments` page.
+
+Variants
+--------
+This entry is a list of variants that will be used for experiments. The following keys are
+used for specifying variants:
+
+- ``axis``: name of the variant axis
+- ``environ``: dictionary of (environment variable, value)-pairs
+- ``extra_args``: list of variant arguments
+- ``items``: list of dictionaries, which specify variants belonging to the same axis.
+- ``name``: name of the variant
+- ``num_nodes``: number of nodes on which to run
+- ``num_threads``: number of cpus required per task
+- ``procs_per_node``: number of tasks to invoke on each node
+
+For detailed usage examples, see the :ref:`Variants` page.
+
+Run Matrix
+----------
+This entry is a list of desired experiment combinations. The following keys are
+used for specifying desired experiment combinations:
+
+- ``axes``: list of included axis names
+- ``experiments``: list of included experiment names
+- ``include``: list of dictionaries, which specify included experiment combinations
+- ``instsets``: list of included instance set names
+- ``repetitions``: integer - number of times all combinations of an ``include`` entry are repeated
+- ``revisions``: list of included revision names
+- ``variants``: list of included variant names
+
+For detailed usage examples, see the :ref:`RunMatrix` page.
