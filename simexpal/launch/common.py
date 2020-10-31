@@ -413,9 +413,11 @@ def invoke_run(manifest):
 			if manifest.workdir is not None else manifest.base_dir)
 	child = subprocess.Popen(cmd, cwd=cwd, env=environ,
 			stdout=stdout, stderr=stderr)
+	os.close(stderr)
 	sel = selectors.DefaultSelector()
 
 	if manifest.stdout is None:
+		os.close(stdout)
 		stdout_writer = LazyWriter(stdout_pipe, manifest.aux_file_path('stdout'))
 		sel.register(stdout_pipe, selectors.EVENT_READ, stdout_writer)
 	stderr_writer = LazyWriter(stderr_pipe, manifest.aux_file_path('stderr'))
@@ -451,7 +453,9 @@ def invoke_run(manifest):
 			break
 	if manifest.stdout is None:
 		stdout_writer.close()
+		os.close(stdout_pipe)
 	stderr_writer.close()
+	os.close(stderr_pipe)
 	runtime = time.perf_counter() - start
 
 	# Collect the status information.
