@@ -684,6 +684,8 @@ def do_experiments_purge(args):
 				for ext in run.experiment.info.output_extensions:
 					util.try_rmfile(run.output_file_path(ext))
 
+				run.purge_status_cache_dict()
+
 			else:
 				print("This would purge experiment '{}', instance '{}' [{}]. Use '-f' to confirm this action.".format(
 						exp.name, instance, run.repetition))

@@ -1194,6 +1194,12 @@ class Run:
 
 		return status
 
+	def purge_status_cache_dict(self):
+		try:
+			del self._cfg.status_cache_dict[self.internal_name][self.instance.shortname]
+		except KeyError:
+			pass
+
 	def get_status(self):
 
 		internal_name = self.internal_name
