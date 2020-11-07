@@ -678,7 +678,7 @@ def do_experiments_launch(args):
 			queue = default_yml['queue'] if 'queue' in default_yml else None
 			append_to_launchers_dict(default_yml['name'], run, default_yml['scheduler'], queue)
 		else:
-			# Final fallback: use the the fork()-based launcher.
+			# Final fallback: use the fork()-based launcher.
 			append_to_launchers_dict('_fork', run, 'fork')
 
 	for launcher, launcher_runs in launchers.values():
