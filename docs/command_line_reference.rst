@@ -15,6 +15,49 @@ archive
 Archives all the experimental data into a ``data.tar.gz`` file within the same directory
 where the ``experiments.yml`` file is located.
 
+.. _cli_builds:
+
+builds
+------
+Responsible to download Git repositories and install executables.
+It supports the following actions:
+
+:make: downloads a Git repository and executes all build commands.
+:purge: deletes all related build files. To confirm this action it needs the ``-f`` argument.
+:remake: rebuilds a build from scratch.
+
+All the above actions can be applied to a subset of builds according to the ``--revisions`` and
+positional ``builds`` argument. Not specifying an argument will select all respective elements, e.g.,
+not specifying the ``--revisions`` argument will lead to the selection of every revision.
+
+develop
+-------
+Responsible to download Git repositories and install executables. It also allows you to redo arbitrary
+build steps after changing local Git files to take over the local changes.
+
+The ``develop`` action can be applied to a subset of builds according to the ``--revisions`` and
+positional ``builds`` argument (analogously to how it works for the :ref:`simex builds <cli_builds>`
+command above).
+
+It further supports the following additional arguments:
+
+:``--checkout``: deletes the local Git repository and (re-)clones it.
+:``--compile``: (re-)compiles the build.
+:``--configure``: (re-)configures the build.
+:``--delete-source``: deletes the source directory when purging.
+:``--install``: (re-)installs the build.
+:``--purge``: deletes all related build files.
+:``--recheckout``: deletes the local build Git repository, reclones, regenerates, reconfigures, recompiles
+    and reinstalls it.
+:``--recompile``: recompiles and reinstall the build.
+:``--reconfigure``: reconfigures, recompiles and reinstalls the build.
+:``--regenerate``: (re-)regenerates the build.
+:``--reinstall``: reinstalls the build.
+:``--reregenerate``: regenerates, reconfigures, recompiles and reinstalls the build.
+
+The ``--checkout``, ``--recheckout`` and ``--purge`` arguments further require the ``-f`` argument to confirm
+their actions.
+
 experiments
 -----------
 Responsible to check, execute and remove experiments.
