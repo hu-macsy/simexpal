@@ -2,9 +2,11 @@
 from collections import OrderedDict
 from enum import IntEnum
 import itertools
+import json
 import os
 import yaml
 import sys
+import tempfile
 import warnings
 
 from . import instances
@@ -76,6 +78,9 @@ class Config:
 		self.basedir = basedir
 		self.yml = yml
 
+		self.status_cache_path = basedir + '/status.cache'
+		self.status_cache_dict = {}
+
 		self._insts = OrderedDict()
 		self._build_infos = OrderedDict()
 		self._revisions = OrderedDict()
@@ -145,6 +150,12 @@ class Config:
 				if exp_yml['name'] in self._exp_infos:
 					raise RuntimeError("The experiment name '{}' is ambiguous".format(exp_yml['name']))
 				self._exp_infos[exp_yml['name']] = ExperimentInfo(self, exp_yml)
+
+		try:
+			with open(self.status_cache_path, 'r') as f:
+				self.status_cache_dict = json.load(f)
+		except FileNotFoundError:
+			pass
 
 	def instance_dir(self):
 		"""Path of the directory that stores all the instances."""
@@ -338,6 +349,7 @@ class Config:
 																	run.instance.shortname, run.repetition))
 					continue
 				yield run
+			self.writeback_status_cache()
 
 		if parse_fn:
 			msg = "Calling 'Config.collect_successful_results()' with a parse function is deprecated and will be " \
@@ -349,6 +361,7 @@ class Config:
 			for run in successful_runs(verbose=True):
 				with open(run.output_file_path('out'), 'r') as f:
 					res.append(parse_fn(run, f))
+			self.writeback_status_cache()
 			return res
 		else:
 			return successful_runs()
@@ -382,6 +395,7 @@ class Config:
 						run.instance.shortname,
 						str(status)
 					))
+		self.writeback_status_cache()
 		return experiment_list
 
 	def export_successful_experiments(self):
@@ -521,6 +535,12 @@ class Config:
 			return tuple([self.get_variant(variant) for variant in variant_list])
 
 		return [make_variation(prod) for prod in itertools.product(*variation_bundle)]
+
+	def writeback_status_cache(self):
+		fd, path = tempfile.mkstemp()
+		with os.fdopen(fd, 'w') as tmp:
+			json.dump(self.status_cache_dict, tmp)
+		os.rename(path, self.status_cache_path)
 
 class Instance:
 	"""Represents a single instance"""
@@ -1117,6 +1137,17 @@ class Run:
 	def config(self):
 		return self._cfg
 
+	@property
+	def internal_name(self):
+		internal_name = self.experiment.name
+		if self.experiment.variation:
+			internal_name += '~' + ','.join([variant.name for variant in self.experiment.variation])
+		if self.experiment.revision:
+			internal_name += '@' + self.experiment.revision.name
+		if self.repetition:
+			internal_name += '[{}]'.format(self.repetition)
+		return internal_name
+
 	# Contains auxiliary files that SHOULD NOT be necessary to determine the result of the run.
 	def aux_file_path(self, ext):
 		return os.path.join(self.experiment.aux_subdir,
@@ -1128,26 +1159,91 @@ class Run:
 		return os.path.join(self.experiment.output_subdir,
 				get_output_file_name(ext, self.instance.shortname, self.repetition))
 
-	def get_status(self):
-		if os.access(self.output_file_path('status'), os.F_OK):
-			with open(self.output_file_path('status'), "r") as f:
+	def _update_status_cache_dict(self):
+
+		# Determine status cache entry.
+		status, last_mod = Status.NOT_SUBMITTED, None
+		try:
+			with open(self.output_file_path('status'), 'r') as f:
 				status_dict = yaml.load(f, Loader=YmlLoader)
+				last_mod = os.fstat(f.fileno()).st_mtime
 
 			if status_dict['timeout']:
-				return Status.TIMEOUT
+				status = Status.TIMEOUT
 			elif status_dict['signal']:
-				return Status.KILLED
+				status = Status.KILLED
 			elif status_dict['status'] > 0:
-				return Status.FAILED
-			return Status.FINISHED
-		elif os.access(self.output_file_path('out'), os.F_OK):
-			return Status.STARTED
-		elif os.access(self.aux_file_path('run'), os.F_OK):
-			return Status.SUBMITTED
-		elif os.access(self.aux_file_path('lock'), os.F_OK):
-			return Status.IN_SUBMISSION
+				status = Status.FAILED
+			else:
+				status = Status.FINISHED
+		except FileNotFoundError:
+			if os.access(self.output_file_path('out'), os.F_OK):
+				status, last_mod = Status.STARTED, os.stat(self.output_file_path('out')).st_mtime
+			elif os.access(self.aux_file_path('run'), os.F_OK):
+				status, last_mod = Status.SUBMITTED, os.stat(self.aux_file_path('run')).st_mtime
+			elif os.access(self.aux_file_path('lock'), os.F_OK):
+				status, last_mod = Status.IN_SUBMISSION, os.stat(self.aux_file_path('lock')).st_mtime
 
-		return Status.NOT_SUBMITTED
+		internal_name = self.internal_name
+		if internal_name not in self._cfg.status_cache_dict:
+			self._cfg.status_cache_dict[internal_name] = {
+				self.instance.shortname: {'status': status, 'last_mod': last_mod}}
+		else:
+			self._cfg.status_cache_dict[internal_name][self.instance.shortname] = {
+				'status': status, 'last_mod': last_mod}
+
+		return status
+
+	def purge_status_cache_dict(self):
+		try:
+			del self._cfg.status_cache_dict[self.internal_name][self.instance.shortname]
+		except KeyError:
+			pass
+
+	def get_status(self):
+
+		internal_name = self.internal_name
+		if internal_name in self._cfg.status_cache_dict:
+			if self.instance.shortname in self._cfg.status_cache_dict[internal_name]:
+				cache_entry = self._cfg.status_cache_dict[internal_name][self.instance.shortname]
+
+				last_mod = None
+				last_mod_source = None
+				try:
+					last_mod = os.stat(self.output_file_path('status')).st_mtime
+					last_mod_source = 'status'
+				except FileNotFoundError:
+					try:
+						last_mod = os.stat(self.output_file_path('out')).st_mtime
+						last_mod_source = 'out'
+					except FileNotFoundError:
+						try:
+							last_mod = os.stat(self.aux_file_path('run')).st_mtime
+							last_mod_source = 'run'
+						except FileNotFoundError:
+							try:
+								last_mod = os.stat(self.aux_file_path('lock')).st_mtime
+								last_mod_source = 'lock'
+							except FileNotFoundError:
+								pass
+
+				if last_mod == cache_entry["last_mod"]:
+
+					# Verify that the file with the same last modification time truly produced this
+					# cache entry by matching the cached status with the source it originated from.
+					status = Status(cache_entry["status"])
+					if (status.is_positive or status.is_negative) and last_mod_source == 'status':
+						return status
+					elif status == Status.STARTED and last_mod_source == 'out':
+						return status
+					elif status == Status.SUBMITTED and last_mod_source == 'run':
+						return status
+					elif status == Status.IN_SUBMISSION and last_mod_source == 'lock':
+						return status
+					elif status == Status.NOT_SUBMITTED and last_mod_source is None:
+						return status
+
+		return self._update_status_cache_dict()
 
 	def output_file_path_from_yml(self):
 		def get_qualified_output_file(ext):

@@ -493,6 +493,8 @@ def do_experiments_list(args, as_default_subcmd=False):
 			show_compact_list(args.full)
 	print(len(selection), "experiments in total")
 
+	cfg.writeback_status_cache()
+
 experiments_list_parser = experiments_subcmds.add_parser('list',
 		parents=[run_selection_parser])
 experiments_list_parser.set_defaults(cmd=do_experiments_list)
@@ -538,6 +540,8 @@ def do_experiments_info(args):
 	print("All related variants are:")
 	for v in sorted(list(variants_name_set)):
 		print('\t', v)
+
+	cfg.writeback_status_cache()
 
 experiments_info_parser = experiments_subcmds.add_parser('info',
 		parents=[run_selection_parser])
@@ -643,6 +647,8 @@ def do_experiments_launch(args):
 
 		submit_to_launcher(cfg, launcher_runs)
 
+		cfg.writeback_status_cache()
+
 experiments_launch_parser = experiments_subcmds.add_parser('launch',
 		parents=[run_selection_parser])
 experiments_launch_parser.set_defaults(cmd=do_experiments_launch)
@@ -678,9 +684,13 @@ def do_experiments_purge(args):
 				for ext in run.experiment.info.output_extensions:
 					util.try_rmfile(run.output_file_path(ext))
 
+				run.purge_status_cache_dict()
+
 			else:
 				print("This would purge experiment '{}', instance '{}' [{}]. Use '-f' to confirm this action.".format(
 						exp.name, instance, run.repetition))
+
+	cfg.writeback_status_cache()
 
 experiments_purge_parser = experiments_subcmds.add_parser('purge',
 		parents=[run_selection_parser])
@@ -700,6 +710,8 @@ def do_experiments_print_output(args):
 			print('Instance: {}'.format(run.instance.shortname))
 			print('Output:\n\n{}\n'.format(util.read_file(run.output_file_path_from_yml())))
 			print('Error Output:\n\n{}\n'.format(util.read_file(run.aux_file_path('stderr'))))
+
+	cfg.writeback_status_cache()
 
 experiments_print_parser = experiments_subcmds.add_parser('print',
 		parents=[run_selection_parser])
