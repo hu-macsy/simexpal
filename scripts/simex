@@ -73,6 +73,9 @@ def cli_selects_run(args, run):
 	if args.instset is not None:
 		if args.instset not in run.instance.instsets:
 			return False
+	if args.repetition is not None:
+		if args.repetition != run.repetition:
+			return False
 	if args.run is not None:
 		m = run_regex.search(args.run)
 		if m is None:
@@ -140,6 +143,7 @@ def can_select_runs_from_cli(args):
 			or args.instset is not None
 			or args.variants is not None
 			or args.axes is not None
+			or args.repetition is not None
 			or args.run is not None
 			or args.all
 			or args.failed
@@ -154,6 +158,7 @@ run_selection_parser.add_argument('--instance', type=str)
 run_selection_parser.add_argument('--revision', type=str)
 run_selection_parser.add_argument('--variants', type=str, nargs='+', help='Name of different variants (space separated)')
 run_selection_parser.add_argument('--axes', type=str, nargs='+', help='Name of different variant axes (space separated)')
+run_selection_parser.add_argument('--repetition', type=int, help='')
 run_selection_parser.add_argument('--run', type=str, help="Given as "
 	"'<experiment_name>~<variants>@<revision_name>/<instance_name>[<repetition>]', where '~<variants>', '@<revision_name>' "
 	"and '[<repetition>]' are optional and '<variants>' is a comma separated list of variant names")
