@@ -97,11 +97,11 @@ class SlurmLauncher(common.Launcher):
 		# Finally start the run.
 		for run in locked:
 			if self.queue:
-				print("Submitting experiment '{}', instance '{}' to slurm partition '{}'".format(
-						run.experiment.name, run.instance.shortname, self.queue))
+				print("Submitting run {}/{}[{}] to slurm partition '{}'".format(
+						run.experiment.display_name, run.instance.shortname, run.repetition, self.queue))
 			else:
-				print("Submitting experiment '{}', instance '{}' to default slurm partition".format(
-						run.experiment.name, run.instance.shortname))
+				print("Submitting run {}/{}[{}] to default slurm partition".format(
+						run.experiment.display_name, run.instance.shortname, run.repetition))
 
 		process = subprocess.Popen(sbatch_args, stdin=subprocess.PIPE)
 		process.communicate(sbatch_script.encode())  # Assume UTF-8 encoding here.

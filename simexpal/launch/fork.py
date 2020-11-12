@@ -7,8 +7,8 @@ class ForkLauncher(common.Launcher):
 			return
 		common.create_run_file(run)
 
-		print("Launching experiment '{}', instance '{}' on local machine".format(
-				run.experiment.name, run.instance.shortname))
+		print("Launching run {}/{}[{}] on local machine".format(
+				run.experiment.display_name, run.instance.shortname, run.repetition))
 		manifest = common.compile_manifest(run)
 		common.invoke_run(manifest)
 

@@ -35,8 +35,8 @@ class SgeLauncher(common.Launcher):
 			if not common.lock_run(r):
 				return
 			locked = [r]
-			print("Launching experiment '{}', instance '{}' on SGE queue '{}'".format(
-					r.experiment.name, r.instance.shortname, self.queue))
+			print("Launching run {}/{}[{}] on SGE queue '{}'".format(
+					r.experiment.display_name, r.instance.shortname, r.repetition, self.queue))
 
 			invoke_args.extend(['--experiment', r.experiment.name,
 					'--instance', r.instance.shortname,
@@ -46,8 +46,8 @@ class SgeLauncher(common.Launcher):
 			for run in r:
 				if not common.lock_run(run):
 					continue
-				print("Launching experiment '{}', instance '{}' on SGE queue '{}'".format(
-						run.experiment.name, run.instance.shortname, self.queue))
+				print("Launching run {}/{}[{}] on SGE queue '{}'".format(
+						run.experiment.display_name, run.instance.shortname, run.repetition, self.queue))
 				locked.append(run)
 
 			if not locked:

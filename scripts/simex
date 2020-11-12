@@ -664,7 +664,7 @@ def do_experiments_launch(args):
 	for run in select_runs_from_cli(cfg, args):
 		if not run.instance.check_available():
 			print("Skipping run {}/{}[{}] as instance is not available".format(
-					run.experiment.name, run.instance.shortname, run.repetition))
+					run.experiment.display_name, run.instance.shortname, run.repetition))
 			continue
 
 		if args.launcher:
@@ -717,11 +717,9 @@ def do_experiments_purge(args):
 		return
 	else:
 		for run in select_runs_from_cli(cfg, args, default_all=False):
-			(exp, instance) = (run.experiment, run.instance.shortname)
-
 			if args.f:
-				print("Purging experiment '{}', instance '{}' [{}]".format(
-						exp.name, instance, run.repetition))
+				print("Purging run {}/{}[{}]".format(
+						run.experiment.display_name, run.instance.shortname, run.repetition))
 
 				util.try_rmfile(run.aux_file_path('lock'))
 				util.try_rmfile(run.aux_file_path('run'))
@@ -737,8 +735,8 @@ def do_experiments_purge(args):
 				run.purge_status_cache_dict()
 
 			else:
-				print("This would purge experiment '{}', instance '{}' [{}]. Use '-f' to confirm this action.".format(
-						exp.name, instance, run.repetition))
+				print("This would purge run {}/{}[{}]. Use '-f' to confirm this action.".format(
+						run.experiment.display_name, run.instance.shortname, run.repetition))
 
 	cfg.writeback_status_cache()
 
