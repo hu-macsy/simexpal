@@ -537,7 +537,7 @@ class Config:
 		return [make_variation(prod) for prod in itertools.product(*variation_bundle)]
 
 	def writeback_status_cache(self):
-		fd, path = tempfile.mkstemp()
+		fd, path = tempfile.mkstemp(dir=self.basedir)
 		with os.fdopen(fd, 'w') as tmp:
 			json.dump(self.status_cache_dict, tmp)
 		os.rename(path, self.status_cache_path)
