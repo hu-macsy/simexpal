@@ -24,7 +24,7 @@ setup(
 		'argcomplete',
 		'requests',
 		'pyyaml',
-		'jsonschema'
+		'jsonschema>=3.2.0'
 	]
 )
 
