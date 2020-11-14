@@ -19,6 +19,7 @@ setup(
 
 	# Now, set the actual Python configuration.
 	packages=['simexpal', 'simexpal.launch'],
+	package_data={'simexpal': ['schemes/*.json']},
 	scripts=['scripts/simex'],
 	install_requires=[
 		'argcomplete',
