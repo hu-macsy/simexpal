@@ -65,7 +65,7 @@ class SgeLauncher(common.Launcher):
 				yaml.dump(spec_dict, f, default_flow_style=False)
 
 			sge_args.extend(['-t', '{}-{}'.format(0, len(locked)-1)])
-			invoke_args.extend(['--specfile', specfile, '--sge-index'])
+			invoke_args.extend([specfile, '--method=sge-index'])
 
 		if not dry_run:
 			subprocess.check_call(sge_args + invoke_args)
