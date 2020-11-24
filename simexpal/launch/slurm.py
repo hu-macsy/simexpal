@@ -63,7 +63,7 @@ class SlurmLauncher(common.Launcher):
 			elif p == 'SPECFILE':
 				return specfile
 			elif p == 'MODE':
-				return '--slurm-array' if use_array else '--slurm'
+				return '--method=slurm-array' if use_array else '--method=slurm'
 			else:
 				return None
 

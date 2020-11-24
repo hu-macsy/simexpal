@@ -10,7 +10,6 @@ import sys
 
 import simexpal as extl
 import simexpal.build
-import simexpal.evloop
 import simexpal.launch.fork
 import simexpal.launch.queue
 import simexpal.launch.slurm
@@ -761,9 +760,7 @@ queue_stop_parser = queue_subcmds.add_parser('stop')
 queue_stop_parser.set_defaults(cmd=do_queue_stop)
 
 def do_queue_interactive(args):
-	loop = simexpal.evloop.EventLoop()
-	simexpal.queuesock.run_queue(loop, force=args.force, sockfd=args.sockfd)
-	loop.run()
+	simexpal.queuesock.run_queue(args.sockfd, args.force)
 
 queue_interactive_parser = queue_subcmds.add_parser('interactive')
 queue_interactive_parser.set_defaults(cmd=do_queue_interactive)
@@ -775,12 +772,12 @@ queue_interactive_parser.add_argument('--force', action='store_true')
 # ---------------------------------------------------------------------------------------
 
 def do_invoke(args, basedir=None):
-	if args.slurm:
+	if args.method in ('queue', 'slurm'):
 		with open(args.specfile, 'r') as f:
 			yml = util.read_yaml_file(f)
 		manifest = extl.launch.common.RunManifest(yml['manifest'])
 		extl.launch.common.invoke_run(manifest)
-	elif args.slurm_array:
+	elif args.method == 'slurm-array':
 		with open(args.specfile, 'r') as f:
 			yml = util.read_yaml_file(f)
 
@@ -829,18 +826,14 @@ def do_invoke(args, basedir=None):
 invoke_parser = main_subcmds.add_parser('internal-invoke')
 invoke_parser.set_defaults(cmd=do_invoke)
 invoke_parser.add_argument('-n', action='store_true')
-invoke_parser.add_argument('--slurm', action='store_true')
-invoke_parser.add_argument('--slurm-array', action='store_true')
-invoke_parser.add_argument('--sge-index', action='store_true')
+invoke_parser.add_argument('--method', choices=['queue', 'slurm', 'slurm-array', 'sge-index'])
 invoke_parser.add_argument('--experiment', type=str) # Legacy argument for SGE.
 invoke_parser.add_argument('--instance', type=str) # Legacy argument for SGE.
 invoke_parser.add_argument('--repetition', type=int) # Legacy argument for SGE.
 invoke_parser.add_argument('specfile', type=str)
 
 def do_internal_queuesock(args):
-	loop = simexpal.evloop.EventLoop()
-	simexpal.queuesock.run_queue(loop, sockfd=args.sockfd)
-	loop.run()
+	simexpal.queuesock.run_queue(args.sockfd)
 
 internal_queuesock_parser = main_subcmds.add_parser('internal-queuesock')
 internal_queuesock_parser.set_defaults(cmd=do_internal_queuesock)
