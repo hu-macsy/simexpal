@@ -555,6 +555,7 @@ class Instance:
 		msg = "The 'Instance.filename' attribute is deprecated and will be removed in future versions."
 		warnings.warn(msg, DeprecationWarning)
 
+		assert not self.is_fileless
 		return self.filenames[0]
 
 	@property
@@ -573,7 +574,18 @@ class Instance:
 	@property
 	def has_multi_files(self):
 		if isinstance(self._inst_yml['items'][self.index], dict):
-			return 'files' in self._inst_yml['items'][self.index]
+			num_files = len(self._inst_yml['items'][self.index].get('files', []))
+			if num_files > 0:
+				return True
+		return False
+
+	@property
+	def is_fileless(self):
+		if isinstance(self._inst_yml['items'][self.index], dict):
+			if 'files' in self._inst_yml['items'][self.index]:
+				num_files = len(self._inst_yml['items'][self.index]['files'])
+				if num_files == 0:
+					return True
 		return False
 
 	@property
@@ -616,17 +628,20 @@ class Instance:
 
 	@property
 	def filenames(self):
-		if self.has_multi_ext:
+		if self.is_fileless:
+			return []
+		elif self.has_multi_ext:
 			return [self.yml_name + '.' + ext for ext in self._inst_yml['extensions']]
 		elif self.has_multi_files:
 			return [file for file in self._inst_yml['items'][self.index]['files']]
-		else:
-			return [self.yml_name]
+		return [self.yml_name]
 
 	@property
 	def unique_filename(self):
 		if len(self.filenames) > 1:
-			raise RuntimeError("The instance '{}' does not have a unique filename.".format(self.yml_name))
+			raise RuntimeError("The instance '{}' does not have a unique filename.".format(self.shortname))
+		if self.is_fileless:
+			raise RuntimeError("The instance '{}' is fileless".format(self.shortname))
 		return self.filenames[0]
 
 	def check_available(self):
@@ -636,7 +651,7 @@ class Instance:
 		return True
 
 	def install(self):
-		if self.check_available():
+		if self.check_available() or self.is_fileless:
 			return
 
 		util.try_mkdir(self._cfg.instance_dir())
