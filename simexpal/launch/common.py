@@ -67,8 +67,8 @@ class RunManifest:
 		return self.yml['instance']
 
 	@property
-	def instance_yml_name(self):
-		return self.yml['instance_filename']
+	def instance_name(self):
+		return self.yml['instance_name']
 
 	@property
 	def instance_extensions(self):
@@ -256,7 +256,7 @@ def compile_manifest(run):
 		'variants': variants_yml,
 		'revision': exp.revision.name if exp.revision else None,
 		'instance': run.instance.shortname,
-		'instance_filename': run.instance.yml_name,
+		'instance_name': run.instance.yml_name,
 		'instance_extensions': instance_extensions,
 		'instance_files': instance_files,
 		'repetition': run.repetition,
@@ -320,11 +320,11 @@ def invoke_run(manifest):
 				raise RuntimeError(
 					f"Unexpected file extension for instance '{manifest.instance}': .{identifier}"
 				) from None
-			return ''.join([manifest.instance_dir, '/', manifest.instance_yml_name, '.', identifier])
+			return ''.join([manifest.instance_dir, '/', manifest.instance_name, '.', identifier])
 
 	def substitute(p):
 		if p == 'INSTANCE':
-			return manifest.instance_dir + '/' + manifest.instance_yml_name
+			return manifest.instance_dir + '/' + manifest.instance_name
 		elif p.startswith('INSTANCE:'):
 			return get_qualified_filename(p.split(':')[1])
 		elif p == 'REPETITION':
