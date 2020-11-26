@@ -582,6 +582,12 @@ class Instance:
 		return self._inst_yml['extensions']
 
 	@property
+	def extra_args(self):
+		if isinstance(self._inst_yml['items'][self.index], dict):
+			return self._inst_yml['items'][self.index].get('extra_args', [])
+		return []
+
+	@property
 	def config(self):
 		return self._cfg
 

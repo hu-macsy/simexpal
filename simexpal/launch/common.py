@@ -146,6 +146,7 @@ class RunManifest:
 		extra_args = []
 		for var_yml in self.yml['variants']:
 			extra_args.extend(var_yml['extra_args'])
+		extra_args.extend(self.yml['instance_extra_args'])
 		return extra_args
 
 	def get_paths(self):
@@ -259,6 +260,7 @@ def compile_manifest(run):
 		'instance_name': run.instance.yml_name,
 		'instance_extensions': instance_extensions,
 		'instance_files': instance_files,
+		'instance_extra_args': run.instance.extra_args,
 		'repetition': run.repetition,
 		'builds': builds_dict,
 		'args': exp.info.args,
