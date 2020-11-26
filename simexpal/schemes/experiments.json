@@ -233,7 +233,7 @@
 						"type": "array",
 						"items": {
 							"type": "object",
-							"required": ["name", "extra_args"],
+							"required": ["name"],
 							"properties": {
 								"name": {"type": "string"},
 								"extra_args": {"$ref":  "#/definitions/str_list"},
