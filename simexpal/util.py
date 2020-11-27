@@ -97,6 +97,19 @@ def validate_setup_file(setup_file):
 
 				print("simexpal: Validation error in {} at {}:\n{}\n{}".format(
 					source, err_source, err.instance, err.message), file=sys.stderr, end="\n\n")
+
+				# The error comes from subschemas in anyOf, oneOf or allOf.
+				if err.context:
+					print("Below are the validation errors of each respective subschema:")
+
+					schema_index = None
+					for sub_error in sorted(err.context, key=lambda e: e.schema_path[0]):
+						cur_schema_index = sub_error.schema_path[0]
+						if cur_schema_index != schema_index:
+							schema_index = cur_schema_index
+							print("\nValidation errors in subschema [{}]:".format(cur_schema_index))
+						print(sub_error.message)
+					print()
 			sys.exit(1)
 
 	cur_file_path = os.path.abspath(os.path.dirname(__file__))
