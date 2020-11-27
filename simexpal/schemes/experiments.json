@@ -83,91 +83,191 @@
 			"type": "array",
 			"items": {
 				"type": "object",
-				"required": ["items"],
-				"properties": {
-					"repo": {
-						"type": "string",
-						"enum": ["local", "konect", "snap"]
-					},
-					"repo-subdir": {"type": "string"},
-					"generator": {"type": "object"},
-					"extensions": {"$ref": "#/definitions/str_list"},
-					"items": {
-						"oneOf": [
-							{"$ref": "#/definitions/dict_list"},
-							{"$ref": "#/definitions/str_list"}
-						]
-					},
-					"set": {"$ref": "#/definitions/str_or_str_list"}
-				},
-				"additionalProperties": false,
-				"if": {
-					"properties": {
-						"generator": {"type": "object"}
-					},
-					"required": ["generator"]
-				},
-				"then": {
-					"properties": {
-						"generator": {
-							"type": "object",
-							"required": ["args"],
-							"properties": {
-								"args": {"$ref": "#/definitions/str_list"},
-								"postprocess": {"const": "to_edgelist"}
-							},
-							"additionalProperties": false
-						},
-						"items": {"$ref": "#/definitions/str_list"},
-						"repo": false,
-						"extensions": false
-					}
-				},
-				"else": {
-					"if": {
-						"properties": {
-							"repo": {"const": "local"}
-						},
-						"required": ["repo"]
-					},
-					"then": {
+				"allOf": [
+					{
 						"if": {
+							"required": ["generator"],
 							"properties": {
-								"items": {"$ref": "#/definitions/dict_list"}
+								"generator": {"type": "object"}
 							}
 						},
 						"then": {
+							"required": ["generator", "items"],
+							"properties": {
+								"generator": {
+									"type": "object",
+									"required": ["args"],
+									"properties": {
+										"args": {"$ref": "#/definitions/str_list"}
+									},
+									"additionalProperties": false
+								},
+								"set": {"$ref": "#/definitions/str_or_str_list"},
+								"items": {
+									"oneOf": [
+										{
+											"$ref": "#/definitions/str_list"
+										},
+										{
+											"type": "array",
+											"items": {
+												"type": "object",
+												"required": ["name"],
+												"properties": {
+													"name": {"type": "string"},
+													"extra_args": {"$ref": "#/definitions/str_list"}
+												},
+												"additionalProperties": false
+											}
+										}
+									]
+								}
+							},
+							"additionalProperties": false
+						}
+					},
+					{
+						"if": {
+							"required": ["extensions"],
+							"properties": {
+								"extensions": {"$ref": "#/definitions/str_list"}
+							}
+						},
+						"then": {
+							"required": ["repo", "extensions", "items"],
+							"properties": {
+								"repo": {"const": "local"},
+								"extensions": {"$ref": "#/definitions/str_list"},
+								"set": {"$ref": "#/definitions/str_or_str_list"},
+								"items": {
+									"oneOf": [
+										{
+											"$ref": "#/definitions/str_list"
+										},
+										{
+											"type": "array",
+											"items": {
+												"type": "object",
+												"required": ["name"],
+												"properties": {
+													"name": {"type": "string"},
+													"extra_args": {"$ref": "#/definitions/str_list"}
+												},
+												"additionalProperties": false
+											}
+										}
+									]
+								}
+							},
+							"additionalProperties": false
+						}
+					},
+					{
+						"if": {
+							"required": ["items"],
 							"properties": {
 								"items": {
 									"type": "array",
 									"items": {
 										"type": "object",
-										"required": ["name","files"],
+										"required": ["files"],
 										"properties": {
-											"name": {"type": "string"},
 											"files": {"$ref": "#/definitions/str_list"}
 										}
 									}
-								},
-								"extensions": false,
-								"generator": false
+								}
 							}
 						},
-						"else": {
+						"then": {
+							"required": ["repo", "items"],
 							"properties": {
-								"extensions": {"$ref": "#/definitions/str_list"},
-								"items": {"$ref": "#/definitions/str_list"},
-								"generator": false
-							}
+								"repo": {"const": "local"},
+								"set": {"$ref": "#/definitions/str_or_str_list"},
+								"items": {
+									"type": "array",
+									"items": {
+										"type": "object",
+										"required": ["name", "files"],
+										"properties": {
+											"name": {"type": "string"},
+											"files": {"$ref": "#/definitions/str_list"},
+											"extra_args": {"$ref": "#/definitions/str_list"}
+										},
+										"additionalProperties": false
+									}
+								}
+							},
+							"additionalProperties": false
 						}
 					},
-					"else": {
-						"properties": {
-							"items": {"$ref": "#/definitions/str_list"},
-							"generator": false
+					{
+						"if": {
+							"not": {
+								"anyOf": [
+									{
+										"required": ["generator"],
+										"properties": {
+											"generator": {"type": "object"}
+										}
+									},
+									{
+										"required": ["extensions"],
+										"properties": {
+											"extensions": {"$ref": "#/definitions/str_list"}
+										}
+									},
+									{
+										"required": ["items"],
+										"properties": {
+											"items": {
+												"type": "array",
+												"items": {
+													"type": "object",
+													"required": ["files"],
+													"properties": {
+														"files": {"$ref": "#/definitions/str_list"}
+													}
+												}
+											}
+										}
+									}
+								]
+							}
+						},
+						"then": {
+							"required": ["repo", "items"],
+							"properties": {
+								"repo": {
+									"type": "string",
+									"enum": ["local", "konect", "snap"]
+								},
+								"repo-subdir": {"type": "string"},
+								"postprocess": {"const": "to_edgelist"},
+								"set": {"$ref": "#/definitions/str_or_str_list"},
+								"items": {
+									"oneOf": [
+										{
+											"$ref": "#/definitions/str_list"
+										},
+										{
+											"type": "array",
+											"items": {
+												"type": "object",
+												"required": ["name"],
+												"properties": {
+													"name": {"type": "string"},
+													"extra_args": {"$ref": "#/definitions/str_list"}
+												},
+												"additionalProperties": false
+											}
+										}
+									]
+								}
+							},
+							"additionalProperties": false
 						}
 					}
-				}
+				]
 			}
 		},
 		"experiments": {
