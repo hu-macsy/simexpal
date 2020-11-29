@@ -266,6 +266,9 @@ def do_instances_process(args):
 		if len(inst.filenames) > 1:
 			print("Skipping instance '{}' as it does not have a unique filename".format(inst.shortname))
 			continue
+		if inst.is_fileless:
+			print("Skipping fileless instance '{}'".format(inst.shortname))
+			continue
 		if os.access(os.path.join(cfg.instance_dir(), inst.shortname + '.info'), os.F_OK):
 			continue
 

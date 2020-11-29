@@ -52,6 +52,12 @@ a list of strings (instead of one space separated string). Note that the :ref:`@
 ``@INSTANCE@`` resolves to the paths of the instances given in the ``instances`` stanza, i.e,
 ``/instance_directory/<instance_name>``.
 
+If the instances have :ref:`InstanceExtraArguments`, we further need to add the :ref:`@-variable <AtVariables>`
+``@EXTRA_ARGS@`` to the experiment arguments, e.g,
+``args: ['./sort.py', '--algo=insertion-sort', '@INSTANCE@', '@EXTRA_ARGS@']`` for the example above.
+``@EXTRA_ARGS@`` will resolve to the specified extra arguments of the respective instance (and also the used
+:ref:`variants <ExperimentsWithVariants>`, see below).
+
 .. _ExperimentsWithMultipleExtensionInstances:
 
 Experiments with Multiple Extension Instances
@@ -78,6 +84,8 @@ specify your experiment as follows:
 The ``@INSTANCE:graph@`` variable will resolve to ``/instance_directory/<instance_name>.graph`` during
 runtime. Analogously for the ``@INSTANCE:xyz@`` variable.
 
+:ref:`InstanceExtraArguments` are handled analogously to the case of :ref:`ExperimentsWithLocalRemoteInstances`.
+
 Experiments with Arbitrary Input File Instances
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -103,6 +111,10 @@ as follows:
 The ``@INSTANCE:0@`` variable will resolve to ``/instance_directory/files[0]``, where ``files[0]`` is
 the first filename of the ``files`` key. Analogously for the ``@INSTANCE:1`` variable.
 
+:ref:`InstanceExtraArguments` are handled analogously to the case of :ref:`ExperimentsWithLocalRemoteInstances`.
+
+.. _ExperimentsWithVariants:
+
 Experiments with Variants
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -118,8 +130,8 @@ arguments:
        args: ['./algorithm.py', '@INSTANCE@', '@EXTRA_ARGS@']
        output: stdout
 
-The ``@EXTRA_ARGS@`` variable resolves to the extra arguments of all variants of the experiment during runtime.
-For example, assume we have the following ``variants`` stanza:
+The ``@EXTRA_ARGS@`` variable resolves to the extra arguments of all variants (and also the used instance, see
+above) of the experiment during runtime. For example, assume we have the following ``variants`` stanza:
 
 .. code-block:: YAML
    :linenos:

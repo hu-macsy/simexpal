@@ -17,7 +17,7 @@ specify ``experiments.py @INSTANCE@`` as experiment arguments.
 Below, we list all @-variables and where they can be used.
 
 - ``@COMPILE_DIR_FOR:<build_name>@``: :ref:`compilation directory <BuildDirectories>` of ``<build_name>`` in the same revision
-- ``@EXTRA_ARGS@``: extra arguments of all variants of an experiment
+- ``@EXTRA_ARGS@``: extra arguments of all variants and the instance of an experiment
 - ``@INSTANCE@``: path of a :ref:`local <LocalInstances>`/:ref:`remote <RemoteInstances>` instance, i.e. ``/instance_directory/<instance_name>``
 - ``@INSTANCE:<ext>@``: path of a :ref:`MultipleExtensions` instance with extension ``<ext>``, i.e. ``/instance_directory/<instance_name>.<ext>``
 - ``@INSTANCE:<idx>@``: path of an :ref:`ArbitraryInputFiles` instance with index ``<idx>`` in the ``files`` key, i.e. ``/instance_directory/files[<idx>]``

@@ -67,8 +67,8 @@ class RunManifest:
 		return self.yml['instance']
 
 	@property
-	def instance_yml_name(self):
-		return self.yml['instance_filename']
+	def instance_name(self):
+		return self.yml['instance_name']
 
 	@property
 	def instance_extensions(self):
@@ -77,6 +77,10 @@ class RunManifest:
 	@property
 	def instance_files(self):
 		return self.yml['instance_files']
+
+	@property
+	def instance_is_filess(self):
+		return self.yml['instance_is_filess']
 
 	@property
 	def experiment(self):
@@ -146,6 +150,7 @@ class RunManifest:
 		extra_args = []
 		for var_yml in self.yml['variants']:
 			extra_args.extend(var_yml['extra_args'])
+		extra_args.extend(self.yml['instance_extra_args'])
 		return extra_args
 
 	def get_paths(self):
@@ -209,10 +214,11 @@ def compile_manifest(run):
 
 	instance_files = None
 	instance_extensions = None
-	if run.instance.has_multi_files:
-		instance_files = run.instance.filenames
-	elif run.instance.has_multi_ext:
-		instance_extensions = run.instance.extensions
+	if not run.instance.is_fileless:
+		if run.instance.has_multi_files:
+			instance_files = run.instance.filenames
+		elif run.instance.has_multi_ext:
+			instance_extensions = run.instance.extensions
 
 	builds_dict = {}
 	for build in recursive_builds:
@@ -256,9 +262,11 @@ def compile_manifest(run):
 		'variants': variants_yml,
 		'revision': exp.revision.name if exp.revision else None,
 		'instance': run.instance.shortname,
-		'instance_filename': run.instance.yml_name,
+		'instance_name': run.instance.yml_name,
 		'instance_extensions': instance_extensions,
 		'instance_files': instance_files,
+		'instance_extra_args': run.instance.extra_args,
+		'instance_is_filess': run.instance.is_fileless,
 		'repetition': run.repetition,
 		'builds': builds_dict,
 		'args': exp.info.args,
@@ -302,6 +310,9 @@ def invoke_run(manifest):
 	os.set_blocking(stderr_pipe, False)
 
 	def get_qualified_filename(identifier):
+		if manifest.instance_is_filess:
+			raise RuntimeError(f"The instance '{manifest.instance}' is fileless")
+
 		if identifier.isdigit():
 			identifier = int(identifier)
 			if manifest.instance_files is None:
@@ -320,11 +331,14 @@ def invoke_run(manifest):
 				raise RuntimeError(
 					f"Unexpected file extension for instance '{manifest.instance}': .{identifier}"
 				) from None
-			return ''.join([manifest.instance_dir, '/', manifest.instance_yml_name, '.', identifier])
+			return ''.join([manifest.instance_dir, '/', manifest.instance_name, '.', identifier])
 
 	def substitute(p):
 		if p == 'INSTANCE':
-			return manifest.instance_dir + '/' + manifest.instance_yml_name
+			if manifest.instance_is_filess:
+				raise RuntimeError(f"The instance '{manifest.instance}' is fileless")
+
+			return manifest.instance_dir + '/' + manifest.instance_name
 		elif p.startswith('INSTANCE:'):
 			return get_qualified_filename(p.split(':')[1])
 		elif p == 'REPETITION':
