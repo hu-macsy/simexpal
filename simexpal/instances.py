@@ -74,10 +74,10 @@ def convert_to_edgelist(inst_yml, in_path, out_path):
 
 	if repo == 'konect':
 		separator = ' '
-		commentPrefix = '%'
+		comment_prefix = '%'
 	elif repo == 'snap':
 		separator = '\t'
-		commentPrefix = '#'
+		comment_prefix = '#'
 
 	def get_other_separator(separator):
 		if separator == ' ':
@@ -86,7 +86,7 @@ def convert_to_edgelist(inst_yml, in_path, out_path):
 	with open(in_path, 'r') as in_f:
 		with open(out_path, 'w') as out_f:
 			for line in in_f:
-				if line.startswith(commentPrefix):
+				if line.startswith(comment_prefix):
 					continue
 				split_line = line.strip().split(separator)
 				if len(split_line) < 2:

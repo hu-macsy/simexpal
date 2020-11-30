@@ -6,6 +6,7 @@
 import argparse
 import os
 import argcomplete
+import re
 import sys
 
 import simexpal as extl
@@ -43,6 +44,12 @@ main_parser.add_argument('-C', type=str)
 main_subcmds = main_parser.add_subparsers(metavar='<command>')
 main_subcmds.required = True
 
+run_regex = re.compile(r'(?P<experiment>[^~@/\[\]]+)'
+						r'(~(?P<variants>[^~@/\[\]]+))?'
+						r'(@(?P<revision>[^~@/\[\]]+))?'
+						r'(/(?P<instance>[^~@/\[\]]+))'
+						r'(\[(?P<repetition>\d+)\])?')
+
 def cli_selects_run(args, run):
 	if args.experiment is not None:
 		if args.experiment != run.experiment.name:
@@ -51,8 +58,7 @@ def cli_selects_run(args, run):
 		if args.instance != run.instance.shortname:
 			return False
 	if args.revision is not None:
-		if (run.experiment.revision is None
-				or args.revision != run.experiment.revision.name):
+		if run.experiment.revision is None or args.revision != run.experiment.revision.name:
 			return False
 	if args.variants is not None:
 		exp_variants = [var.name for var in run.experiment.variation]
@@ -67,8 +73,49 @@ def cli_selects_run(args, run):
 	if args.instset is not None:
 		if args.instset not in run.instance.instsets:
 			return False
+	if args.repetition is not None:
+		if args.repetition != run.repetition:
+			return False
 	if args.run is not None:
-		if args.run != run.experiment.name + '/' + run.instance.shortname:
+		m = run_regex.search(args.run)
+		if m is None:
+			raise RuntimeError("The input for the '--run' argument can not be parsed. Please provide the input in the "
+								"following format: "
+								"'<experiment_name>~<variants>@<revision_name>/<instance_name>[<repetition>]'. "
+								"'~<variants>', '@<revision_name>' and '[<repetition>]' are optional, where <variants> "
+								"is a comma separated list of variant names: {} ".format(args.run))
+
+		exp = m.group('experiment').strip()
+		if exp != run.experiment.name:
+			return False
+
+		variants = m.group('variants')
+		if variants is not None:
+			variants = variants.split(',')
+			variants = sorted([v.strip() for v in variants])
+
+			exp_variants = sorted([var.name for var in run.experiment.variation])
+
+			if variants != exp_variants:
+				return False
+
+		revision = m.group('revision')
+		if revision is not None:
+			revision = revision.strip()
+			if run.experiment.revision is None or revision != run.experiment.revision.name:
+				return False
+		elif args.revision is not None:
+			return False
+
+		instance = m.group('instance').strip()
+		if instance != run.instance.shortname:
+			return False
+
+		repetition = m.group('repetition')
+		if repetition is not None:
+			if int(repetition) != run.repetition:
+				return False
+		elif run.repetition != 0:
 			return False
 	if args.failed:
 		if not run.get_status().is_negative:
@@ -96,6 +143,7 @@ def can_select_runs_from_cli(args):
 			or args.instset is not None
 			or args.variants is not None
 			or args.axes is not None
+			or args.repetition is not None
 			or args.run is not None
 			or args.all
 			or args.failed
@@ -108,9 +156,12 @@ run_selection_parser.add_argument('--instset', type=str)
 run_selection_parser.add_argument('--experiment', type=str)
 run_selection_parser.add_argument('--instance', type=str)
 run_selection_parser.add_argument('--revision', type=str)
-run_selection_parser.add_argument('--variants', type=str, nargs='+', help='name of different variants (space separated)')
-run_selection_parser.add_argument('--axes', type=str, nargs='+', help='name of different variant axes (space separated)')
-run_selection_parser.add_argument('--run', type=str, help='given as experiment/instance')
+run_selection_parser.add_argument('--variants', type=str, nargs='+', help='Name of different variants (space separated)')
+run_selection_parser.add_argument('--axes', type=str, nargs='+', help='Name of different variant axes (space separated)')
+run_selection_parser.add_argument('--repetition', type=int, help='')
+run_selection_parser.add_argument('--run', type=str, help="Given as "
+	"'<experiment_name>~<variants>@<revision_name>/<instance_name>[<repetition>]', where '~<variants>', '@<revision_name>' "
+	"and '[<repetition>]' are optional and '<variants>' is a comma separated list of variant names")
 run_selection_parser.add_argument('--all', action='store_true')
 run_selection_parser.add_argument('--failed', action='store_true')
 run_selection_parser.add_argument('--unfinished', action='store_true')
@@ -616,7 +667,7 @@ def do_experiments_launch(args):
 	for run in select_runs_from_cli(cfg, args):
 		if not run.instance.check_available():
 			print("Skipping run {}/{}[{}] as instance is not available".format(
-					run.experiment.name, run.instance.shortname, run.repetition))
+					run.experiment.display_name, run.instance.shortname, run.repetition))
 			continue
 
 		if args.launcher:
@@ -635,7 +686,7 @@ def do_experiments_launch(args):
 			queue = default_yml['queue'] if 'queue' in default_yml else None
 			append_to_launchers_dict(default_yml['name'], run, default_yml['scheduler'], queue)
 		else:
-			# Final fallback: use the the fork()-based launcher.
+			# Final fallback: use the fork()-based launcher.
 			append_to_launchers_dict('_fork', run, 'fork')
 
 	for launcher, launcher_runs in launchers.values():
@@ -669,11 +720,9 @@ def do_experiments_purge(args):
 		return
 	else:
 		for run in select_runs_from_cli(cfg, args, default_all=False):
-			(exp, instance) = (run.experiment, run.instance.shortname)
-
 			if args.f:
-				print("Purging experiment '{}', instance '{}' [{}]".format(
-						exp.name, instance, run.repetition))
+				print("Purging run {}/{}[{}]".format(
+						run.experiment.display_name, run.instance.shortname, run.repetition))
 
 				util.try_rmfile(run.aux_file_path('lock'))
 				util.try_rmfile(run.aux_file_path('run'))
@@ -689,8 +738,8 @@ def do_experiments_purge(args):
 				run.purge_status_cache_dict()
 
 			else:
-				print("This would purge experiment '{}', instance '{}' [{}]. Use '-f' to confirm this action.".format(
-						exp.name, instance, run.repetition))
+				print("This would purge run {}/{}[{}]. Use '-f' to confirm this action.".format(
+						run.experiment.display_name, run.instance.shortname, run.repetition))
 
 	cfg.writeback_status_cache()
 

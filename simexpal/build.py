@@ -125,7 +125,7 @@ def make_build_in_order(cfg, build, wanted_builds, wanted_phases):
 
 	# Build the environment.
 	def prepend_env(var, items):
-		if(var in os.environ):
+		if var in os.environ:
 			return ':'.join(items) + ':' + os.environ[var]
 		return ':'.join(items)
 

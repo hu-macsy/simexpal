@@ -96,6 +96,11 @@ class Config:
 			if name.startswith('_'):
 				raise RuntimeError(f"Names starting with an underscore are reserved for internal simexpal objects: {name}")
 
+			forbidden_chars = [' ', '~', '@', '/', '[', ']']
+			for c in forbidden_chars:
+				if c in name:
+					raise RuntimeError(f"The character '{c}' is not allowed in names for simexpal objects: {name}")
+
 		def construct_instances():
 			if 'instances' in self.yml:
 				for inst_yml in self.yml['instances']:
