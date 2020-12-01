@@ -11,10 +11,6 @@ class DownloadException(Exception):
 	pass
 
 repos = {
-	'konect': {
-		'url': 'http://konect.cc/files/download.tsv.',
-		'file_fmt': '.tar.bz2',
-	},
 	'snap': {
 			'url': 'https://snap.stanford.edu/data/',
 			'file_fmt': '.txt.gz'
@@ -48,14 +44,7 @@ def download_instance(inst_yml, instances_dir, filename, partial_path, ext):
 
 	tmp_path = os.path.join(instances_dir, filename + '.tmp')
 	compression = fmt.split('.')[-1]
-	if repo == 'konect':
-		tar = tarfile.open(download_path, 'r:' + compression)
-		member_name = next(elem for elem in tar.getnames() if 'out.' in elem)
-
-		with tar.extractfile(member_name) as reader:
-			with open(tmp_path, 'wb') as f:
-				extract(reader, f)
-	elif repo == 'snap':
+	if repo == 'snap':
 		with gzip.open(download_path, 'rb') as reader:
 			with open(tmp_path, 'wb') as f:
 				extract(reader, f)
@@ -63,7 +52,7 @@ def download_instance(inst_yml, instances_dir, filename, partial_path, ext):
 		zip_file = zipfile.ZipFile(download_path + compression, 'r')
 		# TODO finish
 	else:
-		DownloadException('Unknown repository: ' + repo)
+		raise DownloadException('Unknown repository: ' + repo)
 
 	os.unlink(download_path)
 	os.rename(tmp_path, partial_path + ext)

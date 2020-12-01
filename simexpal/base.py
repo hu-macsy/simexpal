@@ -16,6 +16,8 @@ DEFAULT_DEV_BUILD_NAME = '_dev'
 EXPERIMENTS_LIST_THRESHOLD = 30
 TIMEOUT_GRACE_PERIOD = 30
 
+DID_WARN_KONECT = False
+
 did_warn_libyaml = False
 YmlLoader = yaml.SafeLoader
 try:
@@ -656,17 +658,24 @@ class Instance:
 		return True
 
 	def install(self):
+		global DID_WARN_KONECT
+
 		if self.check_available() or self.is_fileless:
 			return
 
 		util.try_mkdir(self._cfg.instance_dir())
 
-		if 'repo' in self._inst_yml:
-			if self._inst_yml['repo'] == 'local':
-				return
-
 		partial_path = os.path.join(self._cfg.instance_dir(), self.unique_filename)
 		if 'repo' in self._inst_yml:
+
+			if self._inst_yml['repo'] == 'local':
+				return
+			elif self._inst_yml['repo'] == 'konect':
+				if not DID_WARN_KONECT:
+					print("Downloading instances from konect is no longer possible.")
+					DID_WARN_KONECT = True
+				return
+
 			print("Downloading instance '{}' from {} repository".format(self.unique_filename,
 					self._inst_yml['repo']))
 
