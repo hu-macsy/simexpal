@@ -9,10 +9,9 @@ You might want to take a look at the following pages before exploring instances:
 
 On this page we describe how to specify instances in the ``experiments.yml`` file. You can
 list local instances that consist of one file or several files. More over simexpal can download
-remote instances from the `KONECT <http://konect.cc>`_ and `SNAP <https://snap.stanford.edu/data/>`_
-repository. It is also possible to assign instances to instance sets that enable a more efficient
-usage of the :ref:`command line interface <CommandLineReference>` and are useful when defining
-the run matrix.
+remote instances from the `SNAP <https://snap.stanford.edu/data/>`_ repository. It is also possible
+to assign instances to instance sets that enable a more efficient usage of the
+:ref:`command line interface <CommandLineReference>` and are useful when defining the run matrix.
 
 Instance Directory
 ------------------
@@ -56,8 +55,14 @@ An example of how to list a local set of instances is:
 Remote Instances
 ----------------
 
-It is possible to let simexpal download instances from the `KONECT <http://konect.cc>`_
-and `SNAP <https://snap.stanford.edu/data/>`_ repository.
+It is possible to let simexpal download instances from the `SNAP <https://snap.stanford.edu/data/>`_
+repository.
+
+.. note::
+    1st December 2020: It is no longer possible to automatically download `KONECT <http://konect.cc>`_
+    instances as the website is no longer publicly available. It is still possible to list them and
+    execute supported actions, e.g, transforming the instances to edgelist format via
+    ``simex instances run-transform --transform='to_edgelist'`` if you already have them saved locally.
 
 To list instances from the SNAP repository, set the value of ``repo`` to ``snap`` and put
 the file names without the ``.txt.gz`` extension in the ``items`` list.

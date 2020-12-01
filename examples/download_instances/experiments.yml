@@ -1,9 +1,4 @@
 instances:
-  - repo: konect
-    items:
-      - 'dolphins'
-      - 'iceland'
-      - 'advogato'
   - repo: snap
     items:
       - 'facebook_combined'

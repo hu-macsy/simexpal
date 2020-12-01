@@ -228,15 +228,14 @@ Instances can be checked with:
 
 Unavailable instances will be shown in red, otherwise they will be shown in green.
 If instances are taken from a public repository, they can be downloaded automatically.
-We configured the YAML file below to use instances from `Konect <http://konect.cc/networks/>`_
-and `SNAP <https://snap.stanford.edu/data/>`_.
+We configured the YAML file below to use instances from `SNAP <https://snap.stanford.edu/data/>`_.
 
 .. literalinclude:: ../examples/download_instances/experiments.yml
    :linenos:
    :language: yaml
    :caption: experiments.yml with instances from public repositories.
 
-All the listed instances can be downloaded within the "./graphs" directory with:
+All the listed instances can be downloaded within the ``./graphs`` directory with:
 
 .. code-block:: bash
 
