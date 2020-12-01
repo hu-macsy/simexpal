@@ -52,7 +52,7 @@ def download_instance(inst_yml, instances_dir, filename, partial_path, ext):
 		zip_file = zipfile.ZipFile(download_path + compression, 'r')
 		# TODO finish
 	else:
-		DownloadException('Unknown repository: ' + repo)
+		raise DownloadException('Unknown repository: ' + repo)
 
 	os.unlink(download_path)
 	os.rename(tmp_path, partial_path + ext)
