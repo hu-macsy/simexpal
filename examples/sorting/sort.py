@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import argparse
-import bisect
 import sys
 from time import time
 import yaml

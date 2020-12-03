@@ -6,7 +6,6 @@ import subprocess
 import time
 
 import yaml
-import warnings
 
 from .. import base
 from .. import util

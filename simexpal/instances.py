@@ -2,7 +2,6 @@
 import gzip
 import os
 import requests
-import tarfile
 import zipfile
 
 from .util import try_mkdir
