@@ -264,7 +264,7 @@ Those variants can be handled by simexpal using the following stanzas:
 
     experiments:
       - name: 'merge-sort'
-        output: stdout
+        stdout: out
         args: ['python3', 'sort.py', '--algo=insertion-sort', '@EXTRA_ARGS@', '@INSTANCE@']
 
     variants:
@@ -343,7 +343,7 @@ Next, we have to assign the builds to their respective experiments:
       - name: quick-sort
         use_builds: [simexpal]  # specify which builds get used for this experiment
         args: ['quicksort', '@INSTANCE@', '@EXTRA_ARGS@']
-        output: stdout
+        stdout: out
 
 Simexpal resolves the ``@INSTANCE@`` variable to the instance paths and the ``@EXTRA_ARGS@``
 to the extra arguments of the variants (that we define below) during runtime.
