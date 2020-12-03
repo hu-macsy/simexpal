@@ -1,0 +1,4 @@
+# Invalid .yml file for util.validate_setup_file().
+# This file contains an invalid top level key.
+
+foo: true
