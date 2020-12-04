@@ -1,0 +1,7 @@
+# Invalid .yml file for util.validate_setup_file().
+# This file contains an invalid value for the 'repo' key in 'instances'
+
+instances:
+  - repo: foo
+    items:
+      - bar
