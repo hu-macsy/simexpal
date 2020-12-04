@@ -45,7 +45,7 @@ our ``experiments.yml`` as follows:
    experiments:
      - name: insertion-sort
        args: ['./sort.py', '--algo=insertion-sort', '@INSTANCE@']
-       output: stdout
+       stdout: out
 
 In the examples above we created an experiment named `insertion-sort`. As experiment arguments we have
 a list of strings (instead of one space separated string). Note that the :ref:`@-variable <AtVariables>`
@@ -79,7 +79,7 @@ specify your experiment as follows:
    experiments:
      - name: graph-algorithm
        args: ['./algorithm.py', '@INSTANCE:graph', '@INSTANCE:xyz@']
-       output: stdout
+       stdout: out
 
 The ``@INSTANCE:graph@`` variable will resolve to ``/instance_directory/<instance_name>.graph`` during
 runtime. Analogously for the ``@INSTANCE:xyz@`` variable.
@@ -106,7 +106,7 @@ as follows:
    experiments:
      - name: algorithm
        args: ['./algorithm.py', '@INSTANCE:0', '@INSTANCE:1@']
-       output: stdout
+       stdout: out
 
 The ``@INSTANCE:0@`` variable will resolve to ``/instance_directory/files[0]``, where ``files[0]`` is
 the first filename of the ``files`` key. Analogously for the ``@INSTANCE:1`` variable.
@@ -128,7 +128,7 @@ arguments:
    experiments:
      - name: algorithm
        args: ['./algorithm.py', '@INSTANCE@', '@EXTRA_ARGS@']
-       output: stdout
+       stdout: out
 
 The ``@EXTRA_ARGS@`` variable resolves to the extra arguments of all variants (and also the used instance, see
 above) of the experiment during runtime. For example, assume we have the following ``variants`` stanza:

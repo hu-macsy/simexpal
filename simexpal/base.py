@@ -621,11 +621,11 @@ class Instance:
 	@property
 	def instsets(self):
 		if 'set' not in self._inst_yml:
-			return set([None])
+			return {None}
 		if isinstance(self._inst_yml['set'], list):
 			return set(self._inst_yml['set'])
 		assert isinstance(self._inst_yml['set'], str)
-		return set([self._inst_yml['set']])
+		return {self._inst_yml['set']}
 
 	@property
 	def repo(self):

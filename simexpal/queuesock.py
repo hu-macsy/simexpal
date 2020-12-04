@@ -4,7 +4,6 @@ import socket
 import selectors
 import subprocess
 import sys
-import tempfile
 
 from . import util
 

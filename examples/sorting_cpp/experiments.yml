@@ -30,7 +30,7 @@ experiments:
   - name: quick-sort
     use_builds: [simexpal]
     args: ['quicksort', '@INSTANCE@', '@EXTRA_ARGS@']
-    output: stdout
+    stdout: out
 
 variants:
   - axis: 'block-algo'
