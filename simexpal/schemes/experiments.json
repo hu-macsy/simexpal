@@ -44,7 +44,7 @@
 			"type": "array",
 			"items": {
 				"type": "object",
-				"required": ["name", "git"],
+				"required": ["name"],
 				"properties": {
 					"name": {"type": "string"},
 					"git": {"type":  "string"},
