@@ -212,15 +212,15 @@ def select_phases_from_cli(args):
 
 	if args.recheckout:
 		if not args.f:
-			print("This would delete the local git repository for the build and reclone it. Confirm this action"
-					" by using the '-f' flag.")
+			print("This would delete the local git repository for the build and reclone it (does not apply to"
+					" VCS-less dev-builds). Confirm this action by using the '-f' flag.")
 			return []
 		else:
 			return subsequent_phases(simexpal.build.Phase.CHECKOUT)
 	elif args.checkout:
 		if not args.f:
-			print("This would delete the local git repository for the build and reclone it. Confirm this action"
-					" by using the '-f' flag.")
+			print("This would delete the local git repository for the build and reclone it (does not apply to"
+					" VCS-less dev-builds). Confirm this action by using the '-f' flag.")
 			return []
 		else:
 			return [simexpal.build.Phase.CHECKOUT]

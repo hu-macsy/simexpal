@@ -199,81 +199,89 @@ def make_build_in_order(cfg, build, wanted_builds, wanted_phases):
 		subprocess.check_call(args, cwd=workdir, env=environ, shell=shell)
 
 	if want_phase(Phase.CHECKOUT):
-		log_phase('checkout')
+		if build.info.git_repo is not None:
+			log_phase('checkout')
 
-		if not build.revision.is_dev_build:
+			if not build.revision.is_dev_build:
 
-			def git_ref_changed():
-				local_hash = subprocess.check_output(['git', 'rev-parse', generic_tag], cwd=build.repo_dir)
-				local_hash = local_hash.strip().decode()
+				def git_ref_changed():
+					local_hash = subprocess.check_output(['git', 'rev-parse', generic_tag], cwd=build.repo_dir)
+					local_hash = local_hash.strip().decode()
 
-				if local_hash == git_ref:
-					return False
-				else:
-					remote_refs = subprocess.check_output(['git', 'ls-remote', build.info.git_repo, git_ref]).decode().splitlines()
-
-					if len(remote_refs) == 0:
-						raise RuntimeError("Git reference '{}' does not exist". format(git_ref))
-					elif len(remote_refs) > 1:
-						raise RuntimeError("Git reference '{}' is ambiguous". format(git_ref))
+					if local_hash == git_ref:
+						return False
 					else:
-						remote_hash, _ = remote_refs[0].split('\t')
+						remote_refs = subprocess.check_output(['git', 'ls-remote', build.info.git_repo, git_ref]).decode().splitlines()
 
-						if local_hash == remote_hash:
-							return False
+						if len(remote_refs) == 0:
+							raise RuntimeError("Git reference '{}' does not exist". format(git_ref))
+						elif len(remote_refs) > 1:
+							raise RuntimeError("Git reference '{}' is ambiguous". format(git_ref))
+						else:
+							remote_hash, _ = remote_refs[0].split('\t')
 
-				return True
+							if local_hash == remote_hash:
+								return False
 
-			git_ref = build.revision.version_for_build(build.name)
-			generic_tag = 'refs/tags/simexpal-rev/' + build.revision.name
+					return True
 
-			# Fetch the remote ref to a local tag.
-			fetch_refspec = ['+' + git_ref + ':' + generic_tag]
+				git_ref = build.revision.version_for_build(build.name)
+				generic_tag = 'refs/tags/simexpal-rev/' + build.revision.name
 
-			# TODO: If we *know* that the ref is a tag, we want to do something like the following:
-			#fetch_refspec = ['+refs/tags/' + git_ref + ':' + generic_tag]
+				# Fetch the remote ref to a local tag.
+				fetch_refspec = ['+' + git_ref + ':' + generic_tag]
 
-			# Create the repository (in an empty state).
-			if not os.access(build.repo_dir, os.F_OK):
-				subprocess.check_call(['git', 'init', '-q', '--bare', build.repo_dir])
+				# TODO: If we *know* that the ref is a tag, we want to do something like the following:
+				#fetch_refspec = ['+refs/tags/' + git_ref + ':' + generic_tag]
 
-			# Fetch the specified revision if it does not exist already.
-			verify_ref_result = subprocess.call(['git', '--git-dir', build.repo_dir,
-					'rev-parse', '-q', '--verify', generic_tag],
-				stdout=subprocess.DEVNULL)
+				# Create the repository (in an empty state).
+				if not os.access(build.repo_dir, os.F_OK):
+					subprocess.check_call(['git', 'init', '-q', '--bare', build.repo_dir])
 
-			if verify_ref_result != 0 or git_ref_changed():
-				# As we create generic_tag, we can add --no-tags here.
+				# Fetch the specified revision if it does not exist already.
+				verify_ref_result = subprocess.call(['git', '--git-dir', build.repo_dir,
+						'rev-parse', '-q', '--verify', generic_tag],
+					stdout=subprocess.DEVNULL)
+
+				if verify_ref_result != 0 or git_ref_changed():
+					# As we create generic_tag, we can add --no-tags here.
+					subprocess.check_call(['git', '--git-dir', build.repo_dir,
+							'fetch', '--depth=1', '--no-tags',
+							build.info.git_repo] + fetch_refspec)
+
+				# Prune the existing worktree.
+				util.try_rmtree(build.clone_dir)
 				subprocess.check_call(['git', '--git-dir', build.repo_dir,
-						'fetch', '--depth=1', '--no-tags',
-						build.info.git_repo] + fetch_refspec)
+						'worktree', 'prune'])
 
-			# Prune the existing worktree.
-			util.try_rmtree(build.clone_dir)
-			subprocess.check_call(['git', '--git-dir', build.repo_dir,
-					'worktree', 'prune'])
+				# Recreate the worktree and check out the specified revision.
+				subprocess.check_call(['git', '--git-dir', build.repo_dir,
+						'worktree', 'add', '--detach',
+						build.clone_dir,
+						generic_tag])
+			else:
+				# Recreate the source directory
+				util.try_rmtree(build.source_dir)
+				util.try_mkdir(build.source_dir)
 
-			# Recreate the worktree and check out the specified revision.
-			subprocess.check_call(['git', '--git-dir', build.repo_dir,
-					'worktree', 'add', '--detach',
-					build.clone_dir,
-					generic_tag])
+				# Clone the git repository into the build.source_dir
+				subprocess.check_call(['git', 'clone', build.info.git_repo, build.source_dir])
+
+			util.touch(os.path.join(checkout_dir, 'checkedout.simexpal'))
+
+			if build.info.recursive_clone:
+				# Clone submodules recursively
+				subprocess.check_call(['git', 'submodule',
+						'update', '--init', '--recursive'], cwd=checkout_dir)
+
+			did_work = True
 		else:
-			# Recreate the source directory
-			util.try_rmtree(build.source_dir)
-			util.try_mkdir(build.source_dir)
+			print("simexpal: Skipping checkout-phase for VCS-less dev-build {}".format(build.name))
 
-			# Clone the git repository into the build.source_dir
-			subprocess.check_call(['git', 'clone', build.info.git_repo, build.source_dir])
-
-		util.touch(os.path.join(checkout_dir, 'checkedout.simexpal'))
-
-		if build.info.recursive_clone:
-			# Clone submodules recursively
-			subprocess.check_call(['git', 'submodule',
-					'update', '--init', '--recursive'], cwd=checkout_dir)
-
-		did_work = True
+	# Make sure that the build source directory exists for VCS-less dev-builds.
+	if build.info.git_repo is None and build.revision.is_dev_build and not os.path.isdir(build.source_dir):
+		raise RuntimeError(f"The source directory of the build '{build.name}' with revision '{build.revision.name}'"
+							f" does not exist.")
 
 	if want_phase(Phase.REGENERATE):
 		log_phase('regenerate')
