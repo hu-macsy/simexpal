@@ -67,11 +67,11 @@ class Phase(IntEnum):
 
 def make_build_in_order(cfg, build, wanted_builds, wanted_phases):
 	if not build.revision.is_dev_build:
-		util.try_mkdir('builds/')
+		util.try_mkdir(cfg.basedir + '/builds/')
 		checkout_dir = build.clone_dir
 	else:
-		util.try_mkdir('develop/')
-		util.try_mkdir('dev-builds/')
+		util.try_mkdir(cfg.basedir + '/develop/')
+		util.try_mkdir(cfg.basedir + '/dev-builds/')
 		checkout_dir = build.source_dir
 
 	def num_allocated_cpus():
