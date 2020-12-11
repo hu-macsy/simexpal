@@ -651,6 +651,14 @@ class Instance:
 			raise RuntimeError("The instance '{}' is fileless".format(self.shortname))
 		return self.filenames[0]
 
+	@property
+	def method(self):
+		return self._inst_yml.get('method', None)
+
+	@property
+	def url(self):
+		return self._inst_yml.get('url', None)
+
 	def check_available(self):
 		for file in self.filenames:
 			if not os.path.isfile(os.path.join(self._cfg.instance_dir(), file)):
@@ -676,13 +684,12 @@ class Instance:
 					DID_WARN_KONECT = True
 				return
 
-			print("Downloading instance '{}' from {} repository".format(self.unique_filename,
+			print("Downloading instance '{}' from {} repository".format(self.shortname,
 					self._inst_yml['repo']))
 
 			instances.download_instance(self._inst_yml,
 					self.config.instance_dir(), self.unique_filename, partial_path, '.post0')
-		else:
-			assert 'generator' in self._inst_yml
+		elif 'generator' in self._inst_yml:
 			import subprocess
 
 			def substitute(p):
@@ -690,7 +697,7 @@ class Instance:
 					return self.unique_filename
 				raise RuntimeError("Unexpected parameter {}".format(p))
 
-			print("Generating instance '{}'".format(self.unique_filename))
+			print("Generating instance '{}'".format(self.shortname))
 
 			assert isinstance(self._inst_yml['generator']['args'], list)
 			cmd = [util.expand_at_params(arg_tmpl, substitute) for arg_tmpl
@@ -700,6 +707,13 @@ class Instance:
 				subprocess.check_call(cmd, cwd=self.config.basedir,
 						stdout=f, stderr=subprocess.PIPE)
 			os.rename(partial_path + '.gen', partial_path + '.post0')
+		elif 'method' in self._inst_yml:
+			print(f"Downloading instance '{self.shortname}' with method '{self.method}'")
+
+			instances.download_instance(self._inst_yml,
+					self.config.instance_dir(), self.unique_filename, partial_path, '.post0')
+		else:
+			raise RuntimeError(f"Unknown installation option for instance '{self.shortname}'")
 
 		stage = 0
 		if 'postprocess' in self._inst_yml:
