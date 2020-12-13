@@ -14,11 +14,14 @@ only Git is supported) and build them automatically. To achieve this, we need to
 
 On this page we will explain the ``builds`` key and mainly use the
 `C++ example <https://github.com/hu-macsy/simexpal/tree/master/examples/sorting_cpp>`_ from the
-:ref:`QuickStart` guide in order to do so. For example, we will explain how to specify a Git repository, enable
-the automated build support and the directories involved in the build process. Furthermore we will present
-additional options such as pulling Git submodules and setting additional environment variables for the build process.
+:ref:`QuickStart` guide in order to do so. For example, we will explain how to specify a Git repository or
+a local build that does not come from a VCS, enable the automated build support and the directories involved
+in the build process. Furthermore we will present additional options such as pulling Git submodules and setting
+additional environment variables for the build process.
 
 You can find information regarding the ``revisions`` key on the :ref:`Revisions` page.
+
+.. _SpecifyingGitRepository:
 
 Specifying a Git Repository
 ---------------------------
@@ -59,6 +62,19 @@ key to ``true`` in order for simexpal to pull the respective files.
         recursive-clone: true
 
 If ``recursive-clone`` is not set, it will default to ``false``.
+
+Specifying Builds Without Version Control
+-----------------------------------------
+
+Specifying builds without version control works similar to :ref:`SpecifyingGitRepository`. The differences are
+
+- we omit the ``git`` key *and*
+- store the local build files in ``./develop/<build_name>@<revision_name>``.
+
+**As of now local builds are only supported for** :ref:`DevRevisions` **as we can not guarantee reproducibility
+without some kind of identifier, e.g, a commit hash.**
+
+All the options below also apply for local builds (we just need to omit the ``git`` key, where applicable).
 
 Automated Builds
 ----------------
@@ -234,16 +250,14 @@ current build. In this way we make sure that simexpal builds the required builds
 
    builds:
      - name: build1
-       git: '<link_to_git_repo>'
+       ...
        requires:
          - build2
          - build3
        ...
      - name: build2
-       git: '<link_to_git_repo>'
        ...
      - name: build3
-       git: '<link_to_git_repo>'
        ...
 
 .. _BuildDirectories:
@@ -257,7 +271,7 @@ the following subsections we will cover the directories for :ref:`normal revisio
 
 .. _BuildDirectoriesNormalBuilds:
 
-Build Directories for normal Builds
+Build Directories for Normal Builds
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 A :ref:`normal revision<NormalRevisions>` in simexpal uses the ``/builds`` directory, which contains the four
 subdirectories
@@ -315,7 +329,7 @@ simexpal files have the suffix ``.simexpal``.
    ├── experiments.yml
    └── quicksort.cpp
 
-Build Directories for develop Builds
+Build Directories for Develop Builds
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 A :ref:`develop revision<DevRevisions>` in simexpal uses the ``/dev-builds`` directory, which contains the two
@@ -330,7 +344,8 @@ and the ``/develop`` directory, which contains the
 
 during the build process:
 
-The functions of the respective directories are as :ref:`before<BuildDirectoriesNormalBuilds>`.
+The functions of the respective directories are as :ref:`before<BuildDirectoriesNormalBuilds>` (for local builds
+the clone directory contains the local program files).
 
 Below you can find the shortened directory structure of our
 `C++ example <https://github.com/hu-macsy/simexpal/tree/master/examples/sorting_cpp>`_ example

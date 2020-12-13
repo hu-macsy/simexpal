@@ -1,0 +1,25 @@
+# This file contains a VCS-less develop build.
+builds:
+  - name: vcs-less
+    regenerate:
+      - args:
+          - 'touch'
+          - 'regenerated'
+    configure:
+      - args:
+          - 'touch'
+          - 'configured'
+    compile:
+      - args:
+          - 'touch'
+          - 'compiled'
+    install:
+      - args:
+          - 'touch'
+          - 'installed'
+
+revisions:
+  - name: main
+    develop: true
+    build_version:
+      'vcs-less': ''

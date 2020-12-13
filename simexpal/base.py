@@ -779,7 +779,7 @@ class BuildInfo:
 
 	@property
 	def git_repo(self):
-		return self._build_yml.get('git', '')
+		return self._build_yml.get('git', None)
 
 	@property
 	def recursive_clone(self):

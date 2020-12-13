@@ -58,8 +58,8 @@ Develop Revisions
 Specifying develop revisions works similarly to specifying :ref:`normal revisions<NormalRevisions>`. The differences
 are:
 
-- we add another key ``develop`` and set its value to ``true``
-- we leave the values of the ``build_version`` dict as empty string ``''``
+- we add another key ``develop`` and set its value to ``true`` *and*
+- we leave the values of the ``build_version`` dict as empty string ``''``.
 
 Values specified in the ``build_version`` dict will be ignored for develop revisions and simexpal will clone the
 latest project files.
