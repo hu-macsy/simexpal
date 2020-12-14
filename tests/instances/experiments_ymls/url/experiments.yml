@@ -1,0 +1,7 @@
+# This file contains download instances from an URL.
+instances:
+  - method: url
+    url: 'https://raw.githubusercontent.com/hu-macsy/simexpal/master/simexpal/schemes/@INSTANCE_FILENAME@'
+    items:
+      - 'experiments.json'
+      - 'launchers.json'
