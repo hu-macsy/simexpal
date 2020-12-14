@@ -6,6 +6,7 @@ Instances
 You might want to take a look at the following pages before exploring instances:
 
 - :ref:`QuickStart`
+- :ref:`AtVariables`
 
 On this page we describe how to specify instances in the ``experiments.yml`` file. You can
 list local instances that consist of one file or several files. More over simexpal can download
@@ -55,14 +56,26 @@ An example of how to list a local set of instances is:
 Remote Instances
 ----------------
 
-It is possible to let simexpal download instances from the `SNAP <https://snap.stanford.edu/data/>`_
-repository.
+It is possible to let simexpal download instances from `SNAP <https://snap.stanford.edu/data/>`_,
+a URL and a Git repository. In the sections below, we will see how to list the different
+kinds of remote instances in the ``experiments.yml``.
+
+After listing the instances we need to use
+
+.. code-block:: bash
+
+   $ simex instances install
+
+to download the instances into the instance directory.
 
 .. note::
     1st December 2020: It is no longer possible to automatically download `KONECT <http://konect.cc>`_
     instances as the website is no longer publicly available. It is still possible to list them and
     execute supported actions, e.g, transforming the instances to edgelist format via
     ``simex instances run-transform --transform='to_edgelist'`` if you already have them saved locally.
+
+Instances From SNAP
+^^^^^^^^^^^^^^^^^^^
 
 To list instances from the SNAP repository, set the value of ``repo`` to ``snap`` and put
 the file names without the ``.txt.gz`` extension in the ``items`` list.
@@ -85,13 +98,81 @@ the internal names of the KONECT instances in the ``items`` list.
           - dolphins
           - ucidata-zachary
 
-After listing the instances use
+Instances From a URL
+^^^^^^^^^^^^^^^^^^^^
 
-.. code-block:: bash
+To list instances from a URL, we use the following keys:
 
-   $ simex instances install
+- ``method``: download method
+- ``url``: URL of the instance
 
-to download the instances into the instance directory.
+We set the value of the ``method`` key to ``'url'`` and specify the URL of the instance in the
+``url`` key.
+
+.. code-block:: YAML
+   :linenos:
+   :caption: How to list instances from a URL in the experiments.yml file.
+
+   instdir: "<path_to_instance_directory>"
+   instances:
+     - method: url
+       url: 'https://raw.githubusercontent.com/hu-macsy/simexpal/master/simexpal/schemes/@INSTANCE_FILENAME@'
+       items:
+         - 'experiments.json'
+         - 'launchers.json'
+
+The :ref:`@-variable <AtVariables>` ``@INSTANCE_FILENAME@`` in the URL (from the example above) resolves to
+the elements in the ``items`` key. Thus, we have listed the two instances ``experiments.json`` and
+``launchers.json``, which come from
+`<https://raw.githubusercontent.com/hu-macsy/simexpal/master/simexpal/schemes/experiments.json>`_ and
+`<https://raw.githubusercontent.com/hu-macsy/simexpal/master/simexpal/schemes/launchers.json>`_ respectively.
+
+Instances From Git
+^^^^^^^^^^^^^^^^^^
+
+To list instances from a Git repository, we use the following keys:
+
+- ``method``: download method
+- ``git``: link to the Git repository
+- ``repo_name``: name of the directory to clone into
+- ``commit``: SHA-1 hash
+- ``git_subdir``: subdirectory of the instance in the Git repository
+
+
+We set the value of the ``method`` key to ``'git'`` and specify the Git URL of the instance in the
+``git`` key. The ``repo_name`` states the local directory name of the Git repository. When installing
+the instance, the Git repository will be stored in ``<instance_dir>/<repo_name>``. The ``commit`` value
+specifies the version of the instance given as SHA-1 hash. It is also possible to specify other revision
+parameters, e.g. ref names. For reproducibility reasons the former variant is recommended. If the instance
+is not located in the root directory of the Git repository, we will need to specify the subdirectory of
+the instance in ``git_subdir``.
+
+.. code-block:: YAML
+   :linenos:
+   :caption: How to list instances from a Git repository in the experiments.yml file.
+
+   instdir: "<path_to_instance_directory>"
+   instances:
+     - method: git
+       git: 'https://github.com/hu-macsy/simexpal'
+       repo_name: 'foo'
+       commit: 'master'
+       items:
+         - 'setup.py'
+         - 'pytest.ini'
+     - method: git
+       git: 'https://github.com/hu-macsy/simexpal'
+       repo_name: 'foo'
+       commit: 'd5e598f292b90cd7ef2e77d7a478ec52d42279df'
+       git_subdir: 'simexpal/schemes/'
+       items:
+         - 'experiments.json'
+         - 'launchers.json'
+
+In the example above we clone the simexpal repository into ``<instance_dir>/foo``. Then ``setup.py`` and
+``pytest.ini`` of the current ``master`` branch and ``simexpal/schemes/experiments.json`` and
+``simexpal/schemes/launchers.json`` of the specified commit ``d5e598f292b90cd7ef2e77d7a478ec52d42279df``
+will be downloaded into the instance directory.
 
 Multiple Input Files
 --------------------
