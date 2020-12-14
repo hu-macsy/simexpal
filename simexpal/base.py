@@ -659,6 +659,22 @@ class Instance:
 	def url(self):
 		return self._inst_yml.get('url', None)
 
+	@property
+	def git(self):
+		return self._inst_yml.get('git', None)
+
+	@property
+	def repo_name(self):
+		return self._inst_yml.get('repo_name', None)
+
+	@property
+	def commit(self):
+		return self._inst_yml.get('commit', None)
+
+	@property
+	def git_subdir(self):
+		return self._inst_yml.get('git_subdir', None)
+
 	def check_available(self):
 		for file in self.filenames:
 			if not os.path.isfile(os.path.join(self._cfg.instance_dir(), file)):

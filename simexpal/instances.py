@@ -69,6 +69,23 @@ def download_instance(inst_yml, instances_dir, filename, partial_path, ext):
 			request = requests.get(url)
 			with open(partial_path + ext, 'wb') as f:
 				f.write(request.content)
+		elif method == 'git':
+			import subprocess
+
+			repo_dir = os.path.join(instances_dir, inst_yml['repo_name'])
+			if not os.path.isdir(repo_dir):
+				subprocess.check_call(['git', 'clone', inst_yml['git'], repo_dir, '--no-checkout'])
+
+			git_subdir = inst_yml.get('git_subdir', None)
+			if git_subdir is not None:
+				file_path = os.path.join(git_subdir, filename)
+			else:
+				file_path = filename
+
+			object_name = inst_yml['commit'] + ':' + file_path
+			output = subprocess.check_output(['git', 'show', object_name], cwd=repo_dir)
+			with open(os.path.join(instances_dir, filename + ext), 'wb') as f:
+				f.write(output)
 		else:
 			raise RuntimeError(f"Unknown method for instance '{shortname}': {method}")
 	else:
