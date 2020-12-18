@@ -190,15 +190,41 @@ key to specify our extra arguments.
 Extra Arguments
 ---------------
 
-We can set extra arguments for instances, which can be appended to the experiment arguments when the
-respective instance is used. In order to specify such instances, we use the
+We can set extra arguments for instance blocks and individual instances, which can be appended to the
+experiment arguments when the respective instance is used. In order to specify such instances, we use the
 
 - ``extra_args``: list of extra arguments
 
 key.
 
-For :ref:`LocalInstances`, :ref:`RemoteInstances` and :ref:`MultipleExtensions` we need to change
-the ``items`` key from a list of instances to a list of dictionaries containing the
+.. note::
+   It is possible to have instances with common extra arguments and additional individual extra arguments
+   by adding the ``extra_args`` key to the respective places (see below).
+
+In order to specify common extra arguments for instance blocks, we simply add the ``extra_args`` key to them.
+
+.. code-block:: YAML
+   :linenos:
+   :caption: How to list instances with common extra arguments in the experiments.yml file.
+
+    instdir: "<path_to_instance_directory>"
+    instances:
+      - repo: local
+        extra_args: ['some','extra_args']
+        ...
+        items:
+          - instance1
+          - instance2
+      - repo: local
+        extra_args: ['some','extra_args']
+        ...
+        items:
+          - instance3
+          - instance4
+
+In order to specify individual extra arguments for :ref:`LocalInstances`, :ref:`RemoteInstances` and
+:ref:`MultipleExtensions` we need to change the ``items`` key from a list of instances to a list of
+dictionaries containing the
 
 - ``name``: name of the instance `and`
 - ``extra_args``
@@ -207,7 +233,8 @@ key, e.g.,
 
 .. code-block:: YAML
    :linenos:
-   :caption: How to list local/remote/multiple extension instances with extra arguments in the experiments.yml file.
+   :caption: How to list local/remote/multiple extension instances with individual
+             extra arguments in the experiments.yml file.
 
    instances:
      - repo: local # local instances with extra arguments
@@ -219,15 +246,15 @@ key, e.g.,
      - repo: snap # remote instances with extra arguments
        items:
          - name: facebook_combined
-           extra_args: ['some', 'extra', 'argument']
+           extra_args: ['some', 'extra_args']
          - name: wiki-Vote
-           extra_args: ['some', 'extra', 'argument']
+           extra_args: ['some', 'extra_args']
      - repo: local # multiple extension instances with extra args
        items:
          - name: inst3
-           extra_args: ['some', 'extra', 'argument']
+           extra_args: ['some', 'extra_args']
          - name: inst4
-           extra_args: ['some', 'extra', 'argument']
+           extra_args: ['some', 'extra_args']
        extensions: [ext1, ext2]
 
 For :ref:`ArbitraryInputFiles` we only need to add the ``extra_args`` key
@@ -235,7 +262,8 @@ to the dictionaries of the instances, e.g,
 
 .. code-block:: YAML
    :linenos:
-   :caption: How to list arbitrary input file instances with extra arguments in the experiments.yml file.
+   :caption: How to list arbitrary input file instances with individual extra arguments
+             in the experiments.yml file.
 
     instances:
      - repo: local
