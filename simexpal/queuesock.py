@@ -54,6 +54,12 @@ class Queue:
 							requests.append(request)
 						elif request['action'] == 'stop':
 							self._should_stop = True
+						elif request['action'] == 'kill':
+							print("Terminating current subprocess")
+							if cur_subprocess is not None:
+								cur_subprocess.terminate()
+							self.close()
+							return
 						else:
 							print("Ignoring request with unknown action '{}': {}".format(request['action'], request))
 
@@ -80,10 +86,12 @@ class Queue:
 
 						cur_subprocess = subprocess.Popen([script, 'internal-invoke', '--method=queue', specfile_path])
 				elif self._should_stop:
-					print("Closing socket on {}".format(self.socket_path))
-					self.socket.close()
-					os.remove(self.socket_path)
+					self.close()
 					break
+	def close(self):
+		print("Closing socket on {}".format(self.socket_path))
+		self.socket.close()
+		os.remove(self.socket_path)
 
 class Connection:
 	def __init__(self, connection):
@@ -135,4 +143,9 @@ def sendrecv(m):
 def stop_queue():
 	sendrecv({
 		'action': 'stop'
+	})
+
+def kill_queue():
+	sendrecv({
+		'action': 'kill'
 	})

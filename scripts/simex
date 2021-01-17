@@ -822,6 +822,12 @@ queue_interactive_parser = queue_subcmds.add_parser('interactive')
 queue_interactive_parser.set_defaults(cmd=do_queue_interactive)
 queue_interactive_parser.add_argument('--force', action='store_true')
 
+def do_queue_kill(args):
+	simexpal.queuesock.kill_queue()
+
+queue_kill_parser = queue_subcmds.add_parser('kill')
+queue_kill_parser.set_defaults(cmd=do_queue_kill)
+
 # ---------------------------------------------------------------------------------------
 # Internal commands. Not intended for CLI users.
 # ---------------------------------------------------------------------------------------
