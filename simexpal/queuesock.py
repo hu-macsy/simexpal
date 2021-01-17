@@ -63,27 +63,27 @@ class Queue:
 			if cur_subprocess is not None:
 				subprocess_terminated = cur_subprocess.poll() is not None
 
-			if subprocess_terminated and not len(requests) == 0:
-				request = requests.pop(0)
+			if subprocess_terminated:
+				if not len(requests) == 0:
+					request = requests.pop(0)
 
-				if self._should_stop:
+					if request['action'] == 'launch':
+						specfile_path = request['specfile_path']
+						with open(specfile_path, 'r') as f:
+							manifest = util.read_yaml_file(f)['manifest']
+
+						display_name = self.get_display_name(manifest)
+						print("Launching run {}/{}[{}]".format(
+							display_name, manifest['instance'], manifest['repetition']))
+
+						script = os.path.abspath(sys.argv[0])
+
+						cur_subprocess = subprocess.Popen([script, 'internal-invoke', '--method=queue', specfile_path])
+				elif self._should_stop:
 					print("Closing socket on {}".format(self.socket_path))
 					self.socket.close()
 					os.remove(self.socket_path)
 					break
-
-				if request['action'] == 'launch':
-					specfile_path = request['specfile_path']
-					with open(specfile_path, 'r') as f:
-						manifest = util.read_yaml_file(f)['manifest']
-
-					display_name = self.get_display_name(manifest)
-					print("Launching run {}/{}[{}]".format(
-						display_name, manifest['instance'], manifest['repetition']))
-
-					script = os.path.abspath(sys.argv[0])
-
-					cur_subprocess = subprocess.Popen([script, 'internal-invoke', '--method=queue', specfile_path])
 
 class Connection:
 	def __init__(self, connection):
