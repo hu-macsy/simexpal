@@ -1,7 +1,6 @@
 
 import gzip
 import os
-import requests
 import zipfile
 
 from .util import try_mkdir, expand_at_params
@@ -21,6 +20,8 @@ repos = {
 }
 
 def download_instance(inst_yml, instances_dir, filename, partial_path, ext):
+	import requests
+
 	shortname = os.path.splitext(filename)[0]
 	if 'repo' in inst_yml:
 		repo = inst_yml['repo']

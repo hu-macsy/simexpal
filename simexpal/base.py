@@ -9,7 +9,6 @@ import sys
 import tempfile
 import warnings
 
-from . import instances
 from . import util
 
 DEFAULT_DEV_BUILD_NAME = '_dev'
@@ -684,6 +683,8 @@ class Instance:
 		return True
 
 	def install(self):
+		from . import instances
+
 		global DID_WARN_KONECT
 
 		if self.check_available() or self.is_fileless:
@@ -745,6 +746,9 @@ class Instance:
 
 	def run_transform(self, transform, out_path):
 		assert transform == 'to_edgelist'
+
+		from . import instances
+
 		instances.convert_to_edgelist(self._inst_yml,
 				self.fullpath, out_path + '.transf1')
 		stage = 1
