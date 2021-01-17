@@ -828,6 +828,25 @@ def do_queue_kill(args):
 queue_kill_parser = queue_subcmds.add_parser('kill')
 queue_kill_parser.set_defaults(cmd=do_queue_kill)
 
+def do_queue_show(args):
+	queue_info = simexpal.queuesock.show_queue()
+
+	print('{:20.20} {}'.format('Currently running:', queue_info['current_run']))
+
+	if len(queue_info['pending_runs']) == 0:
+		print('{:20.20} {}'.format('Pending runs:', None))
+	else:
+		for i, pending_run in enumerate(queue_info['pending_runs']):
+			if i == 0:
+				print('{:20.20} {}'.format('Pending runs:', pending_run))
+			else:
+				print('{:20.20} {}'.format('', pending_run))
+
+	print('{:20.20} {}'.format('Completed runs:', queue_info['num_completed_runs']))
+
+queue_status_parser = queue_subcmds.add_parser('show')
+queue_status_parser.set_defaults(cmd=do_queue_show)
+
 # ---------------------------------------------------------------------------------------
 # Internal commands. Not intended for CLI users.
 # ---------------------------------------------------------------------------------------
