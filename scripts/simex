@@ -816,11 +816,10 @@ queue_stop_parser = queue_subcmds.add_parser('stop')
 queue_stop_parser.set_defaults(cmd=do_queue_stop)
 
 def do_queue_interactive(args):
-	simexpal.queuesock.run_queue(args.sockfd, args.force)
+	simexpal.queuesock.run_queue(force=args.force)
 
 queue_interactive_parser = queue_subcmds.add_parser('interactive')
 queue_interactive_parser.set_defaults(cmd=do_queue_interactive)
-queue_interactive_parser.add_argument('--sockfd', type=int)
 queue_interactive_parser.add_argument('--force', action='store_true')
 
 # ---------------------------------------------------------------------------------------
