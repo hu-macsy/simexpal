@@ -120,7 +120,17 @@ def sendrecv(m):
 	s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
 	s.connect(sockpath)
 	s.send(util.yaml_to_string(m).encode())
+	s.shutdown(socket.SHUT_WR)
+
+	recv_buffer = bytes()
+	while True:
+		data = s.recv(4096)
+		if not data:
+			break
+		recv_buffer += data
+
 	s.close()
+	return util.yaml_from_string(recv_buffer.decode())
 
 def stop_queue():
 	sendrecv({
