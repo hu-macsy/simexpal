@@ -785,10 +785,14 @@ archive_parser.set_defaults(cmd=do_archive)
 # Advanced commands.
 # ---------------------------------------------------------------------------------------
 
+def do_queue(args):
+
+	return do_queue_daemon(args)
+
 queue_parser = main_subcmds.add_parser('queue', help='Local batch queue for experiments',
 		aliases=['q'])
+queue_parser.set_defaults(cmd=do_queue)
 queue_subcmds = queue_parser.add_subparsers()
-queue_subcmds.required = True
 
 def do_queue_daemon(args):
 	import shutil
