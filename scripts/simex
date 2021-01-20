@@ -786,6 +786,7 @@ archive_parser.set_defaults(cmd=do_archive)
 # ---------------------------------------------------------------------------------------
 
 def do_queue(args):
+	args.force = False
 
 	return do_queue_daemon(args)
 
@@ -801,13 +802,16 @@ def do_queue_daemon(args):
 	script = os.path.abspath(sys.argv[0])
 
 	if shutil.which('systemd-run'):
-		subprocess.check_call(['systemd-run', '--user',
-				script, 'internal-queuesock'])
+		cmd = ['systemd-run', '--user', script, 'internal-queuesock']
+		if args.force:
+			cmd.append('--force')
+		subprocess.check_call(cmd)
 	else:
 		raise RuntimeError('No supported service manager is available')
 
 queue_daemon_parser = queue_subcmds.add_parser('daemon')
 queue_daemon_parser.set_defaults(cmd=do_queue_daemon)
+queue_daemon_parser.add_argument('--force', action='store_true')
 
 def do_queue_stop(args):
 	simexpal.queuesock.stop_queue()
@@ -913,11 +917,12 @@ invoke_parser.add_argument('--repetition', type=int) # Legacy argument for SGE.
 invoke_parser.add_argument('specfile', type=str)
 
 def do_internal_queuesock(args):
-	simexpal.queuesock.run_queue(args.sockfd)
+	simexpal.queuesock.run_queue(args.sockfd, args.force)
 
 internal_queuesock_parser = main_subcmds.add_parser('internal-queuesock')
 internal_queuesock_parser.set_defaults(cmd=do_internal_queuesock)
 internal_queuesock_parser.add_argument('--sockfd', type=int)
+internal_queuesock_parser.add_argument('--force', action='store_true')
 
 # ---------------------------------------------------------------------------------------
 
