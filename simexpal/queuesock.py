@@ -5,6 +5,7 @@ import selectors
 import subprocess
 import sys
 
+from . import base
 from . import util
 
 
@@ -140,19 +141,17 @@ def run_queue(sockfd=None, force=False):
 	if sockfd is not None:
 		serve_sock = socket.socket(fileno=sockfd)
 	else:
-		sockpath = os.path.expanduser('~/.extlq.sock')
 		serve_sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
 		if force:
-			util.try_rmfile(sockpath)
-		serve_sock.bind(sockpath)
+			util.try_rmfile(base.DEFAULT_SOCKETPATH)
+		serve_sock.bind(base.DEFAULT_SOCKETPATH)
 
 	queue = Queue(serve_sock)
 	queue.run()
 
 def sendrecv(m):
-	sockpath = os.path.expanduser('~/.extlq.sock')
 	s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-	s.connect(sockpath)
+	s.connect(base.DEFAULT_SOCKETPATH)
 	s.send(util.yaml_to_string(m).encode())
 	s.shutdown(socket.SHUT_WR)
 
