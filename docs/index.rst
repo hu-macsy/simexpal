@@ -18,6 +18,7 @@ Welcome to simexpal's documentation!
    Experiments <experiments>
    Variants <variants>
    Run Matrix <run_matrix>
+   Launcher <launcher>
    Command-line Reference <command_line_reference>
    Python API <python_api>
    Recipes <recipes>
