@@ -97,17 +97,16 @@ class Queue:
 				if not len(requests) == 0:
 					request = requests.pop(0)
 
-					if request['action'] == 'launch':
-						specfile_path = request['specfile_path']
-						with open(specfile_path, 'r') as f:
-							manifest = util.read_yaml_file(f)['manifest']
+					specfile_path = request['specfile_path']
+					with open(specfile_path, 'r') as f:
+						manifest = util.read_yaml_file(f)['manifest']
 
-						cur_run = self.get_run_display_name(manifest)
-						print("Launching run {}".format(cur_run))
+					cur_run = self.get_run_display_name(manifest)
+					print("Launching run {}".format(cur_run))
 
-						script = os.path.abspath(sys.argv[0])
+					script = os.path.abspath(sys.argv[0])
 
-						cur_subproc = subprocess.Popen([script, 'internal-invoke', '--method=queue', specfile_path])
+					cur_subproc = subprocess.Popen([script, 'internal-invoke', '--method=queue', specfile_path])
 				elif self._should_stop:
 					self.close()
 					break
