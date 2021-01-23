@@ -110,19 +110,26 @@ def validate_setup_file(basedir, setup_file, setup_file_schema):
 							print("\nValidation errors in subschema [{}]:".format(cur_schema_index))
 						print(sub_error.message)
 					print()
-			sys.exit(1)
+			return False
+		return True
 
 	cur_file_path = os.path.abspath(os.path.dirname(__file__))
 
 	setup_file_path = os.path.join(basedir, setup_file)
 	setup_file_dict, _ = read_setup_file(setup_file_path)
 	setup_file_schema_path = os.path.join(cur_file_path, "schemes", setup_file_schema)
-	_validate_dict(setup_file_dict, setup_file, setup_file_schema_path)
+	setup_file_is_valid = _validate_dict(setup_file_dict, setup_file, setup_file_schema_path)
+
+	if not setup_file_is_valid:
+		sys.exit(1)
 
 	try:
 		launchers_yml_dict, _ = read_setup_file(os.path.expanduser('~/.simexpal/launchers.yml'))
 		launchers_yml_schema_path = os.path.join(cur_file_path, "schemes", "launchers.json")
-		_validate_dict(launchers_yml_dict, "launchers.yml", launchers_yml_schema_path)
+		launchers_yml_is_valid = _validate_dict(launchers_yml_dict, "launchers.yml", launchers_yml_schema_path)
+
+		if not launchers_yml_is_valid:
+			sys.exit(1)
 	except FileNotFoundError:
 		pass
 
