@@ -119,6 +119,9 @@ class Config:
 
 						yield Variant(self, axis_yml['axis'], variant_yml)
 
+		if 'instdir' not in self.yml:
+			self.yml['instdir'] = './instances'
+
 		for inst in sorted(construct_instances(), key=lambda inst: inst.shortname):
 			if inst.shortname in self._insts:
 				raise RuntimeError("The instance name '{}' is ambiguous".format(inst.shortname))
@@ -156,6 +159,11 @@ class Config:
 
 				if exp_yml['name'] in self._exp_infos:
 					raise RuntimeError("The experiment name '{}' is ambiguous".format(exp_yml['name']))
+
+				if exp_yml.get('output', None) == 'stdout':
+					msg = "Specifying the stdout path via 'output: stdout' is deprecated and will be removed in future " \
+							"versions. Use 'stdout: out' instead."
+					warnings.warn(msg, DeprecationWarning)
 				self._exp_infos[exp_yml['name']] = ExperimentInfo(self, exp_yml)
 
 		try:
@@ -1338,12 +1346,9 @@ class Run:
 			raise RuntimeError("The experiment '{}' with instance '{}' has not been started yet".format(
 				self.experiment.display_name, self.instance.shortname))
 
-def read_and_validate_setup(basedir='.', setup_file='experiments.yml'):
-	return util.validate_setup_file(os.path.join(basedir, setup_file))
-
 def config_for_dir(basedir=None):
 	if basedir is None:
 		basedir = '.'
-	yml = read_and_validate_setup(basedir=basedir)
+	yml = util.validate_setup_file(basedir, 'experiments.yml', 'experiments.json')
 	return Config(os.path.abspath(basedir), yml)
 

@@ -7,7 +7,6 @@ import sys
 import yaml
 import json
 from jsonschema import Draft7Validator
-import warnings
 
 def expand_at_params(s, fn, listfn=None):
 	def subfn(m):
@@ -81,7 +80,7 @@ def read_setup_file(setup_file):
 		last_mod = os.fstat(f.fileno()).st_mtime
 	return setup_dict, last_mod
 
-def validate_setup_file(setup_file):
+def validate_setup_file(basedir, setup_file, setup_file_schema):
 	""" Reads, validates and sanitizes the setup file
 	"""
 
@@ -115,29 +114,19 @@ def validate_setup_file(setup_file):
 
 	cur_file_path = os.path.abspath(os.path.dirname(__file__))
 
-	exp_yml_dict, _ = read_setup_file(setup_file)
-	schema_path = os.path.join(cur_file_path, "schemes", "experiments.json")
-	_validate_dict(exp_yml_dict, "experiments.yml", schema_path)
+	setup_file_path = os.path.join(basedir, setup_file)
+	setup_file_dict, _ = read_setup_file(setup_file_path)
+	setup_file_schema_path = os.path.join(cur_file_path, "schemes", setup_file_schema)
+	_validate_dict(setup_file_dict, setup_file, setup_file_schema_path)
 
 	try:
 		launchers_yml_dict, _ = read_setup_file(os.path.expanduser('~/.simexpal/launchers.yml'))
-		schema_path = os.path.join(cur_file_path, "schemes", "launchers.json")
-		_validate_dict(launchers_yml_dict, "launchers.yml", schema_path)
+		launchers_yml_schema_path = os.path.join(cur_file_path, "schemes", "launchers.json")
+		_validate_dict(launchers_yml_dict, "launchers.yml", launchers_yml_schema_path)
 	except FileNotFoundError:
 		pass
 
-	for exp in exp_yml_dict.get('experiments', []):
-		if exp.get('output', None) == 'stdout':
-			msg = "Specifying the stdout path via 'output: stdout' is deprecated and will be removed in future " \
-					"versions. Use 'stdout: out' instead."
-			warnings.warn(msg, DeprecationWarning)
-
-			break
-
-	if 'instdir' not in exp_yml_dict:
-		exp_yml_dict['instdir'] = './instances'
-
-	return exp_yml_dict
+	return setup_file_dict
 
 def compute_network_size(path, out):
 	import networkit as nk
