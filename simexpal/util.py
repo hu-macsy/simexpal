@@ -6,7 +6,8 @@ import shutil
 import sys
 import yaml
 import json
-from jsonschema import Draft7Validator
+import tempfile
+
 
 def expand_at_params(s, fn, listfn=None):
 	def subfn(m):
@@ -85,6 +86,8 @@ def validate_setup_file(basedir, setup_file, setup_file_schema):
 	"""
 
 	def _validate_dict(dictionary, source, schema_path):
+		from jsonschema import Draft7Validator
+
 		with open(schema_path, 'r') as f:
 			schema = json.load(f)
 
@@ -115,23 +118,61 @@ def validate_setup_file(basedir, setup_file, setup_file_schema):
 
 	cur_file_path = os.path.abspath(os.path.dirname(__file__))
 
-	setup_file_path = os.path.join(basedir, setup_file)
-	setup_file_dict, _ = read_setup_file(setup_file_path)
-	setup_file_schema_path = os.path.join(cur_file_path, "schemes", setup_file_schema)
-	setup_file_is_valid = _validate_dict(setup_file_dict, setup_file, setup_file_schema_path)
-
-	if not setup_file_is_valid:
-		sys.exit(1)
-
+	validation_cache_dict = {}
 	try:
-		launchers_yml_dict, _ = read_setup_file(os.path.expanduser('~/.simexpal/launchers.yml'))
-		launchers_yml_schema_path = os.path.join(cur_file_path, "schemes", "launchers.json")
-		launchers_yml_is_valid = _validate_dict(launchers_yml_dict, "launchers.yml", launchers_yml_schema_path)
-
-		if not launchers_yml_is_valid:
-			sys.exit(1)
+		with open(os.path.join(basedir, 'validation.cache'), 'r') as f:
+			validation_cache_dict = json.load(f)
 	except FileNotFoundError:
 		pass
+
+	# Validate setup file and potentially cache results.
+	setup_file_path = os.path.join(basedir, setup_file)
+	setup_file_dict, setup_file_last_mod = read_setup_file(setup_file_path)
+	setup_file_schema_path = os.path.join(cur_file_path, "schemes", setup_file_schema)
+
+	setup_file_is_valid = None
+	if setup_file not in validation_cache_dict or setup_file_last_mod != validation_cache_dict[setup_file]:
+		setup_file_is_valid = _validate_dict(setup_file_dict, setup_file, setup_file_schema_path)
+
+		if setup_file_is_valid:
+			validation_cache_dict[setup_file] = setup_file_last_mod
+
+	# Validate launchers.yml file and potentially cache results.
+	launchers_yml_is_valid = None
+	try:
+		launchers_yml_dict, launchers_yml_last_mod = read_setup_file(os.path.expanduser('~/.simexpal/launchers.yml'))
+		launchers_yml_schema_path = os.path.join(cur_file_path, "schemes", "launchers.json")
+
+		if 'launchers.yml' not in validation_cache_dict or launchers_yml_last_mod != validation_cache_dict['launchers.yml']:
+			launchers_yml_is_valid = _validate_dict(launchers_yml_dict, 'launchers.yml', launchers_yml_schema_path)
+
+			if launchers_yml_is_valid:
+				validation_cache_dict['launchers.yml'] = launchers_yml_last_mod
+	except FileNotFoundError:
+		pass
+
+	writeback_cache = False
+	do_exit = False
+	if setup_file_is_valid is not None:
+		if setup_file_is_valid:
+			writeback_cache = True
+		else:
+			do_exit = True
+
+	if launchers_yml_is_valid is not None:
+		if launchers_yml_is_valid:
+			writeback_cache = True
+		else:
+			do_exit = True
+
+	if writeback_cache:
+		fd, path = tempfile.mkstemp(dir=basedir)
+		with os.fdopen(fd, 'w') as tmp:
+			json.dump(validation_cache_dict, tmp)
+		os.rename(path, 'validation.cache')
+
+	if do_exit:
+		sys.exit(1)
 
 	return setup_file_dict
 
