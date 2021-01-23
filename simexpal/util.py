@@ -78,7 +78,8 @@ def read_setup_file(setup_file):
 
 	with open(setup_file, 'r') as f:
 		setup_dict = yaml.load(f, Loader=YmlLoader)
-	return setup_dict
+		last_mod = os.fstat(f.fileno()).st_mtime
+	return setup_dict, last_mod
 
 def validate_setup_file(setup_file):
 	""" Reads, validates and sanitizes the setup file
@@ -114,12 +115,12 @@ def validate_setup_file(setup_file):
 
 	cur_file_path = os.path.abspath(os.path.dirname(__file__))
 
-	exp_yml_dict = read_setup_file(setup_file)
+	exp_yml_dict, _ = read_setup_file(setup_file)
 	schema_path = os.path.join(cur_file_path, "schemes", "experiments.json")
 	_validate_dict(exp_yml_dict, "experiments.yml", schema_path)
 
 	try:
-		launchers_yml_dict = read_setup_file(os.path.expanduser('~/.simexpal/launchers.yml'))
+		launchers_yml_dict, _ = read_setup_file(os.path.expanduser('~/.simexpal/launchers.yml'))
 		schema_path = os.path.join(cur_file_path, "schemes", "launchers.json")
 		_validate_dict(launchers_yml_dict, "launchers.yml", schema_path)
 	except FileNotFoundError:
