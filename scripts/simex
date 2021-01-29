@@ -6,6 +6,7 @@
 import argparse
 import os
 import argcomplete
+import errno
 import re
 import sys
 
@@ -785,10 +786,15 @@ archive_parser.set_defaults(cmd=do_archive)
 # Advanced commands.
 # ---------------------------------------------------------------------------------------
 
+def do_queue(args):
+	args.force = False
+
+	return do_queue_daemon(args)
+
 queue_parser = main_subcmds.add_parser('queue', help='Local batch queue for experiments',
 		aliases=['q'])
+queue_parser.set_defaults(cmd=do_queue)
 queue_subcmds = queue_parser.add_subparsers()
-queue_subcmds.required = True
 
 def do_queue_daemon(args):
 	import shutil
@@ -797,27 +803,86 @@ def do_queue_daemon(args):
 	script = os.path.abspath(sys.argv[0])
 
 	if shutil.which('systemd-run'):
-		subprocess.check_call(['systemd-run', '--user',
-				script, 'internal-queuesock'])
+		cmd = ['systemd-run', '--user', script, 'internal-queuesock']
+		if args.force:
+			cmd.append('--force')
+		subprocess.check_call(cmd)
 	else:
 		raise RuntimeError('No supported service manager is available')
 
 queue_daemon_parser = queue_subcmds.add_parser('daemon')
 queue_daemon_parser.set_defaults(cmd=do_queue_daemon)
+queue_daemon_parser.add_argument('--force', action='store_true')
 
 def do_queue_stop(args):
-	simexpal.queuesock.stop_queue()
+	try:
+		simexpal.queuesock.stop_queue()
+	except FileNotFoundError:
+		print("There is currently no queue daemon running.")
+	except ConnectionRefusedError:
+		print("There is currently a queue daemon running that did not terminate properly. Use "
+			"'simex queue interactive --force' or 'simex q daemon --force' to forcefully launch a new daemon. "
+			"Alternatively you can delete the socket '{}' manually and start a new daemon.".format(
+			simexpal.base.DEFAULT_SOCKETPATH))
+
 
 queue_stop_parser = queue_subcmds.add_parser('stop')
 queue_stop_parser.set_defaults(cmd=do_queue_stop)
 
 def do_queue_interactive(args):
-	simexpal.queuesock.run_queue(args.sockfd, args.force)
+	try:
+		simexpal.queuesock.run_queue(force=args.force)
+	except OSError as e:
+		if e.errno == errno.EADDRINUSE:
+			print("There is currently a queue daemon running or the daemon did not terminate properly. "
+				"Use 'simex queue interactive --force' to forcefully launch a new daemon.")
+		else:
+			raise e
 
 queue_interactive_parser = queue_subcmds.add_parser('interactive')
 queue_interactive_parser.set_defaults(cmd=do_queue_interactive)
-queue_interactive_parser.add_argument('--sockfd', type=int)
 queue_interactive_parser.add_argument('--force', action='store_true')
+
+def do_queue_kill(args):
+	try:
+		simexpal.queuesock.kill_queue()
+	except FileNotFoundError:
+		print("There is currently no queue daemon running.")
+	except ConnectionRefusedError:
+		print("There is currently a queue daemon running that did not terminate properly. Use "
+			"'simex queue interactive --force' or 'simex q daemon --force' to forcefully launch a new daemon. "
+			"Alternatively you can delete the socket '{}' manually and start a new daemon.".format(
+			simexpal.base.DEFAULT_SOCKETPATH))
+
+queue_kill_parser = queue_subcmds.add_parser('kill')
+queue_kill_parser.set_defaults(cmd=do_queue_kill)
+
+def do_queue_show(args):
+	try:
+		queue_info = simexpal.queuesock.show_queue()
+
+		print('{:20.20} {}'.format('Currently running:', queue_info['current_run']))
+
+		if len(queue_info['pending_runs']) == 0:
+			print('{:20.20} {}'.format('Pending runs:', None))
+		else:
+			for i, pending_run in enumerate(queue_info['pending_runs']):
+				if i == 0:
+					print('{:20.20} {}'.format('Pending runs:', pending_run))
+				else:
+					print('{:20.20} {}'.format('', pending_run))
+
+		print('{:20.20} {}'.format('Completed runs:', queue_info['num_completed_runs']))
+	except FileNotFoundError:
+		print("There is currently no queue daemon running.")
+	except ConnectionRefusedError:
+		print("There is currently a queue daemon running that did not terminate properly. Use "
+			"'simex queue interactive --force' or 'simex q daemon --force' to forcefully launch a new daemon. "
+			"Alternatively you can delete the socket '{}' manually and start a new daemon.".format(
+			simexpal.base.DEFAULT_SOCKETPATH))
+
+queue_status_parser = queue_subcmds.add_parser('show')
+queue_status_parser.set_defaults(cmd=do_queue_show)
 
 # ---------------------------------------------------------------------------------------
 # Internal commands. Not intended for CLI users.
@@ -885,11 +950,19 @@ invoke_parser.add_argument('--repetition', type=int) # Legacy argument for SGE.
 invoke_parser.add_argument('specfile', type=str)
 
 def do_internal_queuesock(args):
-	simexpal.queuesock.run_queue(args.sockfd)
+	try:
+		simexpal.queuesock.run_queue(args.sockfd, args.force)
+	except OSError as e:
+		if e.errno == errno.EADDRINUSE:
+			print("There is currently a queue daemon running or the daemon did not terminate properly. "
+				"Use 'simex queue interactive --force' to forcefully launch a new daemon.")
+		else:
+			raise e
 
 internal_queuesock_parser = main_subcmds.add_parser('internal-queuesock')
 internal_queuesock_parser.set_defaults(cmd=do_internal_queuesock)
 internal_queuesock_parser.add_argument('--sockfd', type=int)
+internal_queuesock_parser.add_argument('--force', action='store_true')
 
 # ---------------------------------------------------------------------------------------
 

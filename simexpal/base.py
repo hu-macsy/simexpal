@@ -15,6 +15,7 @@ from . import util
 DEFAULT_DEV_BUILD_NAME = '_dev'
 EXPERIMENTS_LIST_THRESHOLD = 30
 TIMEOUT_GRACE_PERIOD = 30
+DEFAULT_SOCKETPATH = os.path.expanduser('~/.extl.sock')
 
 DID_WARN_KONECT = False
 

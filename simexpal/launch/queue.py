@@ -1,7 +1,9 @@
 
 import os
 import tempfile
+import sys
 
+from ..base import DEFAULT_SOCKETPATH
 from . import common
 from .. import queuesock
 from .. import util
@@ -10,6 +12,18 @@ class QueueLauncher(common.Launcher):
 	def submit(self, cfg, run):
 		util.try_mkdir(os.path.join(cfg.basedir, 'aux'))
 		util.try_mkdir(os.path.join(cfg.basedir, 'aux/_queue'))
+
+		try:
+			queuesock.show_queue()
+		except FileNotFoundError:
+			print("There is currently no queue daemon running. Please start a new daemon before launching experiments.")
+			sys.exit(1)
+		except ConnectionRefusedError:
+			print("There is currently a queue daemon running that did not terminate properly. Use "
+				"'simex queue interactive --force' or 'simex q daemon --force' to forcefully launch a new daemon. "
+				 "Alternatively you can delete the socket '{}' manually and start a new daemon.".format(
+				DEFAULT_SOCKETPATH))
+			sys.exit(1)
 
 		if not common.lock_run(run):
 			return
