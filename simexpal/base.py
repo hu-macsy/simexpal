@@ -118,10 +118,19 @@ class Config:
 				for axis_yml in self.yml['variants']:
 					check_for_reserved_name(axis_yml['axis'])
 
-					for variant_yml in axis_yml['items']:
-						check_for_reserved_name(variant_yml['name'])
+					if 'items' in axis_yml:
+						for variant_yml in axis_yml['items']:
+							check_for_reserved_name(variant_yml['name'])
 
-						yield Variant(self, axis_yml['axis'], variant_yml)
+							yield Variant(self, axis_yml['axis'], variant_yml)
+					elif 'range' in axis_yml:
+						for val in range(axis_yml['range'][0], axis_yml['range'][1] + 1, axis_yml['steps']):
+							yield Variant(self, axis_yml['axis'], axis_yml, is_dynamic=True, value=val)
+					elif 'enum' in axis_yml:
+						for val in axis_yml['enum']:
+							yield Variant(self, axis_yml['axis'], axis_yml, is_dynamic=True, value=val)
+					else:
+						raise RuntimeError('Unknown variant type: ', axis_yml)
 
 		if 'instdir' not in self.yml:
 			self.yml['instdir'] = './instances'
@@ -997,13 +1006,17 @@ def extract_thread_settings(yml):
 	}
 
 class Variant:
-	def __init__(self, cfg, axis, variant_yml):
+	def __init__(self, cfg, axis, variant_yml, is_dynamic=False, value=None):
 		self._cfg = cfg
 		self.axis = axis
 		self.variant_yml = variant_yml
+		self.is_dynamic = is_dynamic
+		self.value = value
 
 	@property
 	def name(self):
+		if self.is_dynamic:
+			return self.axis + ':' + str(self.value)
 		return self.variant_yml['name']
 
 	@property
