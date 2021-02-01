@@ -234,12 +234,12 @@ def compile_manifest(run):
 	variants_yml = []
 	for variant in exp.variation:
 		environ = {}
-		if 'environ' in variant.variant_yml:
-			for (k, v) in variant.variant_yml['environ'].items():
-				environ[k] = str(v)
+		for k, v in variant.environ.items():
+			environ[k] = str(v)
+
 		variants_yml.append({
 			'name': variant.name,
-			'extra_args': variant.variant_yml.get('extra_args', []),
+			'extra_args': variant.extra_args,
 			'environ': environ
 		})
 

@@ -1022,6 +1022,14 @@ class Variant:
 	def launcher(self):
 		return self.variant_yml.get('launcher', None)
 
+	@property
+	def environ(self):
+		return self.variant_yml.get('environ', {})
+
+	@property
+	def extra_args(self):
+		return self.variant_yml.get('extra_args', [])
+
 class ExperimentInfo:
 	def __init__(self, cfg, exp_yml):
 		self._cfg = cfg
