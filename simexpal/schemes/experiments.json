@@ -20,6 +20,12 @@
 				"type": "object"
 			}
 		},
+		"int_list": {
+			"type": "array",
+			"items": {
+				"type": "integer"
+			}
+		},
 		"build_arguments": {
 			"type": "array",
 			"items": {
@@ -30,6 +36,24 @@
 					"workdir": {"type": "string"}
 				},
 				"additionalProperties": false
+			}
+		},
+		"slurm_settings": {
+			"type": "object",
+			"properties": {
+				"num_nodes": {
+					"type": "integer",
+					"minimum": 1
+				},
+				"procs_per_node": {
+					"type":  "integer",
+					"minimum": 1
+				},
+				"num_threads": {
+					"type": "integer",
+					"minimum": 1
+				},
+				"slurm_args": {"$ref": "#/definitions/str_or_str_list"}
 			}
 		}
 	},
@@ -381,50 +405,48 @@
 			"type": "array",
 			"items": {
 				"type": "object",
-				"required": ["name", "args"],
-				"properties": {
-					"name": {"type": "string"},
-					"args": {"$ref": "#/definitions/str_list"},
-					"use_builds": {"$ref": "#/definitions/str_list"},
-					"output": {
-						"oneOf": [
-							{"type": "string"},
-							{
-								"type": "object",
-								"properties": {
-									"extensions": {"$ref": "#/definitions/str_list"}
-								},
-								"additionalProperties": false
-							}
-						]
+				"allOf": [
+					{
+						"$ref": "#/definitions/slurm_settings"
 					},
-					"num_nodes": {
-						"type": "integer",
-						"minimum": 1
-					},
-					"procs_per_node": {
-						"type": "integer",
-						"minimum": 1
-					},
-					"num_threads": {
-						"type": "integer",
-						"minimum": 1
-					},
-					"timeout": {
-						"type": "integer",
-						"minimum": 0
-					},
-					"environ": {"type": "object"},
-					"repeat": {
-						"type": "integer",
-						"minimum": 0
-					},
-					"slurm_args": {"$ref": "#/definitions/str_or_str_list"},
-					"workdir": {"type": "string"},
-					"launcher": {"type": "string"},
-					"stdout": {"type": "string"}
-				},
-				"additionalProperties": false
+					{
+						"required": ["name", "args"],
+						"properties": {
+							"name": {"type": "string"},
+							"args": {"$ref": "#/definitions/str_list"},
+							"use_builds": {"$ref": "#/definitions/str_list"},
+							"output": {
+								"oneOf": [
+									{"type": "string"},
+									{
+										"type": "object",
+										"properties": {
+											"extensions": {"$ref": "#/definitions/str_list"}
+										},
+										"additionalProperties": false
+									}
+								]
+							},
+							"timeout": {
+								"type": "integer",
+								"minimum": 0
+							},
+							"environ": {"type": "object"},
+							"repeat": {
+								"type": "integer",
+								"minimum": 0
+							},
+							"workdir": {"type": "string"},
+							"launcher": {"type": "string"},
+							"stdout": {"type": "string"},
+							"num_nodes": {},
+							"procs_per_node": {},
+							"num_threads": {},
+							"slurm_args": {}
+						},
+						"additionalProperties": false
+					}
+				]
 			}
 		},
 		"variants": {
@@ -432,38 +454,132 @@
 			"type": "array",
 			"items": {
 				"type": "object",
-				"required": ["axis", "items"],
-				"properties": {
-					"axis": {"type": "string"},
-					"items": {
-						"type": "array",
-						"items": {
-							"type": "object",
-							"required": ["name"],
+				"allOf": [
+					{
+						"if": {
+							"required": ["range", "steps"],
 							"properties": {
-								"name": {"type": "string"},
-								"extra_args": {"$ref":  "#/definitions/str_list"},
-								"num_nodes": {
-									"type": "integer",
-									"minimum": 1
+								"range": {},
+								"steps": {}
+							}
+
+						},
+						"then": {
+							"allOf": [
+								{
+									"$ref": "#/definitions/slurm_settings"
 								},
-								"procs_per_node": {
-									"type":  "integer",
-									"minimum": 1
+								{
+									"required": ["axis", "range", "steps"],
+									"properties": {
+										"axis": {"type": "string"},
+										"extra_args": {"$ref":  "#/definitions/str_list"},
+										"range": {"$ref": "#/definitions/int_list"},
+										"steps": {"type": "integer"},
+										"environ": {"type": "object"},
+										"launcher": {"type": "string"},
+										"num_nodes": {},
+										"procs_per_node": {},
+										"num_threads": {},
+										"slurm_args": {}
+									},
+									"additionalProperties": false
+								}
+							]
+						}
+					},
+					{
+						"if": {
+							"required": ["enum"],
+							"properties": {
+								"enum": {}
+							}
+						},
+						"then": {
+							"allOf": [
+								{
+									"$ref": "#/definitions/slurm_settings"
 								},
-								"num_threads": {
-									"type": "integer",
-									"minimum": 1
+								{
+									"required": ["axis", "enum"],
+									"properties": {
+										"axis": {"type": "string"},
+										"enum": {"type": "array"},
+										"extra_args": {"$ref":  "#/definitions/str_list"},
+										"environ": {"type": "object"},
+										"launcher": {"type": "string"},
+										"num_nodes": {},
+										"procs_per_node": {},
+										"num_threads": {},
+										"slurm_args": {}
+									},
+									"additionalProperties": false
+								}
+							]
+						}
+					},
+					{
+						"if": {
+							"not": {
+								"anyOf": [
+									{
+										"required": ["range", "steps"],
+										"properties": {
+											"range": {},
+											"steps:": {}
+										}
+									},
+									{
+										"required": ["enum"],
+										"properties": {
+											"enum": {}
+										}
+									}
+								]
+							}
+						},
+						"then": {
+							"allOf": [
+								{
+									"properties": {
+										"items": {
+											"type": "array",
+											"items": {
+												"$ref": "#/definitions/slurm_settings"
+											}
+										}
+									}
 								},
-								"environ": {"type": "object"},
-								"slurm_args": {"$ref": "#/definitions/str_or_str_list"},
-								"launcher": {"type": "string"}
-							},
-							"additionalProperties": false
+								{
+									"required": ["axis", "items"],
+									"properties": {
+										"axis": {"type": "string"},
+										"items": {
+											"type": "array",
+											"items": {
+												"type": "object",
+												"required": ["name"],
+												"properties": {
+													"name": {"type": "string"},
+													"extra_args": {"$ref":  "#/definitions/str_list"},
+													"environ": {"type": "object"},
+													"launcher": {"type": "string"},
+													"num_nodes": {},
+													"procs_per_node": {},
+													"num_threads": {},
+													"slurm_args": {}
+												},
+												"additionalProperties": false
+											}
+										}
+									},
+									"additionalProperties": false
+								}
+							]
 						}
 					}
-				},
-				"additionalProperties": false
+
+				]
 			}
 		},
 		"matrix": {
