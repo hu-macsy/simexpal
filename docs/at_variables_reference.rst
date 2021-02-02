@@ -21,6 +21,7 @@ Below, we list all @-variables and where they can be used.
 - ``@INSTANCE@``: path of a :ref:`local <LocalInstances>`/:ref:`remote <RemoteInstances>` instance, i.e. ``/instance_directory/<instance_name>``
 - ``@INSTANCE:<ext>@``: path of a :ref:`MultipleExtensions` instance with extension ``<ext>``, i.e. ``/instance_directory/<instance_name>.<ext>``
 - ``@INSTANCE:<idx>@``: path of an :ref:`ArbitraryInputFiles` instance with index ``<idx>`` in the ``files`` key, i.e. ``/instance_directory/files[<idx>]``
+- ``@INSTANCE_FILENAME@``: filename of the instance
 - ``@OUTPUT@``: path to the output file of an experiment
 - ``@OUTPUT:<ext>@``: path to the output file with extension ``<ext>`` of an experiment
 - ``@OUTPUT_SUBDIR@``: output subdirectory of the experiment where the output and status files are stored, i.e. ``/path_to_experiments_yml/output/``
@@ -113,3 +114,14 @@ workdir
 ^^^^^^^
 
 Same as for the :ref:`AtVariablesExperimentsArgs` key `without` the ``@EXTRA_ARGS@`` variable.
+
+
+Instances
+---------
+
+url
+^^^
+
+The following @-variables can be used in the ``url`` key:
+
+- ``@INSTANCE_FILENAME@``

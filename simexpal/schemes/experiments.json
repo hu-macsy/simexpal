@@ -83,6 +83,12 @@
 			"type": "array",
 			"items": {
 				"type": "object",
+				"properties": {
+					"method": {
+						"type": "string",
+						"enum": ["url", "git"]
+					}
+				},
 				"allOf": [
 					{
 						"if": {
@@ -205,6 +211,95 @@
 					},
 					{
 						"if": {
+							"required": ["method"],
+							"properties": {
+								"method": {"type": "string"}
+							}
+						},
+						"then": {
+							"allOf": [
+								{
+									"if": {
+										"required": ["method"],
+										"properties": {
+											"method": {"const": "url"}
+										}
+									},
+									"then": {
+										"required": ["method", "url", "items"],
+										"properties": {
+											"method": {"const": "url"},
+											"url": {"type": "string"},
+											"set": {"$ref": "#/definitions/str_or_str_list"},
+											"postprocess": {"const": "to_edgelist"},
+											"items": {
+												"oneOf": [
+													{
+														"$ref": "#/definitions/str_list"
+													},
+													{
+														"type": "array",
+														"items": {
+															"type": "object",
+															"required": ["name"],
+															"properties": {
+																"name": {"type": "string"},
+																"extra_args": {"$ref": "#/definitions/str_list"}
+															},
+															"additionalProperties": false
+														}
+													}
+												]
+											}
+										},
+										"additionalProperties": false
+									}
+								},
+								{
+									"if": {
+										"required": ["method"],
+										"properties": {
+											"method": {"const": "git"}
+										}
+									},
+									"then": {
+										"required": ["method", "git", "repo_name", "commit", "items"],
+										"properties": {
+											"method": {"const": "git"},
+											"git": {"type": "string"},
+											"repo_name": {"type": "string"},
+											"commit": {"type": "string"},
+											"git_subdir": {"type": "string"},
+											"set": {"$ref": "#/definitions/str_or_str_list"},
+											"postprocess": {"const": "to_edgelist"},
+											"items": {
+												"oneOf": [
+													{
+														"$ref": "#/definitions/str_list"
+													},
+													{
+														"type": "array",
+														"items": {
+															"type": "object",
+															"required": ["name"],
+															"properties": {
+																"name": {"type": "string"},
+																"extra_args": {"$ref": "#/definitions/str_list"}
+															},
+															"additionalProperties": false
+														}
+													}
+												]
+											}
+										},
+										"additionalProperties": false
+									}
+								}
+							]
+						}
+					},
+					{
+						"if": {
 							"not": {
 								"anyOf": [
 									{
@@ -232,6 +327,12 @@
 													}
 												}
 											}
+										}
+									},
+									{
+										"required": ["method"],
+										"properties": {
+											"method": {"type": "string"}
 										}
 									}
 								]

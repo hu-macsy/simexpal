@@ -1,0 +1,18 @@
+# This file contains download instances from git with
+# a branch and a SHA-hash as commit identifier.
+instances:
+  - method: git
+    git: 'https://github.com/hu-macsy/simexpal'
+    repo_name: 'foo'
+    commit: 'master'
+    items:
+      - 'setup.py'
+      - 'pytest.ini'
+  - method: git
+    git: 'https://github.com/hu-macsy/simexpal'
+    repo_name: 'foo'
+    commit: 'd5e598f292b90cd7ef2e77d7a478ec52d42279df'
+    git_subdir: 'simexpal/schemes/'
+    items:
+      - 'experiments.json'
+      - 'launchers.json'

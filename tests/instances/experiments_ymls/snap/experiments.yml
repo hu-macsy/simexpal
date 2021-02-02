@@ -1,0 +1,6 @@
+# This file contains download instances from the SNAP repository.
+instances:
+  - repo: snap
+    items:
+      - 'wiki-RfA'
+      - 'wiki-Vote'
