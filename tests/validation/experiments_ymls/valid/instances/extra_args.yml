@@ -1,0 +1,43 @@
+# This file contains 'extra_args' in instance blocks for local, SNAP,
+# KONECT, multiple extension, multiple file and fileless instances.
+instances:
+  - repo: local   # local instances
+    extra_args : ['some', 'extra_args']
+    items:
+      - inst1
+      - inst2
+  - repo: snap    # SNAP instances
+    extra_args : ['some', 'extra_args']
+    items:
+      - facebook_combined
+      - wiki-Vote
+  - repo: konect  # KONECT instances
+    extra_args : ['some', 'extra_args']
+    items:
+      - dolphins
+      - ucidata-zachary
+  - repo: local   # multiple extension instances
+    extra_args : ['some', 'extra_args']
+    extensions:
+      - graph
+      - xyz
+    items:
+      - foo
+      - bar
+  - repo: local   # multiple file instances
+    extra_args : ['some', 'extra_args']
+    items:
+      - name: inst3
+        files:
+          - file1
+          - file2
+      - name: inst4
+        files:
+          - file3
+          - file4
+  - repo: local   # fileless instance
+    extra_args : ['some', 'extra_args']
+    items:
+      - name: inst5
+        files: []
+        extra_args: ['some', 'extra_args']

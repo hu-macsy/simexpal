@@ -102,6 +102,7 @@
 									},
 									"additionalProperties": false
 								},
+								"extra_args": {"$ref": "#/definitions/str_list"},
 								"set": {"$ref": "#/definitions/str_or_str_list"},
 								"items": {
 									"oneOf": [
@@ -138,6 +139,7 @@
 							"properties": {
 								"repo": {"const": "local"},
 								"extensions": {"$ref": "#/definitions/str_list"},
+								"extra_args": {"$ref": "#/definitions/str_list"},
 								"set": {"$ref": "#/definitions/str_or_str_list"},
 								"items": {
 									"oneOf": [
@@ -182,6 +184,7 @@
 							"required": ["repo", "items"],
 							"properties": {
 								"repo": {"const": "local"},
+								"extra_args": {"$ref": "#/definitions/str_list"},
 								"set": {"$ref": "#/definitions/str_or_str_list"},
 								"items": {
 									"type": "array",
@@ -243,6 +246,7 @@
 								},
 								"repo-subdir": {"type": "string"},
 								"postprocess": {"const": "to_edgelist"},
+								"extra_args": {"$ref": "#/definitions/str_list"},
 								"set": {"$ref": "#/definitions/str_or_str_list"},
 								"items": {
 									"oneOf": [

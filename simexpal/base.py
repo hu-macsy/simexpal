@@ -603,9 +603,10 @@ class Instance:
 
 	@property
 	def extra_args(self):
+		extra_args = self._inst_yml.get('extra_args', [])
 		if isinstance(self._inst_yml['items'][self.index], dict):
-			return self._inst_yml['items'][self.index].get('extra_args', [])
-		return []
+			return extra_args + self._inst_yml['items'][self.index].get('extra_args', [])
+		return extra_args
 
 	@property
 	def config(self):
