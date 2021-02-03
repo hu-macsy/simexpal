@@ -81,15 +81,18 @@ def read_setup_file(setup_file):
 		last_mod = os.fstat(f.fileno()).st_mtime
 	return setup_dict, last_mod
 
-def validate_setup_file(basedir, setup_file, setup_file_schema):
+def read_json_file(json_file):
+	with open(json_file, 'r') as f:
+		json_dict = json.load(f)
+		last_mod = os.fstat(f.fileno()).st_mtime
+	return json_dict, last_mod
+
+def validate_setup_file(basedir, setup_file, setup_file_schema_name):
 	""" Reads, validates and sanitizes the setup file
 	"""
 
-	def _validate_dict(dictionary, source, schema_path):
+	def _validate_dict(dictionary, source, schema):
 		from jsonschema import Draft7Validator
-
-		with open(schema_path, 'r') as f:
-			schema = json.load(f)
 
 		validator = Draft7Validator(schema)
 		validation_errors = list(validator.iter_errors(dictionary))
@@ -128,26 +131,35 @@ def validate_setup_file(basedir, setup_file, setup_file_schema):
 	# Validate setup file and potentially cache results.
 	setup_file_path = os.path.join(basedir, setup_file)
 	setup_file_dict, setup_file_last_mod = read_setup_file(setup_file_path)
-	setup_file_schema_path = os.path.join(cur_file_path, "schemes", setup_file_schema)
+	setup_file_schema_path = os.path.join(cur_file_path, 'schemes', setup_file_schema_name)
+	setup_file_schema, setup_file_schema_last_mod = read_json_file(setup_file_schema_path)
 
 	setup_file_is_valid = None
-	if setup_file not in validation_cache_dict or setup_file_last_mod != validation_cache_dict[setup_file]:
-		setup_file_is_valid = _validate_dict(setup_file_dict, setup_file, setup_file_schema_path)
+	if (setup_file not in validation_cache_dict
+		or setup_file_last_mod != validation_cache_dict[setup_file]
+		or setup_file_schema_name not in validation_cache_dict
+		or setup_file_schema_last_mod != validation_cache_dict[setup_file_schema_name]):
 
+		setup_file_is_valid = _validate_dict(setup_file_dict, setup_file, setup_file_schema)
 		if setup_file_is_valid:
 			validation_cache_dict[setup_file] = setup_file_last_mod
+			validation_cache_dict[setup_file_schema_name] = setup_file_schema_last_mod
 
 	# Validate launchers.yml file and potentially cache results.
 	launchers_yml_is_valid = None
 	try:
 		launchers_yml_dict, launchers_yml_last_mod = read_setup_file(os.path.expanduser('~/.simexpal/launchers.yml'))
-		launchers_yml_schema_path = os.path.join(cur_file_path, "schemes", "launchers.json")
+		launchers_yml_schema_path = os.path.join(cur_file_path, 'schemes', 'launchers.json')
+		launchers_yml_schema, launchers_yml_schema_last_mod = read_json_file(launchers_yml_schema_path)
 
-		if 'launchers.yml' not in validation_cache_dict or launchers_yml_last_mod != validation_cache_dict['launchers.yml']:
-			launchers_yml_is_valid = _validate_dict(launchers_yml_dict, 'launchers.yml', launchers_yml_schema_path)
+		if ('launchers.yml' not in validation_cache_dict
+			or launchers_yml_last_mod != validation_cache_dict['launchers.yml']
+			or launchers_yml_schema_last_mod != validation_cache_dict['launchers.json']):
 
+			launchers_yml_is_valid = _validate_dict(launchers_yml_dict, 'launchers.yml', launchers_yml_schema)
 			if launchers_yml_is_valid:
 				validation_cache_dict['launchers.yml'] = launchers_yml_last_mod
+				validation_cache_dict['launchers.json'] = launchers_yml_schema_last_mod
 	except FileNotFoundError:
 		pass
 
