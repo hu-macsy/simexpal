@@ -138,6 +138,14 @@ class RunManifest:
 	def variants(self):
 		return [v['name'] for v in self.yml['variants']]
 
+	def get_variant_value(self, axis):
+		for variant in self.yml['variants']:
+			if axis == variant['axis']:
+				if not variant['is_dynamic']:
+					raise RuntimeError("The axis '{}' does not have dynamic variants".format(axis))
+				return variant['value']
+		raise RuntimeError("The experiment '{}' does not use the variant axis '{}'".format(self.yml['experiment'], axis))
+
 	def aux_file_path(self, ext):
 		return os.path.join(self.aux_subdir,
 				base.get_aux_file_name(ext, self.instance, self.repetition))
@@ -238,9 +246,12 @@ def compile_manifest(run):
 			environ[k] = str(v)
 
 		variants_yml.append({
+			'axis': variant.axis,
 			'name': variant.name,
 			'extra_args': variant.extra_args,
-			'environ': environ
+			'environ': environ,
+			'is_dynamic': variant.is_dynamic,
+			'value': variant.value
 		})
 
 	environ = {}
@@ -359,12 +370,14 @@ def invoke_run(manifest):
 			return manifest.base_dir
 		elif p == 'INSTANCE_DIR':
 			return manifest.instance_dir
+		elif p.startswith('VARIANT_VALUE:'):
+			return str(manifest.get_variant_value(p.split(':')[1]))
 		else:
 			return None
 
 	def substitute_list(p):
 		if p == 'EXTRA_ARGS':
-			return manifest.get_extra_args()
+			return util.expand_at_params(manifest.get_extra_args(), substitute)
 		else:
 			return None
 
