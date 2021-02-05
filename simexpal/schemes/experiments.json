@@ -42,15 +42,15 @@
 			"type": "object",
 			"properties": {
 				"num_nodes": {
-					"type": "integer",
+					"type": ["integer", "string"],
 					"minimum": 1
 				},
 				"procs_per_node": {
-					"type":  "integer",
+					"type":  ["integer", "string"],
 					"minimum": 1
 				},
 				"num_threads": {
-					"type": "integer",
+					"type": ["integer", "string"],
 					"minimum": 1
 				},
 				"slurm_args": {"$ref": "#/definitions/str_or_str_list"}
