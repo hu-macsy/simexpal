@@ -417,7 +417,12 @@ def invoke_run(manifest):
 	environ['PATH'] = prepend_env('PATH', extra_paths)
 	environ['LD_LIBRARY_PATH'] = prepend_env('LD_LIBRARY_PATH', manifest.get_ldso_paths())
 	environ['PYTHONPATH'] = prepend_env('PYTHONPATH', manifest.get_python_paths())
-	environ.update(manifest.environ)
+
+	manifest_environ = manifest.environ
+	for env_var in manifest_environ:
+		manifest_environ[env_var] = util.expand_at_params(manifest_environ[env_var], substitute)
+
+	environ.update(manifest_environ)
 
 	# Dumps data from an FD to the FS.
 	# Creates the output file only if something is written.
