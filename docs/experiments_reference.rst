@@ -87,6 +87,7 @@ This entry is a list of variants that will be used for experiments. The followin
 used for specifying variants:
 
 - ``axis``: name of the variant axis
+- ``enum``: list of variant values
 - ``environ``: dictionary of (environment variable, value)-pairs
 - ``extra_args``: list of variant arguments
 - ``items``: list of dictionaries, which specify variants belonging to the same axis.
@@ -94,6 +95,8 @@ used for specifying variants:
 - ``num_nodes``: number of nodes on which to run
 - ``num_threads``: number of cpus required per task
 - ``procs_per_node``: number of tasks to invoke on each node
+- ``range``: list with start and stop element
+- ``steps``: step size
 
 For detailed usage examples, see the :ref:`Variants` page.
 
