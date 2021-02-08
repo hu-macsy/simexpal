@@ -118,7 +118,7 @@
 						"if": {
 							"required": ["generator"],
 							"properties": {
-								"generator": {"type": "object"}
+								"generator": {}
 							}
 						},
 						"then": {
@@ -161,7 +161,7 @@
 						"if": {
 							"required": ["extensions"],
 							"properties": {
-								"extensions": {"$ref": "#/definitions/str_list"}
+								"extensions": {}
 							}
 						},
 						"then": {
@@ -204,7 +204,7 @@
 										"type": "object",
 										"required": ["files"],
 										"properties": {
-											"files": {"$ref": "#/definitions/str_list"}
+											"files": {}
 										}
 									}
 								}
@@ -237,7 +237,7 @@
 						"if": {
 							"required": ["method"],
 							"properties": {
-								"method": {"type": "string"}
+								"method": {}
 							}
 						},
 						"then": {
@@ -330,13 +330,13 @@
 									{
 										"required": ["generator"],
 										"properties": {
-											"generator": {"type": "object"}
+											"generator": {}
 										}
 									},
 									{
 										"required": ["extensions"],
 										"properties": {
-											"extensions": {"$ref": "#/definitions/str_list"}
+											"extensions": {}
 										}
 									},
 									{
@@ -348,7 +348,7 @@
 													"type": "object",
 													"required": ["files"],
 													"properties": {
-														"files": {"$ref": "#/definitions/str_list"}
+														"files": {}
 													}
 												}
 											}
@@ -357,7 +357,7 @@
 									{
 										"required": ["method"],
 										"properties": {
-											"method": {"type": "string"}
+											"method": {}
 										}
 									}
 								]
