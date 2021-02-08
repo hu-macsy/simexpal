@@ -1,0 +1,9 @@
+# Invalid .yml file for util.validate_setup_file().
+# This file contains an additional property for 'range' variants.
+
+variants:
+  - axis: 'block-size'
+    range: [32, 64]
+    steps: 32
+    extra_args: ['@VARIANT_VALUE:block-size@']
+    foo: true
