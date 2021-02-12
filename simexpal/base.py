@@ -1280,7 +1280,6 @@ class Run:
 			pass
 
 	def get_status(self):
-
 		internal_name = self.internal_name
 		if internal_name in self._cfg.status_cache_dict:
 			if self.instance.shortname in self._cfg.status_cache_dict[internal_name]:
@@ -1306,7 +1305,7 @@ class Run:
 							except FileNotFoundError:
 								pass
 
-				if last_mod == cache_entry["last_mod"]:
+				if last_mod == cache_entry.get('last_mod', None):
 
 					# Verify that the file with the same last modification time truly produced this
 					# cache entry by matching the cached status with the source it originated from.

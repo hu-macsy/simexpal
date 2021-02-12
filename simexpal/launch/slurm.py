@@ -1,6 +1,7 @@
 
 import collections
 import os
+import re
 import subprocess
 import sys
 import tempfile
@@ -11,6 +12,11 @@ from . import common
 script_template = '''#!/bin/sh
 @SIMEX@ internal-invoke @MODE@ @SPECFILE@
 '''
+
+# regex for matching Slurm JobIDs
+jobid_regex = r'Submitted batch job (?P<jobid>.+)'
+prog = re.compile(jobid_regex)
+
 
 class SlurmLauncher(common.Launcher):
 	def __init__(self, queue):
@@ -103,10 +109,17 @@ class SlurmLauncher(common.Launcher):
 				print("Submitting run {}/{}[{}] to default slurm partition".format(
 						run.experiment.display_name, run.instance.shortname, run.repetition))
 
-		process = subprocess.Popen(sbatch_args, stdin=subprocess.PIPE)
-		process.communicate(sbatch_script.encode())  # Assume UTF-8 encoding here.
+		process = subprocess.Popen(sbatch_args, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+		out, _ = process.communicate(sbatch_script.encode())  # Assume UTF-8 encoding here.
+		return_msg = out.decode()
+		print(return_msg)
+
 		assert process.returncode == 0
 
-		for run in locked:
-			common.create_run_file(run)
+		jobid = prog.match(return_msg).group('jobid')
+		if use_array:
+			for idx, run in enumerate(locked):
+				common.create_run_file(run, {'slurm_jobid': str(jobid) + '_' + str(idx)})
+		else:
+			common.create_run_file(locked[0], {'slurm_jobid': str(jobid)})
 
