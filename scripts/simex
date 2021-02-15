@@ -701,7 +701,7 @@ def do_experiments_launch(args):
 
 		submit_to_launcher(cfg, launcher_runs)
 
-		cfg.writeback_status_cache()
+	cfg.writeback_status_cache()
 
 experiments_launch_parser = experiments_subcmds.add_parser('launch',
 		parents=[run_selection_parser])
