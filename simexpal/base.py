@@ -5,6 +5,7 @@ import itertools
 import json
 import os
 import yaml
+import subprocess
 import sys
 import tempfile
 import warnings
@@ -82,6 +83,9 @@ class Config:
 
 		self.status_cache_path = basedir + '/status.cache'
 		self.status_cache_dict = {}
+
+		self.slurm_queried = False
+		self.slurm_queried_jobs = {}
 
 		self._insts = OrderedDict()
 		self._build_infos = OrderedDict()
@@ -419,6 +423,41 @@ class Config:
 	def export_failed_experiments(self):
 		return self.export_experiments([s for s in Status if s.is_negative])
 
+	def query_slurm(self):
+		if not self.slurm_queried:
+			# -h omits the header line.
+			# -r outputs one job array element per line.
+			output = subprocess.check_output(['squeue', '-h', '-r'])
+			output = output.decode().splitlines()
+
+			self.slurm_queried = True
+
+			if len(output) > 0:
+				output = [entry.split() for entry in output]
+				for entry in output:
+					entry_jobid = entry[0]
+					entry_state = entry[4]
+					if entry_state == 'PD':
+						status = Status.SUBMITTED
+					elif entry_state in ['R', 'CG']:
+						status = Status.STARTED
+					else:
+						status = Status.BROKEN
+
+					self.slurm_queried_jobs[entry_jobid] = status
+
+	def get_slurm_job_status(self, jobid):
+		# Returns 'failed' for jobs not listed in self.slurm_queried_jobs.
+		# This only holds for jobs that would receive the status
+		# 'submitted' or 'started' in Run._update_status_cache_dict().
+		return self.slurm_queried_jobs.get(jobid, Status.FAILED)
+
+	def writeback_status_cache(self):
+		fd, path = tempfile.mkstemp(dir=self.basedir)
+		with os.fdopen(fd, 'w') as tmp:
+			json.dump(self.status_cache_dict, tmp)
+		os.rename(path, self.status_cache_path)
+
 	# -----------------------------------------------------------------------------------
 	# Matrix expansion.
 	# -----------------------------------------------------------------------------------
@@ -550,12 +589,6 @@ class Config:
 			return tuple([self.get_variant(variant) for variant in variant_list])
 
 		return [make_variation(prod) for prod in itertools.product(*variation_bundle)]
-
-	def writeback_status_cache(self):
-		fd, path = tempfile.mkstemp(dir=self.basedir)
-		with os.fdopen(fd, 'w') as tmp:
-			json.dump(self.status_cache_dict, tmp)
-		os.rename(path, self.status_cache_path)
 
 class Instance:
 	"""Represents a single instance"""
@@ -1273,8 +1306,26 @@ class Run:
 		except FileNotFoundError:
 			if os.access(self.output_file_path('out'), os.F_OK):
 				status, last_mod = Status.STARTED, os.stat(self.output_file_path('out')).st_mtime
+
+				jobid = self.slurm_jobid
+				if jobid is not None:
+					if not self._cfg.slurm_queried:
+						self._cfg.query_slurm()
+					status = self._cfg.get_slurm_job_status(jobid)
+
+					return status
+
 			elif os.access(self.aux_file_path('run'), os.F_OK):
 				status, last_mod = Status.SUBMITTED, os.stat(self.aux_file_path('run')).st_mtime
+
+				jobid = self.slurm_jobid
+				if jobid is not None:
+					if not self._cfg.slurm_queried:
+						self._cfg.query_slurm()
+					status = self._cfg.get_slurm_job_status(jobid)
+
+					return status
+
 			elif os.access(self.aux_file_path('lock'), os.F_OK):
 				status, last_mod = Status.IN_SUBMISSION, os.stat(self.aux_file_path('lock')).st_mtime
 
@@ -1325,15 +1376,12 @@ class Run:
 					# Verify that the file with the same last modification time truly produced this
 					# cache entry by matching the cached status with the source it originated from.
 					status = Status(cache_entry["status"])
-					if (status.is_positive or status.is_negative) and last_mod_source == 'status':
-						return status
-					elif status == Status.STARTED and last_mod_source == 'out':
-						return status
-					elif status == Status.SUBMITTED and last_mod_source == 'run':
-						return status
-					elif status == Status.IN_SUBMISSION and last_mod_source == 'lock':
-						return status
-					elif status == Status.NOT_SUBMITTED and last_mod_source is None:
+					if (((status.is_positive or status.is_negative) and last_mod_source == 'status')
+						or (status == Status.STARTED and last_mod_source == 'out')
+						or (status == Status.SUBMITTED and last_mod_source == 'run')
+						or (status == Status.IN_SUBMISSION and last_mod_source == 'lock')
+						or (status == Status.NOT_SUBMITTED and last_mod_source is None)):
+
 						return status
 
 		return self._update_status_cache_dict()
