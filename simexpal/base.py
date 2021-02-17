@@ -1174,6 +1174,7 @@ class Status(IntEnum):
 	TIMEOUT = 5
 	KILLED = 6
 	FAILED = 7
+	BROKEN = 8
 
 	def __str__(self):
 		if self.value == Status.NOT_SUBMITTED:
@@ -1192,6 +1193,8 @@ class Status(IntEnum):
 			return 'killed'
 		if self.value == Status.FAILED:
 			return 'failed'
+		if self.value == Status.BROKEN:
+			return 'broken'
 
 	@property
 	def is_positive(self):
@@ -1203,7 +1206,7 @@ class Status(IntEnum):
 
 	@property
 	def is_negative(self):
-		return self.value in [Status.TIMEOUT, Status.KILLED, Status.FAILED]
+		return self.value in [Status.TIMEOUT, Status.KILLED, Status.FAILED, Status.BROKEN]
 
 class Run:
 	def __init__(self, cfg, experiment, instance, repetition):
