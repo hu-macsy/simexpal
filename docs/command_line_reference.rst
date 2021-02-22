@@ -74,6 +74,8 @@ It supports the following actions:
 :launch: launches all the non executed experiments.
 :print: displays all experimental output, including error outputs, on the command-line.
 :purge: deletes the experimental data. To confirm this action it needs the ``-f`` argument.
+:kill: terminates jobs submitted to or started by Slurm. To confirm this action it needs
+    the ``-f`` argument.
 
 All the above actions can be applied to a subset of experiments according to a `selection option`,
 which can be specified as an additional argument. Supported selection options are:
