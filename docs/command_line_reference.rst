@@ -72,8 +72,8 @@ It supports the following actions:
    experiment will be grouped together. The ``--full`` option forces simexpal to display the
    full experiment name.
 :launch: launches all the non executed experiments.
-:purge: deletes the experimental data. To confirm this action it needs the ``-f`` argument.
 :print: displays all experimental output, including error outputs, on the command-line.
+:purge: deletes the experimental data. To confirm this action it needs the ``-f`` argument.
 
 All the above actions can be applied to a subset of experiments according to a `selection option`,
 which can be specified as an additional argument. Supported selection options are:
@@ -96,11 +96,11 @@ instances
 Checks and eventually downloads the instances for the experiments.
 It supports the following actions:
 
-:list: lists all the instances found in the experiments.yml file.
-   Available instances are shown in green, unavailable instances in red.
 :install: downloads all the missing instances if they are taken from a public repository.
    With the argument ``--overwrite`` it will also download the available instances and
    overwrite them.
+:list: lists all the instances found in the experiments.yml file.
+   Available instances are shown in green, unavailable instances in red.
 :process: caches information about instances.
 :run-transform: manually runs a transformation on instance files.
 
