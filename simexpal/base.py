@@ -1251,7 +1251,7 @@ class Run:
 				status = Status.TIMEOUT
 			elif status_dict['signal']:
 				status = Status.KILLED
-			elif status_dict['status'] > 0:
+			elif status_dict['status'] > 0 or status_dict.get('error', None):
 				status = Status.FAILED
 			else:
 				status = Status.FINISHED

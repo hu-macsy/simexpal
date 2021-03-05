@@ -424,8 +424,26 @@ def invoke_run(manifest):
 	start = time.perf_counter()
 	cwd = (util.expand_at_params(manifest.workdir, substitute)
 			if manifest.workdir is not None else manifest.base_dir)
-	child = subprocess.Popen(cmd, cwd=cwd, env=environ,
-			stdout=stdout, stderr=stderr)
+	try:
+		child = subprocess.Popen(cmd, cwd=cwd, env=environ,
+				stdout=stdout, stderr=stderr)
+	except FileNotFoundError:
+		import traceback
+
+		# Log the error traceback.
+		with open(manifest.aux_file_path('stderr'), 'w') as f:
+			f.write(traceback.format_exc())
+
+		# Create the .status file.
+		status_dict = {'timeout': False, 'walltime': 0,
+				'status': -1, 'signal': None,
+				'error': 'executable_not_found'}
+		with open(manifest.output_file_path('status.tmp'), "w") as f:
+			yaml.dump(status_dict, f)
+		os.rename(manifest.output_file_path('status.tmp'), manifest.output_file_path('status'))
+
+		return
+
 	os.close(stderr)
 	sel = selectors.DefaultSelector()
 
@@ -482,7 +500,8 @@ def invoke_run(manifest):
 
 	# Create the status file to signal that we are finished.
 	status_dict = {'timeout': did_timeout, 'walltime': runtime,
-			'status': status, 'signal': sigcode}
+			'status': status, 'signal': sigcode,
+			'error': None}
 	with open(manifest.output_file_path('status.tmp'), "w") as f:
 		yaml.dump(status_dict, f)
 	os.rename(manifest.output_file_path('status.tmp'), manifest.output_file_path('status'))
