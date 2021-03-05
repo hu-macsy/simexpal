@@ -1,0 +1,17 @@
+# This file contains experiments with a non-existing program.
+instances:
+  - repo: local
+    items:
+        - name: foo
+          files: []
+          extra_args: []
+  - repo: local
+    items:
+        - name: bar
+          files: []
+          extra_args: []
+
+experiments:
+  - name: baz
+    args: ['./non_existing_file']
+    stdout: out
