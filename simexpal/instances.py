@@ -22,6 +22,12 @@ repos = {
 def download_instance(inst_yml, instances_dir, filename, partial_path, ext):
 	import requests
 
+	def download_as_stream(url, download_path):
+		with requests.get(url, stream=True) as request:
+			with open(download_path, 'wb') as f:
+				for chunk in request.iter_content(chunk_size=1000000):
+					f.write(chunk)
+
 	shortname = os.path.splitext(filename)[0]
 	if 'repo' in inst_yml:
 		repo = inst_yml['repo']
@@ -36,9 +42,7 @@ def download_instance(inst_yml, instances_dir, filename, partial_path, ext):
 		url = repos[repo]['url'] + prefix + filename + fmt
 
 		download_path = os.path.join(instances_dir, filename + '.download')
-		request = requests.get(url)
-		with open(download_path, 'wb') as f:
-			f.write(request.content)
+		download_as_stream(url, download_path)
 
 		# Decompress the instance.
 		def extract(reader, f):
@@ -67,9 +71,8 @@ def download_instance(inst_yml, instances_dir, filename, partial_path, ext):
 				raise RuntimeError("Unexpected parameter {}".format(p))
 
 			url = expand_at_params(inst_yml['url'], substitute)
-			request = requests.get(url)
-			with open(partial_path + ext, 'wb') as f:
-				f.write(request.content)
+			download_path = partial_path + ext
+			download_as_stream(url, download_path)
 		elif method == 'git':
 			import subprocess
 
