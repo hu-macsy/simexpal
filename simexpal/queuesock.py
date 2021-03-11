@@ -32,6 +32,19 @@ class Queue:
 		return "{}/{}[{}]".format(display_name, manifest['instance'], manifest['repetition'])
 
 	def run(self):
+		import signal
+
+		signal_reader, signal_writer = os.pipe()
+		os.set_blocking(signal_writer, False)
+		signal.set_wakeup_fd(signal_writer)
+
+		# We need to install a signal handler in order for
+		# signal.set_wakeup_fd() to write the signal into fd
+		signal.signal(signal.SIGTERM, lambda *args: None)
+		signal.signal(signal.SIGINT, lambda *args: None)
+
+		self.selector.register(signal_reader, selectors.EVENT_READ)
+
 		print('Serving on {}'.format(self.socket_path))
 		self.socket.listen()
 		self.selector.register(self.socket, selectors.EVENT_READ)
@@ -41,6 +54,7 @@ class Queue:
 		cur_subproc = None
 		cur_subproc_terminated = True
 		cur_run = None
+
 		while True:
 			events = self.selector.select(1)
 
@@ -51,7 +65,13 @@ class Queue:
 
 					self.selector.register(conn, selectors.EVENT_READ, connection)
 				else:
-					request = sk.data.progress()
+					if sk.fileobj == signal_reader:
+						self.selector.unregister(signal_reader)
+						# SIGTERM or SIGINT was sent to the process. We have to kill the queue launcher.
+						request = {'action': 'kill'}
+					else:
+						request = sk.data.progress()
+
 					if request:
 						if request['action'] == 'launch':
 							requests.append(request)
@@ -60,9 +80,16 @@ class Queue:
 						elif request['action'] == 'kill':
 							print("Terminating current subprocess")
 							if cur_subproc is not None:
+								# terminate() is sufficient as the subprocess is a simexpal process
+								# and thus will always terminate accordingly when receiving SIGTERM
 								cur_subproc.terminate()
+							os.close(signal_reader)
+							os.close(signal_writer)
 							self.close()
-							return
+
+							raise RuntimeError(
+								"simexpal received a termination signal (either SIGINT or SIGTERM) and has terminated "
+								"the current child process")
 						elif request['action'] == 'show':
 							pending_runs = []
 							for request in requests:
