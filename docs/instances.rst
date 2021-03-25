@@ -9,10 +9,11 @@ You might want to take a look at the following pages before exploring instances:
 - :ref:`AtVariables`
 
 On this page we describe how to specify instances in the ``experiments.yml`` file. You can
-list local instances that consist of one file or several files. More over simexpal can download
-remote instances from the `SNAP <https://snap.stanford.edu/data/>`_ repository. It is also possible
-to assign instances to instance sets that enable a more efficient usage of the
-:ref:`command line interface <CommandLineReference>` and are useful when defining the run matrix.
+list local instances that consist of zero or more files. More over simexpal can download
+remote instances from the `SNAP <https://snap.stanford.edu/data/>`_ repository, Git repositories
+and arbitrary URLs. It is also possible to assign instances to instance sets that enable a more
+efficient usage of the :ref:`command line interface <CommandLineReference>` and are useful when
+defining the run matrix.
 
 Instance Directory
 ------------------
