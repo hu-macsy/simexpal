@@ -51,9 +51,6 @@ An example of how to list a local set of instances is:
    :language: yaml
    :caption: How to list local instances in the experiments.yml file.
 
-..
-    TODO: Add section on instance generators
-
 .. _RemoteInstances:
 
 Remote Instances
@@ -268,6 +265,80 @@ key to specify our extra arguments.
           - name: foo
             files: []
             extra_args: ['--seed', '10']
+
+Generator Instances
+-------------------
+
+It is possible to let simexpal generate instances by providing a program that writes to ``/dev/stdout``.
+In order to do so, we specify the
+
+- ``generator``: dictionary containing generator arguments
+- ``items``: list of instances
+
+keys.
+
+.. code-block:: YAML
+   :linenos:
+   :caption: How to list generator instances in the experiments.yml file.
+
+   instances:
+     - generator:
+         args: ['./generate.py', '--seed=1', '1000']
+       items:
+         - uniform-n1000-s1
+     - generator:
+         args: ['./generate.py', '--seed=2', '1000']
+       items:
+         - uniform-n1000-s2
+     - generator:
+         args: ['./generate.py', '--seed=3', '1000']
+       items:
+         - uniform-n1000-s3
+
+In the example above we list the three instances ``uniform-n1000-s1``, ``uniform-n1000-s2`` and
+``uniform-n1000-s3``, which will be created from the program
+`generate.py <https://github.com/hu-macsy/simexpal/blob/master/examples/sorting/generate.py>`_.
+It takes the following optional parameters
+
+- ``-o``: path of output file (default: ``/dev/stdout``),
+- ``--seed``: seed for random generator (default: current system time),
+- ``--range``: range of integers (default: ``10e6``)
+
+and mandatory parameter
+
+- ``n``: number of integers to generate
+
+as input.
+
+The command ``./generate.py --seed=2 1000`` creates 1000 random numbers from the seed ``2`` and writes
+them into ``/dev/stdout``. Simexpal redirects the input from ``/dev/stdout`` to the file
+``/<instance_directory>/<instance_name>``.
+
+Finally, we need to use
+
+.. code-block:: bash
+
+   $ simex instances install
+
+to generate the instances.
+
+It is also possible to list more than one instance in the ``items`` key, e.g.
+
+.. code-block:: YAML
+   :linenos:
+   :caption: How to list generator instances with more than one item in the experiments.yml file.
+
+   instances:
+     - generator:
+         args: ['./generate.py' '1000']
+       items:
+         - uniform-n1000-s1
+         - uniform-n1000-s2
+
+Here we list the two instances ``uniform-n1000-s1`` and ``uniform-n1000-s2``. Both
+``./generate.py 1000`` commands will use their respective system times as seed and create 1000 random
+numbers from them.
+
 
 .. _InstanceExtraArguments:
 

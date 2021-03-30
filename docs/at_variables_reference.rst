@@ -125,6 +125,16 @@ Same as for the :ref:`AtVariablesExperimentsArgs` key `without` the ``@EXTRA_ARG
 Instances
 ---------
 
+generator
+^^^^^^^^^
+
+args
+~~~~
+
+The following @-variables can be used in the ``args`` key of the ``generator`` key:
+
+- ``@INSTANCE_FILENAME@``
+
 url
 ^^^
 
