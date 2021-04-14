@@ -122,6 +122,10 @@ def make_build_in_order(cfg, build, wanted_builds, wanted_phases):
 			return get_prefix_dir_for(var.split(':')[1])
 		elif var == 'PARALLELISM':
 			return str(get_concurrency())
+		elif var == 'BASE_DIR':
+			return cfg.basedir
+		elif var == 'INSTANCE_DIR':
+			return cfg.instance_dir()
 
 	# Build the environment.
 	def prepend_env(var, items):
