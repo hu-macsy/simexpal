@@ -15,6 +15,8 @@ and arbitrary URLs. It is also possible to assign instances to instance sets tha
 efficient usage of the :ref:`command line interface <CommandLineReference>` and are useful when
 defining the run matrix.
 
+.. _InstanceDirectory:
+
 Instance Directory
 ------------------
 
