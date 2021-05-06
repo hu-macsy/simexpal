@@ -52,6 +52,7 @@ class Queue:
 
 		requests = OrderedDict()
 		num_completed_runs = 0
+		cur_queue_jobid = None
 		cur_subproc = None
 		cur_subproc_terminated = True
 		cur_run = None
@@ -77,6 +78,13 @@ class Queue:
 						if request['action'] == 'launch':
 							queue_jobid = util.extract_file_prefix_from_path(request['specfile_path'], '-spec')
 							requests[queue_jobid] = request
+						elif request['action'] == 'get_job_status_dict':
+							queried_jobs = {}
+							if cur_queue_jobid is not None:
+								queried_jobs[cur_queue_jobid] = int(base.Status.STARTED)
+							for queue_jobid in requests:
+								queried_jobs[queue_jobid] = int(base.Status.SUBMITTED)
+							sk.data.send(util.yaml_to_string(queried_jobs))
 						elif request['action'] == 'stop':
 							self._should_stop = True
 						elif request['action'] == 'kill':
@@ -119,19 +127,21 @@ class Queue:
 			if cur_subproc_terminated:
 
 				if cur_subproc is not None:
+					cur_queue_jobid = None
 					cur_run = None
 					cur_subproc = None
 					num_completed_runs += 1
 
 				if not len(requests) == 0:
-					request = requests.popitem(last=False)[1]  # FIFO
+					queue_jobid, request = requests.popitem(last=False)  # FIFO
 
 					specfile_path = request['specfile_path']
 					with open(specfile_path, 'r') as f:
 						manifest = util.read_yaml_file(f)['manifest']
 
+					cur_queue_jobid = queue_jobid
 					cur_run = self.get_run_display_name(manifest)
-					print("Launching run {}".format(cur_run))
+					print("Launching run {} with queue jobid '{}'".format(cur_run, cur_queue_jobid))
 
 					script = os.path.abspath(sys.argv[0])
 
@@ -206,4 +216,9 @@ def kill_queue():
 def show_queue():
 	return sendrecv({
 		'action': 'show'
+	})
+
+def get_job_status_dict():
+	return sendrecv({
+		'action': 'get_job_status_dict'
 	})
