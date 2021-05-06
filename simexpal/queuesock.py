@@ -7,6 +7,7 @@ import sys
 
 from . import base
 from . import util
+from collections import OrderedDict
 
 
 class Queue:
@@ -49,7 +50,7 @@ class Queue:
 		self.socket.listen()
 		self.selector.register(self.socket, selectors.EVENT_READ)
 
-		requests = []
+		requests = OrderedDict()
 		num_completed_runs = 0
 		cur_subproc = None
 		cur_subproc_terminated = True
@@ -74,7 +75,8 @@ class Queue:
 
 					if request:
 						if request['action'] == 'launch':
-							requests.append(request)
+							queue_jobid = util.extract_file_prefix_from_path(request['specfile_path'], '-spec')
+							requests[queue_jobid] = request
 						elif request['action'] == 'stop':
 							self._should_stop = True
 						elif request['action'] == 'kill':
@@ -92,7 +94,7 @@ class Queue:
 								"the current child process")
 						elif request['action'] == 'show':
 							pending_runs = []
-							for request in requests:
+							for request in requests.values():
 								specfile_path = request['specfile_path']
 								with open(specfile_path, 'r') as f:
 									manifest = util.read_yaml_file(f)['manifest']
@@ -122,7 +124,7 @@ class Queue:
 					num_completed_runs += 1
 
 				if not len(requests) == 0:
-					request = requests.pop(0)
+					request = requests.popitem(last=False)[1]  # FIFO
 
 					specfile_path = request['specfile_path']
 					with open(specfile_path, 'r') as f:
