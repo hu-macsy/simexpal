@@ -1296,6 +1296,16 @@ class Run:
 		except FileNotFoundError:
 			return None
 
+	def get_queue_jobid(self):
+		try:
+			with open(self.aux_file_path('run'), 'r') as f:
+				data = yaml.load(f, Loader=YmlLoader)
+				if data is None:
+					return None
+			return data.get('queue_jobid', None)
+		except FileNotFoundError:
+			return None
+
 	# Contains auxiliary files that SHOULD NOT be necessary to determine the result of the run.
 	def aux_file_path(self, ext):
 		return os.path.join(self.experiment.aux_subdir,
