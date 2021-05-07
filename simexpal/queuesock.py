@@ -145,7 +145,8 @@ class Queue:
 
 					script = os.path.abspath(sys.argv[0])
 
-					cur_subproc = subprocess.Popen([script, 'internal-invoke', '--method=queue', specfile_path])
+					with open(os.path.join(manifest['config']['base_dir'], 'aux/_queue/' + queue_jobid + '.err'), 'w') as f:
+						cur_subproc = subprocess.Popen([script, 'internal-invoke', '--method=queue', specfile_path], stderr=f)
 				elif self._should_stop:
 					self.close()
 					break
