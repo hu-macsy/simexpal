@@ -16,9 +16,11 @@ specify ``experiments.py @INSTANCE@`` as experiment arguments.
 
 Below, we list all @-variables and where they can be used.
 
+- ``@BASE_DIR@``: path of the directory containing the ``experiments.yml``
 - ``@COMPILE_DIR_FOR:<build_name>@``: :ref:`compilation directory <BuildDirectories>` of ``<build_name>`` in the same revision
 - ``@EXTRA_ARGS@``: extra arguments of all variants and the instance of an experiment
 - ``@INSTANCE@``: path of a :ref:`local <LocalInstances>`/:ref:`remote <RemoteInstances>` instance, i.e. ``/instance_directory/<instance_name>``
+- ``@INSTANCE_DIR@``: path of the :ref:`InstanceDirectory`
 - ``@INSTANCE:<ext>@``: path of a :ref:`MultipleExtensions` instance with extension ``<ext>``, i.e. ``/instance_directory/<instance_name>.<ext>``
 - ``@INSTANCE:<idx>@``: path of an :ref:`ArbitraryInputFiles` instance with index ``<idx>`` in the ``files`` key, i.e. ``/instance_directory/files[<idx>]``
 - ``@INSTANCE_FILENAME@``: filename of the instance
@@ -46,7 +48,9 @@ compile
 
 The following @-variables can be used in the ``compile`` key:
 
+- ``@BASE_DIR@``
 - ``@COMPILE_DIR_FOR:<build_name>@``
+- ``@INSTANCE_DIR@``
 - ``@PARALLELISM@``
 - ``@PREFIX_DIR_FOR:<build_name>@``
 - ``@SOURCE_DIR_FOR:<build_name>@``
@@ -98,9 +102,11 @@ args
 
 The following @-variables can be used in the ``args`` key:
 
+- ``@BASE_DIR@``
 - ``@COMPILE_DIR_FOR:<build_name>@`` (``<build>`` has to be in ``used_builds`` or be required by a build in it)
 - ``@EXTRA_ARGS@``
 - ``@INSTANCE@``
+- ``@INSTANCE_DIR@``
 - ``@INSTANCE:<ext>@``
 - ``@INSTANCE:<idx>@``
 - ``@OUTPUT@``

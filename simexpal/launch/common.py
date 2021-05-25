@@ -354,6 +354,10 @@ def invoke_run(manifest):
 			return manifest.get_prefix_dir_for(p.split(':')[1])
 		elif p == 'OUTPUT_SUBDIR':
 			return manifest.output_subdir
+		elif p == 'BASE_DIR':
+			return manifest.base_dir
+		elif p == 'INSTANCE_DIR':
+			return manifest.instance_dir
 		else:
 			return None
 
@@ -384,6 +388,10 @@ def invoke_run(manifest):
 			return manifest.get_compile_dir_for(p.split(':')[1])
 		elif p.startswith('PREFIX_DIR_FOR:'):
 			return manifest.get_prefix_dir_for(p.split(':')[1])
+		elif p == 'BASE_DIR':
+			return manifest.base_dir
+		elif p == 'INSTANCE_DIR':
+			return manifest.instance_dir
 		else:
 			return None
 	environ = os.environ.copy()

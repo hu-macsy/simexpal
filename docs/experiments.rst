@@ -177,11 +177,11 @@ the experiment as follows:
    experiments:
      - name: experiment1
        args: ['<name_of_executable_of_build1>', ...]
-       used_builds: [build1]
+       use_builds: [build1]
        ...
 
 In this way simexpal will check the :ref:`installation directory <BuildDirectories>` and the ``extra_paths``
-of the builds specified in ``used_builds`` for the executable. If a build
+of the builds specified in ``use_builds`` for the executable. If a build
 :ref:`requires other builds <DependentBuilds>` and they are properly specified in the ``requires`` key, then
 simexpal will also check the installation directories and ``extra_paths`` of those builds.
 
