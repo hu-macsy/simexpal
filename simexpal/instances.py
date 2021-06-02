@@ -1,6 +1,7 @@
 
 import gzip
 import os
+import sys
 import zipfile
 
 from .util import try_mkdir, expand_at_params
@@ -24,9 +25,35 @@ def download_instance(inst_yml, instances_dir, filename, partial_path, ext):
 
 	def download_as_stream(url, download_path):
 		with requests.get(url, stream=True) as request:
+			content_length = request.headers.get('content-length')
 			with open(download_path, 'wb') as f:
-				for chunk in request.iter_content(chunk_size=1000000):
-					f.write(chunk)
+				if content_length is not None:
+					content_length = int(content_length)
+					downloaded = 0
+					progress = -1
+					for chunk in request.iter_content(chunk_size=1000000):
+						f.write(chunk)
+
+						downloaded += len(chunk)
+						if sys.stdout.isatty():
+							# We are running in a terminal.
+							done = int(50*downloaded/content_length)
+							sys.stdout.write("\r[{}{}]{}% ({:.2f}MB/{:.2f}MB)".format(
+								'='*done, ' '*(50-done), 2*done, downloaded/2**20, content_length/2**20))
+							sys.stdout.flush()
+						else:
+							done = int(10*downloaded/content_length)
+							# Only draw a new progress bar when at least 10% progress was made or we are in the first
+							# iteration of this loop.
+							if done > progress:
+								sys.stdout.write("[{}{}]{}% ({:.2f}MB/{:.2f}MB)\n".format(
+									'='*done, ' '*(10-done), 10*done, downloaded/2**20, content_length/2**20))
+								sys.stdout.flush()
+							progress = done
+					print()
+				else:
+					for chunk in request.iter_content(chunk_size=1000000):
+						f.write(chunk)
 
 	shortname = os.path.splitext(filename)[0]
 	if 'repo' in inst_yml:
