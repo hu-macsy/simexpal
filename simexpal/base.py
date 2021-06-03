@@ -681,6 +681,10 @@ class Instance:
 		return self._inst_yml.get('commit', None)
 
 	@property
+	def format(self):
+		return self._inst_yml.get('format', None)
+
+	@property
 	def git_subdir(self):
 		return self._inst_yml.get('git_subdir', None)
 
