@@ -232,6 +232,10 @@
 											"url": {"type": "string"},
 											"set": {"$ref": "#/definitions/str_or_str_list"},
 											"postprocess": {"const": "to_edgelist"},
+											"format": {
+												"type": "string",
+												"enum": ["zip", "tar", "gztar", "bztar", "xztar", "gz"]
+											},
 											"items": {
 												"oneOf": [
 													{
