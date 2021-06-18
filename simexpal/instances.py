@@ -4,7 +4,8 @@ import os
 import sys
 import zipfile
 
-from .util import try_mkdir, expand_at_params
+from .util import try_mkdir, try_rmfile, try_rmtree, expand_at_params
+from .base import ADDITIONAL_SUPPORTED_ARCHIVE_FORMATS
 
 class DownloadException(Exception):
 	pass
@@ -98,8 +99,46 @@ def download_instance(inst_yml, instances_dir, filename, partial_path, ext):
 				raise RuntimeError("Unexpected parameter {}".format(p))
 
 			url = expand_at_params(inst_yml['url'], substitute)
-			download_path = partial_path + ext
+			download_path = os.path.join(instances_dir, filename + '.download')
 			download_as_stream(url, download_path)
+
+			if inst_yml.get('format', None):
+				import shutil
+				import tempfile
+
+				if inst_yml['format'] in ADDITIONAL_SUPPORTED_ARCHIVE_FORMATS:
+					if inst_yml['format'] == 'gz':
+						fd, tmp_file_path = tempfile.mkstemp(dir=instances_dir)
+						with gzip.open(download_path, 'rb') as f_in:
+							with open(tmp_file_path, 'wb') as f_out:
+								shutil.copyfileobj(f_in, f_out)
+
+						os.rename(tmp_file_path, partial_path + ext)
+				else:
+					tmp_dir_path = tempfile.mkdtemp(dir=instances_dir)
+					try:
+						shutil.unpack_archive(download_path, extract_dir=tmp_dir_path, format=inst_yml['format'])
+					except (ValueError, shutil.ReadError):
+						print("Skipping unpacking of instance '{}' with unsupported archive format: .{}".format(
+							shortname, inst_yml['format']))
+						try_rmtree(tmp_dir_path)
+						try_rmfile(download_path)
+						return False
+
+					try:
+						os.rename(os.path.join(tmp_dir_path, filename), partial_path + ext)
+					except FileNotFoundError:
+						print("Skipping unpacking of instance '{}' as it does not exist in the archive '{}'".format(
+							filename, url
+						))
+						try_rmtree(tmp_dir_path)
+						try_rmfile(download_path)
+						return False
+					try_rmtree(tmp_dir_path)
+
+				try_rmfile(download_path)
+			else:
+				os.rename(download_path, partial_path + ext)
 		elif method == 'git':
 			import subprocess
 

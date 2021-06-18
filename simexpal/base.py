@@ -15,8 +15,8 @@ DEFAULT_DEV_BUILD_NAME = '_dev'
 EXPERIMENTS_LIST_THRESHOLD = 30
 TIMEOUT_GRACE_PERIOD = 30
 DEFAULT_SOCKETPATH = os.path.expanduser('~/.extl.sock')
-
 DID_WARN_KONECT = False
+ADDITIONAL_SUPPORTED_ARCHIVE_FORMATS = ['gz']  # In addition to the formats supported by shutil.unpack_archive().
 
 did_warn_libyaml = False
 YmlLoader = yaml.SafeLoader
@@ -741,8 +741,10 @@ class Instance:
 		elif 'method' in self._inst_yml:
 			print(f"Downloading instance '{self.shortname}' with method '{self.method}'")
 
-			instances.download_instance(self._inst_yml,
+			ret_value = instances.download_instance(self._inst_yml,
 					self.config.instance_dir(), self.unique_filename, partial_path, '.post0')
+			if ret_value is not None:
+				return
 		else:
 			raise RuntimeError(f"Unknown installation option for instance '{self.shortname}'")
 
