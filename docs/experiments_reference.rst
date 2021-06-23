@@ -41,6 +41,7 @@ used for specifying builds:
 - ``configure``: list of dictionaries containing configuration parameters
 - ``compile``: list of dictionaries containing compilation parameters
 - ``environ``: dictionary of (environment variable, value)-pairs
+- ``extra_paths``: list of extra paths, which simexpal should check when running an experiment that uses this build
 - ``git``: link to the Git repository
 - ``install``: list of dictionaries containing installation parameters
 - ``name``: (arbitrary) name of the build
