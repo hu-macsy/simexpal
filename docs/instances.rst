@@ -77,6 +77,8 @@ to download the instances into the instance directory.
     execute supported actions, e.g, transforming the instances to edgelist format via
     ``simex instances run-transform --transform='to_edgelist'`` if you already have them saved locally.
 
+.. _SNAPInstances:
+
 Instances From SNAP
 ^^^^^^^^^^^^^^^^^^^
 
@@ -129,6 +131,47 @@ the elements in the ``items`` key. Thus, we have listed the two instances ``expe
 ``launchers.json``, which come from
 `<https://raw.githubusercontent.com/hu-macsy/simexpal/master/simexpal/schemes/experiments.json>`_ and
 `<https://raw.githubusercontent.com/hu-macsy/simexpal/master/simexpal/schemes/launchers.json>`_ respectively.
+
+Automatic Unpacking of Archives
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+When dealing with instances from a URL, you might encounter archives. Simexpal can automatically unpack archives
+by specifying the archive format in the
+
+- ``format``: archive format of the instance
+
+key. Supported formats are formats supported by
+`shutil.unpack_archive() <https://docs.python.org/3.6/library/shutil.html#archiving-operations>`_ and also gzip'ed files,
+i.e.:
+
+- ``zip``: ZIP file (if the `zlib <https://docs.python.org/3.6/library/zlib.html#module-zlib>`_ module is available)
+- ``tar``: uncompressed tar file
+- ``gztar``: gzip’ed tar-file (if the `zlib <https://docs.python.org/3.6/library/zlib.html#module-zlib>`_ module is available)
+- ``bztar``: bzip2’ed tar-file (if the `bz2 <https://docs.python.org/3.6/library/bz2.html#module-bz2>`_ module is available)
+- ``xztar``: xz’ed tar-file (if the `lzma <https://docs.python.org/3.6/library/lzma.html#module-lzma>`_ module is available)
+- ``gz``: gzip'ed file.
+
+.. code-block:: YAML
+   :linenos:
+   :caption: How to automatically unpack instances from a URL in the experiments.yml file.
+
+   instdir: "<path_to_instance_directory>"
+   instances:
+     - method: url
+       url: https://snap.stanford.edu/data/@INSTANCE_FILENAME@.txt.gz
+       items:
+         - 'facebook_combined'
+         - 'wiki-Vote'
+       format: gz
+
+.. note::
+   This only serves as an example. Downloading instances from the `SNAP repository <https://snap.stanford.edu/data/>`_
+   should be done as mentioned :ref:`above <SNAPInstances>`.
+
+In the ``experiments.yml`` above we specified two instances ``facebook_combined`` and ``wiki-Vote``, which both come
+from the `SNAP repository <https://snap.stanford.edu/data/>`_. As visible in the URL, the instances are gzip archives.
+By setting ``format: gz`` we make sure that the appropriate unpacker is used.
+
 
 Instances From Git
 ^^^^^^^^^^^^^^^^^^
