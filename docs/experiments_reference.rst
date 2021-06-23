@@ -23,7 +23,9 @@ This entry is a list of instances that will be used for experiments. The followi
 used for specifying instances:
 
 - ``extensions``: list of extensions that the instance has
+- ``extra_args``:  list of extra arguments
 - ``files``: list of files the instance consists of
+- ``format``: archive format of the instance
 - ``items``: list of instances
 - ``name``: name of the instance (used when dealing with instances that consist of unrelated files)
 - ``repo``: source of instances
