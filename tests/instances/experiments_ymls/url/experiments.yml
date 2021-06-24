@@ -5,3 +5,13 @@ instances:
     items:
       - 'experiments.json'
       - 'launchers.json'
+  - method: url
+    url: 'https://snap.stanford.edu/data/@INSTANCE_FILENAME@.txt.gz'
+    format: 'gz'
+    items:
+      - 'facebook_combined'
+  - method: url
+    url: 'http://nrvis.com/download/data/dynamic/soc-epinions-trust-dir.zip'
+    format: zip
+    items:
+      - 'soc-epinions-trust-dir.edges'
