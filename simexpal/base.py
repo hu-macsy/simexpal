@@ -740,9 +740,10 @@ class Instance:
 		if self.check_available() or self.is_fileless:
 			return
 
-		util.try_mkdir(self._cfg.instance_dir())
+		instance_dir = self._cfg.instance_dir()
+		util.try_mkdir(instance_dir)
 
-		partial_path = os.path.join(self._cfg.instance_dir(), self.unique_filename)
+		partial_path = os.path.join(instance_dir, self.unique_filename)
 		if 'repo' in self._inst_yml:
 
 			if self._inst_yml['repo'] == 'local':
@@ -757,7 +758,7 @@ class Instance:
 					self._inst_yml['repo']))
 
 			instances.download_instance(self._inst_yml,
-					self.config.instance_dir(), self.unique_filename, partial_path, '.post0')
+					instance_dir, self.unique_filename, partial_path, '.post0')
 		elif 'generator' in self._inst_yml:
 			import subprocess
 
@@ -780,7 +781,7 @@ class Instance:
 			print(f"Downloading instance '{self.shortname}' with method '{self.method}'")
 
 			instances.download_instance(self._inst_yml,
-					self.config.instance_dir(), self.unique_filename, partial_path, '.post0')
+					instance_dir, self.unique_filename, partial_path, '.post0')
 		else:
 			raise RuntimeError(f"Unknown installation option for instance '{self.shortname}'")
 
