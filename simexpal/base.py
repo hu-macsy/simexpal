@@ -787,11 +787,18 @@ class Instance:
 
 		stage = 0
 		if 'postprocess' in self._inst_yml:
-			assert self._inst_yml['postprocess'] == 'to_edgelist'
-			instances.convert_to_edgelist(self._inst_yml,
-					partial_path + '.post0', partial_path + '.post1')
-			os.unlink(partial_path + '.post0')
-			stage = 1
+			did_work = False
+			if not os.path.isfile(partial_path + '.postprocessed'):
+				assert self._inst_yml['postprocess'] == 'to_edgelist'
+				instances.convert_to_edgelist(self._inst_yml,
+						partial_path + '.post0', partial_path + '.post1')
+				os.rename(partial_path + '.post0', partial_path + '.original')
+				stage = 1
+				did_work = True
+				util.touch(partial_path + '.postprocessed')
+
+			if not did_work:
+				print("simexpal: No postprocessing to do for instance '{}'".format(self.shortname))
 
 		os.rename(partial_path + '.post{}'.format(stage), partial_path)
 
