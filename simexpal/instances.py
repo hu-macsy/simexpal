@@ -132,6 +132,8 @@ def convert_to_edgelist(inst_yml, in_path, out_path):
 	elif repo == 'snap':
 		separator = '\t'
 		comment_prefix = '#'
+	else:
+		raise RuntimeError("Only instances from the KONECT or SNAP repository can be converted to edge list format")
 
 	def get_other_separator(separator):
 		if separator == ' ':
