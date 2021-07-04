@@ -11,8 +11,6 @@ e.g. ``experiment.py /path/to/instance1``, ``experiment.py /path/to/instance2``,
 ``@INSTANCE@`` variable that resolves to the respective paths of the instances. Then, we only need to
 specify ``experiments.py @INSTANCE@`` as experiment arguments.
 
-..
-    TODO: Add section Instances for generators and INSTANCE_FILENAME variable
 
 Below, we list all @-variables and where they can be used.
 
@@ -21,9 +19,9 @@ Below, we list all @-variables and where they can be used.
 - ``@EXTRA_ARGS@``: extra arguments of all variants and the instance of an experiment
 - ``@INSTANCE@``: path of a :ref:`local <LocalInstances>`/:ref:`remote <RemoteInstances>` instance, i.e. ``/instance_directory/<instance_name>``
 - ``@INSTANCE_DIR@``: path of the :ref:`InstanceDirectory`
+- ``@INSTANCE_FILENAME@``: filename of the instance
 - ``@INSTANCE:<ext>@``: path of a :ref:`MultipleExtensions` instance with extension ``<ext>``, i.e. ``/instance_directory/<instance_name>.<ext>``
 - ``@INSTANCE:<idx>@``: path of an :ref:`ArbitraryInputFiles` instance with index ``<idx>`` in the ``files`` key, i.e. ``/instance_directory/files[<idx>]``
-- ``@INSTANCE_FILENAME@``: filename of the instance
 - ``@OUTPUT@``: path to the output file of an experiment
 - ``@OUTPUT:<ext>@``: path to the output file with extension ``<ext>`` of an experiment
 - ``@OUTPUT_SUBDIR@``: output subdirectory of the experiment where the output and status files are stored, i.e. ``/path_to_experiments_yml/output/``
@@ -148,6 +146,26 @@ Same as for the :ref:`AtVariablesExperimentsArgs` key `without` the ``@EXTRA_ARG
 Instances
 ---------
 
+.. _AtVariablesInstanceArgs:
+
+args
+^^^^
+
+The following @-variables can be used in the ``args`` key:
+
+
+- ``@BASE_DIR@``
+- ``@INSTANCE_DIR@``
+- ``@INSTANCE@``
+- ``@INSTANCE:<ext>@``
+- ``@INSTANCE:<idx>@``
+
+environ
+^^^^^^^
+
+The values of the ``environ`` key will be substituted and the @-variables are the same as for
+the :ref:`AtVariablesInstanceArgs` key.
+
 extra_args
 ^^^^^^^^^^
 
@@ -169,6 +187,12 @@ url
 The following @-variables can be used in the ``url`` key:
 
 - ``@INSTANCE_FILENAME@``
+
+workdir
+^^^^^^^
+
+Same as for the :ref:`AtVariablesInstanceArgs` key.
+
 
 Variants
 --------
@@ -197,3 +221,4 @@ procs_per_node
 ^^^^^^^^^^^^^^
 
 Same as for the :ref:`experiments args <AtVariablesExperimentsArgs>` key `without` the ``@EXTRA_ARGS@`` variable.
+

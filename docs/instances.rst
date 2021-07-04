@@ -13,7 +13,7 @@ list local instances that consist of zero or more files. More over simexpal can 
 remote instances from the `SNAP <https://snap.stanford.edu/data/>`_ repository, Git repositories
 and arbitrary URLs. It is also possible to assign instances to instance sets that enable a more
 efficient usage of the :ref:`command line interface <CommandLineReference>` and are useful when
-defining the run matrix.
+defining the run matrix. Furthermore, you can add extra arguments to instances and postprocess them.
 
 .. _InstanceDirectory:
 
@@ -71,8 +71,9 @@ to download the instances into the instance directory.
 .. note::
     1st December 2020: It is no longer possible to automatically download `KONECT <http://konect.cc>`_
     instances as the website is no longer publicly available. It is still possible to list them and
-    execute supported actions, e.g, transforming the instances to edgelist format via
-    ``simex instances run-transform --transform='to_edgelist'`` if you already have them saved locally.
+    execute supported actions, e.g, transforming the instances to edge list format via
+    ``simex instances run-transform --transform='to_edgelist'`` or :ref:`postprocess <PostprocessInstances>`
+    them if you already have them saved locally.
 
 Instances From SNAP
 ^^^^^^^^^^^^^^^^^^^
@@ -466,6 +467,108 @@ and ``set2``, which contains ``instance2`` and ``instance3``.
 
 Instance sets will also be useful when using the :ref:`command line interface <CommandLineReference>` of
 simexpal and when defining the :ref:`RunMatrix`.
+
+.. _PostprocessInstances:
+
+Postprocessing
+--------------
+
+There might be cases where you need to process the instances after installing or downloading them, before they
+are ready to be used in the experiments. In order to do so, you can use the
+
+- ``postprocess``: list or string of postprocessing arguments
+
+key. Afterwards, you can install and postprocess the instances by calling
+
+.. code-block:: bash
+
+   $ simex instances install
+
+in the terminal.
+
+Before processing an instance, simexpal copies the contents of each file belonging to an instance into separate
+``<filename>.original`` files. After postprocessing an instance simexpal creates an ``<instance_name>.postprocessed``
+file, signalling the successful postprocessing of an instance. If an error occurs during the postprocessing of an
+instance, the original instance files will be restored and the postprocessing will be skipped.
+
+Arbitrary Postprocessing
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+You can define arbitrary postprocessing steps by setting the ``postprocess`` key to a list of dictionaries
+containing the
+
+- ``args``: list of postprocessing arguments
+- ``environ``: dictionary of (environment variable, value)-pairs
+- ``workdir``: path of the working directory
+
+keys.
+
+Assume you want to postprocess the ``facebook_combined`` and ``cit-HepTh`` network from
+`SNAP <https://snap.stanford.edu/data/>`_ using two executables ``postprocess1`` and ``postprocess2``, which
+take the path of the instance as parameter. Also, you have to prepend the path for ``postprocess1`` to the
+``PATH`` environment variable. Then, your ``experiments.yml`` file could look as follows:
+
+.. code-block:: YAML
+   :linenos:
+   :caption: How to arbitrarily postprocess instances in the experiments.yml file.
+
+   instances:
+     - repo: snap
+       items:
+         - 'facebook_combined'
+         - 'cit-HepTh'
+       postprocess:
+         - args: ['postprocess1', '@INSTANCE@']
+           environ:
+               'PATH': '/path/to/postprocess1'
+         - args: ['postprocess2', '@INSTANCE@']
+
+When executing the postprocessing arguments, the :ref:`@-variable <AtVariables>` ``@INSTANCE@`` will resolve
+to the respective path of the instances. For instances with :ref:`MultipleExtensions` or
+:ref:`ArbitraryInputFiles`, use the @-variables ``@INSTANCE:<ext>@`` and ``@INSTANCE:<idx>@`` respectively.
+
+.. warning::
+   Make sure to use the :ref:`AtVariables` to access paths of instance files and to maintain the names and
+   locations of each file belonging to an instance (as passed by the @-variable) after every postprocessing step.
+   Simexpal temporarily renames instance files while postprocessing them. Manually renaming instance files might
+   break the postprocessing.
+
+Converting to Edge List Format
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+To convert instances from `SNAP <https://snap.stanford.edu/data/>`_ or `KONECT <http://konect.cc>`_, we can set
+``postprocess: to_edgelist`` as follows:
+
+.. code-block:: YAML
+   :linenos:
+   :caption: How to convert SNAP/KONECT instances to edge list format in the experiments.yml file.
+
+   instances:
+      - repo: snap
+        items:
+           - facebook_combined
+           - cit-HepTh
+        postprocess: to_edgelist
+      - repo: konect
+        items:
+           - dolphins
+           - ucidata-zachary
+        postprocess: to_edgelist
+
+In this way, simexpal will use its internal mechanism to convert the instances to edge list
+format after downloading them.
+
+Re-Postprocessing
+^^^^^^^^^^^^^^^^^
+
+To re-postprocess instances, you can simply delete the respective ``<instance_name>.postprocessed`` files
+before calling
+
+.. code-block:: bash
+
+   $ simex instances install
+
+in the terminal.
 
 Next
 ----
