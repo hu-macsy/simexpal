@@ -17,4 +17,3 @@ def test_download(rel_yml_path):
         instance.install()
 
         assert instance.check_available()
-        assert os.path.getsize(instance.fullpath) > 0
