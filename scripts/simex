@@ -122,7 +122,7 @@ def cli_selects_run(args, run):
 	if args.failed:
 		if not run.get_status().is_negative:
 			return False
-	elif args.unfinished:
+	if args.unfinished:
 		status = run.get_status()
 		if not (status.is_neutral or status == Status.NOT_SUBMITTED):
 			return False
