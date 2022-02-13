@@ -231,6 +231,8 @@ supported for variants. For static variants we set the
 
 keys for each item in the ``items`` key.
 
+
+.. _StaticSlurmVariants:
 .. code-block:: YAML
    :linenos:
    :caption: How to specify supported Slurm parameters for static variants in the experiments.yml file.
@@ -262,18 +264,33 @@ level as the ``axis`` key:
    :caption: How to specify supported Slurm parameters for dynamic variants in the experiments.yml file.
 
    variants:
-     - axis: num_cores
-       ...
+     - axis: 'block-size'
+       range: [32,64]
+       steps: 32
+       extra_args: ['@VARIANT_VALUE:block-size@']
        num_nodes: 1
        procs_per_node: 24
        num_threads: 2
 
-Also, the :ref:`@-variable <AtVariables>` ``@VARIANT_VALUE:<axis_name>@`` can be specified as value of
-these keys.
-
 .. note::
    Dynamic variants of the same ``axis`` will share the values set by ``procs_per_node``, ``num_threads``
    and ``num_nodes``.
+
+Also, the :ref:`@-variable <AtVariables>` ``@VARIANT_VALUE:<axis_name>@`` can be specified as value of
+these keys. E.g. the following is equivalent to the :ref:`static case above <StaticSlurmVariants>`:
+
+.. code-block:: YAML
+   :linenos:
+   :caption: How to specify supported Slurm parameters as dynamic variants in the experiments.yml file.
+
+   variants:
+   - axis: 'num-cores'
+     range: [1,2]
+     steps: 1
+     num_nodes: '@VARIANT_VALUE:num-cores@'
+     procs_per_node: 24
+     num_threads: 2
+
 
 Next
 ----
