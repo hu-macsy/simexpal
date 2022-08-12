@@ -15,7 +15,7 @@ In the following sections, we consider the
 :ref:`QuickStart` guide.
 
 ..
-    TODO: Add section on ForkLauncher, Slurm, SGE
+    TODO: Add section on ForkLauncher, SGE
 
 Queue Launcher
 --------------
@@ -102,6 +102,78 @@ commands are stated below.
 - ``simex queue stop``: terminate the launcher after finishing all pending jobs
 - ``simex queue kill``: terminate the launcher immediately
 
+Slurm Launcher
+--------------
+
+`Slurm <https://slurm.schedmd.com/overview.html>`_ is a cluster management and job scheduling system,
+which simexpal can use to submit experiments.
+
+Launching Experiments
+^^^^^^^^^^^^^^^^^^^^^
+
+To launch experiments through the Slurm launcher we need to :ref:`set up a launchers.yml file <launchers_yml>`.
+Alternatively, we can add the ``--launch-through=slurm`` and ``--queue=<queue>`` (where ``<queue>`` is the name
+of the partition to use) argument to the ``simex experiments launch`` command. If ``--queue`` is omitted, the
+default slurm partition will be used:
+
+.. code-block:: bash
+
+   $ simex e launch --launch-through=slurm
+   Submitting run bubble-sort/uniform-n1000-s1[0] to default slurm partition
+   Submitting run bubble-sort/uniform-n1000-s2[0] to default slurm partition
+   Submitting run bubble-sort/uniform-n1000-s3[0] to default slurm partition
+   Submitted batch job 287454
+
+   Submitting run insertion-sort/uniform-n1000-s1[0] to default slurm partition
+   Submitting run insertion-sort/uniform-n1000-s2[0] to default slurm partition
+   Submitting run insertion-sort/uniform-n1000-s3[0] to default slurm partition
+   Submitted batch job 287455
+
+Show the Status
+^^^^^^^^^^^^^^^
+
+The status of experiments can be listed via the ``simex experiments`` (or short: ``simex e``)
+command. When encountering experiments that are currently submitted to or started by Slurm,
+simexpal will additionally query Slurm using its ``squeue`` command to verify the status. If
+the ``squeue`` command outputs an unexpected status, simexpal will return the ``broken`` status.
+
+.. code-block:: bash
+
+   $ simex e
+   Experiment                              Instance                            Status
+   ----------                              --------                            ------
+   bubble-sort                             uniform-n1000-s1                    [0] started
+   bubble-sort                             uniform-n1000-s2                    [0] started
+   bubble-sort                             uniform-n1000-s3                    [0] started
+   insertion-sort                          uniform-n1000-s1                    [0] submitted
+   insertion-sort                          uniform-n1000-s2                    [0] submitted
+   insertion-sort                          uniform-n1000-s3                    [0] submitted
+
+Terminate
+^^^^^^^^^
+
+It is possible to terminate experiments that are already submitted to or started by Slurm. To
+do so, we can use ``simex experiments kill`` (internally ``scancel`` will be used). To confirm
+the termination of experiments, we need to add the ``-f`` argument to the command.
+
+.. code-block:: bash
+
+   $ simex experiments kill -f
+   Killing run bubble-sort/uniform-n1000-s1[0] with Slurm jobid 287454_0
+   Killing run bubble-sort/uniform-n1000-s2[0] with Slurm jobid 287454_1
+   Killing run bubble-sort/uniform-n1000-s3[0] with Slurm jobid 287454_2
+   Killing run insertion-sort/uniform-n1000-s1[0] with Slurm jobid 287455_0
+   Killing run insertion-sort/uniform-n1000-s2[0] with Slurm jobid 287455_1
+   Killing run insertion-sort/uniform-n1000-s3[0] with Slurm jobid 287455_2
+
+Troubleshooting
+^^^^^^^^^^^^^^^
+
+When encountering unexpected statuses, we can use ``simex experiments print`` to check the experiments
+error output and manually check the error/output files of Slurm located in ``aux/_slurm/``. Each Slurm
+job has a respective ``<job_id>-<array_id>.err`` and ``<job_id>-<array_id>.out`` file. If the job is not
+part of a job array ``-<array_id>`` is omitted in the name.
+
 .. _launchers_yml:
 
 "launchers.yml" File
@@ -123,23 +195,22 @@ Launchers
 
 To specify launchers in the ``launchers.yml`` file we need to set the
 
-- ``launchers``: list of dictionaries, which contain launchers
+- ``launchers``: list of dictionaries containing launchers
 
-key.
+key. Each dictionary contains the
+
+- ``name``: name of the launcher
+- ``default``: boolean (``true``/``false``) - whether this is the default launcher or not
+- ``scheduler``: type of the launcher
+
+keys.
 
 .. _QueueLauncher:
 
 Queue Launcher
 ~~~~~~~~~~~~~~
 
-To define a queue launcher we need to add a list entry to the ``launchers`` key, which contains a
-dictionary with the
-
-- ``name``: name of the launcher
-- ``default``: boolean (``true``/``false``) - whether this is the default launcher or not
-- ``scheduler``: type of the launcher
-
-key.
+To define a queue launcher we need to set ``scheduler: queue``:
 
 .. code-block:: YAML
    :linenos:
@@ -152,6 +223,29 @@ key.
 
 In this way we created a queue launcher with the name ``local-queue``. We also set it to be the default
 launcher.
+
+Slurm Launcher
+~~~~~~~~~~~~~~
+
+To define a Slurm launcher we need to set ``scheduler: slurm``. Also, we can choose the partition
+the experiments are run on by setting the
+
+- ``queue``: name of the partition to use
+
+key. If ``queue`` is not specified, Slurm will use the default partition.
+
+.. code-block:: YAML
+   :linenos:
+   :caption: How to specify a Slurm launcher in the launchers.yml file.
+
+    launchers:
+        - name: local-cluster
+          default: true
+          scheduler: slurm
+          queue: fat-nodes
+
+In this way we created a Slurm launcher with the name ``local-cluster``. We also set it to be the default
+launcher and use the partition ``fat-nodes``.
 
 Command Line Interface
 ^^^^^^^^^^^^^^^^^^^^^^

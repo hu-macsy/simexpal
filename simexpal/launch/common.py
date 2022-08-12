@@ -35,11 +35,11 @@ def lock_run(run):
 	os.close(lockfd)
 	return True
 
-def create_run_file(run):
+def create_run_file(run, yml_dict={}):
 
 	# Create the .run file. This signals that the run has been submitted.
-	with open(run.aux_file_path('run.tmp'), "w"):
-		pass
+	with open(run.aux_file_path('run.tmp'), 'w') as f:
+		yaml.dump(yml_dict, f)
 	os.rename(run.aux_file_path('run.tmp'), run.aux_file_path('run'))
 
 # Stores all information that is necessary to invoke a run.

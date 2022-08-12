@@ -8,6 +8,7 @@ import os
 import argcomplete
 import errno
 import re
+import subprocess
 import sys
 
 import simexpal as extl
@@ -121,7 +122,7 @@ def cli_selects_run(args, run):
 	if args.failed:
 		if not run.get_status().is_negative:
 			return False
-	elif args.unfinished:
+	if args.unfinished:
 		status = run.get_status()
 		if not (status.is_neutral or status == Status.NOT_SUBMITTED):
 			return False
@@ -701,7 +702,7 @@ def do_experiments_launch(args):
 
 		submit_to_launcher(cfg, launcher_runs)
 
-		cfg.writeback_status_cache()
+	cfg.writeback_status_cache()
 
 experiments_launch_parser = experiments_subcmds.add_parser('launch',
 		parents=[run_selection_parser])
@@ -768,6 +769,42 @@ def do_experiments_print_output(args):
 experiments_print_parser = experiments_subcmds.add_parser('print',
 		parents=[run_selection_parser])
 experiments_print_parser.set_defaults(cmd=do_experiments_print_output)
+
+def do_experiments_kill(args):
+	cfg = extl.base.config_for_dir()
+
+	wanted_slurm_jobids = []
+
+	for run in select_runs_from_cli(cfg, args):
+		# It only makes sense to kill Slurm jobs that were submitted or already started.
+		if run.get_status() in [Status.SUBMITTED, Status.STARTED]:
+			slurm_jobid = run.slurm_jobid
+			if slurm_jobid is not None:
+				if not args.f:
+					print("This would kill run {}/{}[{}] with Slurm jobid {}".format(
+						run.experiment.display_name, run.instance.shortname, run.repetition, run.slurm_jobid))
+				else:
+					print("Killing run {}/{}[{}] with Slurm jobid {}".format(
+						run.experiment.display_name, run.instance.shortname, run.repetition, run.slurm_jobid))
+				wanted_slurm_jobids.append(run.slurm_jobid)
+
+	if len(wanted_slurm_jobids) > 0:
+		if not args.f:
+			print("Use '-f' to confirm this action.")
+		else:
+			scancel_cmd = ['scancel']
+			scancel_cmd.extend(wanted_slurm_jobids)
+
+			subprocess.check_output(scancel_cmd)
+	else:
+		print("No Slurm jobs available")
+
+	cfg.writeback_status_cache()
+
+experiments_kill_parser = experiments_subcmds.add_parser('kill',
+		parents=[run_selection_parser])
+experiments_kill_parser.set_defaults(cmd=do_experiments_kill)
+experiments_kill_parser.add_argument('-f', action='store_true', help='execute kill')
 
 # ---------------------------------------------------------------------------------------
 
