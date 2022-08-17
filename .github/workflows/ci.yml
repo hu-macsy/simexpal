@@ -5,16 +5,16 @@ on:
       - master
 
 jobs:
-  build:
+  build-and-test:
     strategy:
       matrix:
-        python-version: [3.6, 3.7]
+        python-version: ["3.7", "3.8", "3.9", "3.10"]
         os: [ubuntu-latest, macos-latest]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install simexpal
@@ -23,5 +23,49 @@ jobs:
           pip install .
       - name: Run tests
         run: |
-          pip install pytest==6.1.2
+          pip install pytest==6.2.5
           pytest
+
+  # This job checks whether the current workflow is triggered by a new tag with the following form: INT.INT or INT.INT.INT (for example: 1.0, 1.0.1, ...)
+  # The result is saved in a variable and used as a conditional variable when uploading packages.
+  check-release-tag:
+    name: "Check for new release"
+    runs-on: ubuntu-latest
+    outputs:
+      is-release: ${{ steps.do-check.outputs.is-release }}
+    steps:
+      - name: Check release tag ${{ github.ref }}
+        id: do-check
+        run: |
+          if [[ ${{ github.ref }} =~ ^refs\/tags\/v[0-9]+\.[0-9]+(\.[0-9]+)?$ ]]; then
+            echo "::set-output name=is-release::true"
+          else
+            echo "::set-output name=is-release::false"
+          fi
+
+  build-wheel-and-upload:
+    if: needs.check-release-tag.outputs.is-release == 'true' && github.repository == 'hu-macsy/simexpal'
+    name: 'PyPi release upload'
+    runs-on: ubuntu-20.04
+    needs: [build-and-test, check-release-tag]
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.10
+      - name: Create wheel
+        run: |
+          python -m pip install --upgrade pip
+          pip install wheel
+          python3 -m pip wheel ./ --wheel-dir=./dist --no-deps
+      - name: Create source package
+        run: |
+          python3 setup.py sdist
+      - name: Upload to PyPI
+        run: |
+          pip install twine 
+          python3 -m twine upload --verbose --skip-existing ./dist/*
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.TWINE_TOKEN }}
