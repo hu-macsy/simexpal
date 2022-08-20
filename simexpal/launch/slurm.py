@@ -80,6 +80,13 @@ class SlurmLauncher(common.Launcher):
 
 		def substitute_slurm_settings(p):
 			if p.startswith('VARIANT_VALUE:'):
+				# Verify that all runs have the same variants.
+				if use_array:
+					for run in locked[1:]:
+						if not locked[0].experiment.variation == run.experiment.variation:
+							raise RuntimeError("Can not start experiment '{}' as Slurm job array. The experiment "
+												"contains inconsistent variants.".format(locked[0].experiment.display_name))
+
 				return str(manifest.get_variant_value(p.split(':')[1]))
 			else:
 				return None
