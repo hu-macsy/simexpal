@@ -36,7 +36,7 @@ class QueueLauncher(common.Launcher):
 		with os.fdopen(specfd, 'w') as f:
 			util.write_yaml_file(f, specs)
 
-		print("Launching run {}/{}[{}] on local machine".format(
+		print("Submitting run {}/{}[{}] to local queue launcher".format(
 				run.experiment.display_name, run.instance.shortname, run.repetition))
 
 		queuesock.sendrecv({

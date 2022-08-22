@@ -3,6 +3,7 @@ import os
 import selectors
 import signal
 import subprocess
+import sys
 import time
 
 import yaml
@@ -462,6 +463,19 @@ def invoke_run(manifest):
 	stderr_writer = LazyWriter(stderr_pipe, manifest.aux_file_path('stderr'))
 	sel.register(stderr_pipe, selectors.EVENT_READ, stderr_writer)
 
+	signal_reader, signal_writer = os.pipe()
+	os.set_blocking(signal_writer, False)
+	signal.set_wakeup_fd(signal_writer)
+
+	# We need to install a signal handler in order for
+	# signal.set_wakeup_fd() to write the signal into fd
+	signal.signal(signal.SIGTERM, lambda *args: None)
+	signal.signal(signal.SIGINT, lambda *args: None)
+
+	sel.register(signal_reader, selectors.EVENT_READ)
+
+	do_exit = False
+
 	# Wait until the run program finishes.
 	while True:
 		if child.poll() is not None:
@@ -479,8 +493,15 @@ def invoke_run(manifest):
 		# Consume any output that might be ready.
 		events = sel.select(timeout=1)
 		for (sk, mask) in events:
-			if not sk.data.progress():
+			if sk.fileobj == signal_reader:
+				sel.unregister(signal_reader)
+				child.kill()
+				do_exit = True  # We also need to terminate the parent process. Otherwise subsequent experiments will be launched.
+			elif not sk.data.progress():
 				sel.unregister(sk.fd)
+
+	os.close(signal_reader)
+	os.close(signal_writer)
 
 	# Consume all remaining output.
 	while True:
@@ -513,3 +534,8 @@ def invoke_run(manifest):
 	with open(manifest.output_file_path('status.tmp'), "w") as f:
 		yaml.dump(status_dict, f)
 	os.rename(manifest.output_file_path('status.tmp'), manifest.output_file_path('status'))
+
+	if do_exit:
+		raise RuntimeError(
+			"simexpal received a termination signal (either SIGINT or SIGTERM) and has terminated "
+			"the current child process")

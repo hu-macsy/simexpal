@@ -71,12 +71,12 @@ or add the ``--launch-through=queue`` argument to the ``simex experiments launch
 .. code-block:: bash
 
     $ simex experiments launch --launch-through=queue
-    Launching run bubble-sort/uniform-n1000-s1[0] on local machine
-    Launching run bubble-sort/uniform-n1000-s2[0] on local machine
-    Launching run bubble-sort/uniform-n1000-s3[0] on local machine
-    Launching run insertion-sort/uniform-n1000-s1[0] on local machine
-    Launching run insertion-sort/uniform-n1000-s2[0] on local machine
-    Launching run insertion-sort/uniform-n1000-s3[0] on local machine
+    Submitting run bubble-sort/uniform-n1000-s1[0] on to local queue launcher
+    Submitting run bubble-sort/uniform-n1000-s2[0] on to local queue launcher
+    Submitting run bubble-sort/uniform-n1000-s3[0] on to local queue launcher
+    Submitting run insertion-sort/uniform-n1000-s1[0] to local queue launcher
+    Submitting run insertion-sort/uniform-n1000-s2[0] to local queue launcher
+    Submitting run insertion-sort/uniform-n1000-s3[0] to local queue launcher
 
 Show the Status
 ^^^^^^^^^^^^^^^
