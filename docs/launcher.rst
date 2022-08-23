@@ -15,7 +15,44 @@ In the following sections, we consider the
 :ref:`QuickStart` guide.
 
 ..
-    TODO: Add section on ForkLauncher, SGE
+    TODO: Add section on SGE
+
+Fork Launcher
+-------------
+
+Simexpal uses the fork launcher if no further configurations are made. The fork launcher launches
+experiments on the local machine. In contrast to the :ref:`QueueLauncher`, the fork launcher launches
+the experiments immediately in the current terminal and blocks until completion of the experiments.
+
+Launching Experiments
+^^^^^^^^^^^^^^^^^^^^^
+
+To launch experiments through the fork launcher we can simply use the ``simex experiments launch``
+command (if no launcher configurations were made), :ref:`set up a launchers.yml file <launchers_yml>`
+or add the ``--launch-through=fork`` argument to the ``simex experiments launch`` command:
+
+.. code-block:: bash
+
+    $ simex experiments launch   # no launcher configurations were made beforehand
+
+and
+
+.. code-block:: bash
+
+    $ simex experiments launch --launch-through=fork
+
+will output
+
+.. code-block:: bash
+
+    Launching run bubble-sort/uniform-n1000-s1[0] on local machine
+    Launching run bubble-sort/uniform-n1000-s2[0] on local machine
+    Launching run bubble-sort/uniform-n1000-s3[0] on local machine
+    Launching run insertion-sort/uniform-n1000-s1[0] on local machine
+    Launching run insertion-sort/uniform-n1000-s2[0] on local machine
+    Launching run insertion-sort/uniform-n1000-s3[0] on local machine
+
+.. _QueueLauncher:
 
 Queue Launcher
 --------------
@@ -205,7 +242,31 @@ key. Each dictionary contains the
 
 keys.
 
-.. _QueueLauncher:
+Fork Launcher
+~~~~~~~~~~~~~
+
+To define a fork launcher we need to add a list entry to the ``launchers`` key, which contains a
+dictionary with the
+
+- ``name``: name of the launcher
+- ``default``: boolean (``true``/``false``) - whether this is the default launcher or not
+- ``scheduler``: type of the launcher
+
+key.
+
+.. code-block:: YAML
+   :linenos:
+   :caption: How to specify a fork launcher in the launchers.yml file.
+
+    launchers:
+        - name: local-fork
+          default: true
+          scheduler: fork
+
+In this way we created a fork launcher with the name ``local-fork``. We also set it to be the default
+launcher.
+
+.. _QueueLauncherYml:
 
 Queue Launcher
 ~~~~~~~~~~~~~~
@@ -266,7 +327,7 @@ Selecting the Launcher
 When launching experiments using ``simex experiments launch``, you can specify the ``--launcher`` option
 to select a certain launcher defined in the ``launchers.yml`` file. For example:
 
-Assume you have a ``launchers.yml`` file set up as in the :ref:`QueueLauncher` section, then
+Assume you have a ``launchers.yml`` file set up as in the :ref:`QueueLauncherYml` section, then
 ``simex experiments launch --launcher local-queue`` will select the launcher named ``local-queue`` from
 the ``launchers.yml`` file to run experiments.
 
