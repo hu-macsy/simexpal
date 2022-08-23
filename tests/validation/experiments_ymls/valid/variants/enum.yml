@@ -1,0 +1,6 @@
+# This file contains an 'enum' variant.
+
+variants:
+  - axis: 'block-algo'
+    enum: ['insertion_sort', 'bubble_sort']
+    extra_args: ['@VARIANT_VALUE:block-algo@']

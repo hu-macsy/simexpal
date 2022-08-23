@@ -1,0 +1,8 @@
+# Invalid .yml file for util.validate_setup_file().
+# This file contains a string for the 'steps' key.
+
+variants:
+  - axis: 'block-size'
+    range: [32, 64]
+    steps: 'foo'
+    extra_args: ['@VARIANT_VALUE:block-size@']

@@ -18,7 +18,22 @@ you to duplicate the ``experiments`` stanza multiple times.
 Specifying Variants
 -------------------
 
-To specify variants we will use the following keys:
+There are two types of variants:
+
+1. static variants
+2. dynamic variants
+
+Static variants have to be specified individually and thus allow for more customization e.g.
+:ref:`setting different environment variables <VariantsSettingEnvironmentVariables>` for each individual
+variant. In cases where such customization is not necessary, dynamic variations can be used. By using
+:ref:`AtVariables` and syntactic sugar, dynamic variations also simplify writing the ``experiments.yml``.
+
+.. _StaticVariants:
+
+Static Variants
+^^^^^^^^^^^^^^^
+
+To specify static variants we will use the following keys:
 
 - ``axis``: name of the variant axis
 - ``items``: list of dictionaries, which specify variants belonging to the same axis.
@@ -32,7 +47,7 @@ keys.
 
 .. code-block:: YAML
    :linenos:
-   :caption: How to specify variants in the experiments.yml file.
+   :caption: How to specify static variants in the experiments.yml file.
 
     variants:
       - axis: 'block-algo'
@@ -65,6 +80,90 @@ for the ``experiments.yml`` above.
 
 Later we will see how to choose only certain combinations of variants (:ref:`RunMatrix`).
 
+.. _DynamicVariants:
+
+Dynamic Variants
+^^^^^^^^^^^^^^^^
+
+Dynamic variants work similar to :ref:`static variants <StaticVariants>`. Some differences are the syntax, automatic
+assignment of variant names of the form ``<axis_name>:<variant_value>`` to the variants and the introduction
+of the :ref:`@-variable <AtVariables>` ``@VARIANT_VALUE:<axis_name>@``.
+
+.. _RangeVariants:
+
+``range`` Variants
+~~~~~~~~~~~~~~~~~~
+
+In cases where the values of variants are integers with regular step sizes, we can use ``range``
+variants. In order to do so, we will use the
+
+- ``axis``:  name of the variant axis
+- ``range``: list with start and stop element
+- ``steps``: step size
+- ``extra_args``: list of variant arguments
+
+keys.
+
+The ``range`` and ``steps`` keys will generate values ``i`` equivalent to a
+``for(int i = start; i <= stop; i += steps)`` loop in C.
+
+The ``experiments.yml`` file in the :ref:`static variants <StaticVariants>` example can then be written in the
+following way:
+
+.. code-block:: YAML
+   :linenos:
+   :caption: How to specify range variants in the experiments.yml file.
+
+    variants:
+      - axis: 'block-algo'
+        items:
+          - name: 'ba-insert'
+            extra_args: ['insertion_sort']
+          - name: 'ba-bubble'
+            extra_args: ['bubble_sort']
+      - axis: 'block-size'
+        range: [32,64]
+        steps: 32
+        extra_args: ['@VARIANT_VALUE:block-size@']
+
+The only differences to the :ref:`static variants <StaticVariants>` example is that we created the variant axis
+``block-size`` with variants named ``block-size:32`` and ``block-size:64``. Also, we need to specify the
+``@VARIANT_VALUE:<axis_name>@`` :ref:`@-variable <AtVariables>` in the ``extra_args`` key to access the values of
+the variants.
+
+``enum`` Variants
+~~~~~~~~~~~~~~~~~
+
+``enum`` variants can be seen as a generalization of :ref:`range variants <RangeVariants>`. With ``enum``
+variants, we can specify arbitrary values explicitly. In order to so, we will use the
+
+- ``axis``:  name of the variant axis
+- ``enum``: list of variant values
+- ``extra_args``: list of variant arguments
+
+keys.
+
+The ``experiments.yml`` file in the :ref:`range variants <RangeVariants>` example can then be written in the
+following way:
+
+.. code-block:: YAML
+   :linenos:
+   :caption: How to specify enum variants in the experiments.yml file.
+
+    variants:
+      - axis: 'block-algo'
+        enum: ['insertion_sort', 'bubble_sort']
+        extra_args: ['@VARIANT_VALUE:block-algo@']
+      - axis: 'block-size'
+        range: [32,64]
+        steps: 32
+        extra_args: ['@VARIANT_VALUE:block-size@']
+
+The only differences to the :ref:`range variants <RangeVariants>` example is that we created the variant axis
+``block-algo`` with variants named ``block-algo:insertion_sort`` and ``block-algo:bubble_sort``.
+
+.. _VariantsSettingEnvironmentVariables:
+
 Setting Environment Variables
 -----------------------------
 
@@ -74,12 +173,12 @@ Setting Environment Variables
 
 Setting environment variables for variants works similar to
 :ref:`setting environment variables for experiments <ExperimentsSettingEnvironmentVariables>`.
-The difference is that we set the
+For static variants we set the
 
 - ``environ``: dictionary of (environment variable, value)-pairs
 
-key for each item in the ``items`` key. For example you can specify the
-``OMP_NUM_THREADS`` environment variable as follows:
+key for each item in the ``items`` key. For dynamic variants we set the ``environ`` key on the same
+level as the ``axis`` key. For example you can specify environment variables as follows:
 
 .. code-block:: YAML
    :linenos:
@@ -97,6 +196,24 @@ key for each item in the ``items`` key. For example you can specify the
            ...
            environ:
              OMP_NUM_THREADS: 4
+     - axis: block-algo
+       enum: ...
+       ...
+       environ:
+         foo1: 'bar'
+     - axis: block-size
+       range: ...
+       steps: ...
+       ...
+       environ:
+         foo2: 'baz'
+
+With dynamic variants it is also possible to use the :ref:`@-variable <AtVariables>` ``@VARIANT_VALUE:<axis_name>@``
+as value for the environment variables.
+
+.. note::
+   Dynamic variants of the same ``axis`` will share the environment variables set by ``environ``.
+
 
 Slurm: ``--ntasks-per-node``, ``-c``, ``-N``
 --------------------------------------------
@@ -106,7 +223,7 @@ Slurm: ``--ntasks-per-node``, ``-c``, ``-N``
    arguments specified in the ``experiments`` stanza (if the same slurm argument occurs).
 
 The :ref:`supported Slurm arguments in experiments <ExperimentsSupportedSlurmArgs>` are also
-supported for variants. Here, we can specify the
+supported for variants. For static variants we set the
 
 - ``procs_per_node``: number of tasks to invoke on each node (slurm: ``--ntasks-per-node=n``)
 - ``num_threads``: number of cpus required per task (slurm: ``-c``, ``--cpus-per-task=ncpus``)
@@ -114,9 +231,11 @@ supported for variants. Here, we can specify the
 
 keys for each item in the ``items`` key.
 
+
+.. _StaticSlurmVariants:
 .. code-block:: YAML
    :linenos:
-   :caption: How to specify supported Slurm parameters for variants in the experiments.yml file.
+   :caption: How to specify supported Slurm parameters for static variants in the experiments.yml file.
 
    variants:
      - axis: num_cores
@@ -126,7 +245,7 @@ keys for each item in the ``items`` key.
            procs_per_node: 24
            num_threads: 2
            extra_args: []           # empty extra_args as we only want to benchmark with
-                                    # different node/cpu settings; do NOT omit this key
+                                    # different node/cpu settings
          - name: c48
            num_nodes: 2
            procs_per_node: 24
@@ -136,6 +255,42 @@ keys for each item in the ``items`` key.
 When launching your experiments with slurm, the variant ``c24`` will append
 ``-N 1 --ntasks-per-node 24 -c 2`` to the sbatch command. Analogously for the experiment with
 the variant ``c48``.
+
+For dynamic variants we set ``procs_per_node``, ``num_threads`` and ``num_nodes`` on the same
+level as the ``axis`` key:
+
+.. code-block:: YAML
+   :linenos:
+   :caption: How to specify supported Slurm parameters for dynamic variants in the experiments.yml file.
+
+   variants:
+     - axis: 'block-size'
+       range: [32,64]
+       steps: 32
+       extra_args: ['@VARIANT_VALUE:block-size@']
+       num_nodes: 1
+       procs_per_node: 24
+       num_threads: 2
+
+.. note::
+   Dynamic variants of the same ``axis`` will share the values set by ``procs_per_node``, ``num_threads``
+   and ``num_nodes``.
+
+Also, the :ref:`@-variable <AtVariables>` ``@VARIANT_VALUE:<axis_name>@`` can be specified as value of
+these keys. E.g. the following is equivalent to the :ref:`static case above <StaticSlurmVariants>`:
+
+.. code-block:: YAML
+   :linenos:
+   :caption: How to specify supported Slurm parameters as dynamic variants in the experiments.yml file.
+
+   variants:
+   - axis: 'num-cores'
+     range: [1,2]
+     steps: 1
+     num_nodes: '@VARIANT_VALUE:num-cores@'
+     procs_per_node: 24
+     num_threads: 2
+
 
 Next
 ----

@@ -48,13 +48,16 @@ class SlurmLauncher(common.Launcher):
 		use_array = len(locked) > 1
 
 		# Build the specfile.
+		manifest = common.compile_manifest(locked[0])
 		if not use_array:
 			specs = {
-				'manifest': common.compile_manifest(locked[0]).yml
+				'manifest': manifest.yml
 			}
 		else:
+			manifests = [manifest.yml]
+			manifests.extend([common.compile_manifest(run).yml for run in locked[1:]])
 			specs = {
-				'manifests': [common.compile_manifest(run).yml for run in locked]
+				'manifests': manifests
 			}
 
 		(specfd, specfile) = tempfile.mkstemp(prefix='', suffix='-spec.yml',
@@ -75,8 +78,47 @@ class SlurmLauncher(common.Launcher):
 
 		sbatch_script = util.expand_at_params(script_template, substitute)
 
+		def substitute_slurm_settings(p):
+			if p.startswith('VARIANT_VALUE:'):
+				# Verify that all runs have the same variants.
+				if use_array:
+					for run in locked[1:]:
+						if not locked[0].experiment.variation == run.experiment.variation:
+							raise RuntimeError("Can not start experiment '{}' as Slurm job array. The experiment "
+												"contains inconsistent variants.".format(locked[0].experiment.display_name))
+
+				return str(manifest.get_variant_value(p.split(':')[1]))
+			else:
+				return None
+
 		ps = experiment.effective_process_settings
 		ts = experiment.effective_thread_settings
+
+		def _represents_int(x):
+			try:
+				int(x)
+				return True
+			except ValueError:
+				return False
+
+		if ps is not None:
+			if ps['num_nodes'] is not None:
+				if isinstance(ps['num_nodes'], str):
+					ps['num_nodes'] = util.expand_at_params(ps['num_nodes'], substitute_slurm_settings)
+				if not _represents_int(ps['num_nodes']):
+					raise RuntimeError("The value of the 'num_nodes' key has to be an integer: {}".format(ps['num_nodes']))
+
+			if ps['procs_per_node'] is not None:
+				if isinstance(ps['procs_per_node'], str):
+					ps['procs_per_node'] = util.expand_at_params(ps['procs_per_node'], substitute_slurm_settings)
+				if not _represents_int(ps['procs_per_node']):
+					raise RuntimeError("The value of the 'procs_per_node' key has to be an integer: {}".format(ps['procs_per_node']))
+
+		if ts is not None:
+			if isinstance(ts['num_threads'], str):
+				ts['num_threads'] = util.expand_at_params(ts['num_threads'], substitute_slurm_settings)
+			if not _represents_int(ts['num_threads']):
+				raise RuntimeError("The value of the 'num_threads' key has to be an integer: {}".format(ts['num_threads']))
 
 		# Build the sbatch command to run the script.
 		# TODO: Support multiple queues

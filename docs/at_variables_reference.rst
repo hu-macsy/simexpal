@@ -35,7 +35,7 @@ Below, we list all @-variables and where they can be used.
 - ``@THIS_COMPILE_DIR@``: :ref:`compilation directory <BuildDirectories>` of this build
 - ``@THIS_PREFIX_DIR@``: :ref:`installation directory <BuildDirectories>` of this build
 - ``@THIS_SOURCE_DIR@``: :ref:`source directory <BuildDirectories>` of this build
-
+- ``@VARIANT_VALUE:<axis_name>@``: variant value of the :ref:`dynamic variant <DynamicVariants>` axis ``<axis_name>``
 
 
 Builds
@@ -115,6 +115,29 @@ The following @-variables can be used in the ``args`` key:
 - ``@PREFIX_DIR_FOR:<build_name>@`` (``<build_name>`` has to be in ``used_builds`` or be required by a build in it)
 - ``@REPETITION@``
 - ``@SOURCE_DIR_FOR:<build_name>@`` (``<build_name>`` has to be in ``used_builds`` or be required by a build in it)
+- ``@VARIANT_VALUE:<axis_name>@``
+
+environ
+^^^^^^^
+
+The values of the ``environ`` key will be substituted and the @-variables are the same as for
+the :ref:`AtVariablesExperimentsArgs` key.
+
+num_nodes
+^^^^^^^^^
+
+Same as for the :ref:`AtVariablesExperimentsArgs` key `without` the ``@EXTRA_ARGS@`` variable.
+
+num_threads
+^^^^^^^^^^^
+
+Same as for the :ref:`AtVariablesExperimentsArgs` key `without` the ``@EXTRA_ARGS@`` variable.
+
+procs_per_node
+^^^^^^^^^^^^^^
+
+Same as for the :ref:`AtVariablesExperimentsArgs` key `without` the ``@EXTRA_ARGS@`` variable.
+
 
 workdir
 ^^^^^^^
@@ -124,6 +147,11 @@ Same as for the :ref:`AtVariablesExperimentsArgs` key `without` the ``@EXTRA_ARG
 
 Instances
 ---------
+
+extra_args
+^^^^^^^^^^
+
+Same as for the :ref:`experiments args <AtVariablesExperimentsArgs>` key `without` the ``@EXTRA_ARGS@`` variable.
 
 generator
 ^^^^^^^^^
@@ -141,3 +169,31 @@ url
 The following @-variables can be used in the ``url`` key:
 
 - ``@INSTANCE_FILENAME@``
+
+Variants
+--------
+
+environ
+^^^^^^^
+
+Same as for the :ref:`experiments args <AtVariablesExperimentsArgs>` key `without` the ``@EXTRA_ARGS@`` variable.
+
+extra_args
+^^^^^^^^^^
+
+Same as for the :ref:`experiments args <AtVariablesExperimentsArgs>` key `without` the ``@EXTRA_ARGS@`` variable.
+
+num_nodes
+^^^^^^^^^
+
+Same as for the :ref:`experiments args <AtVariablesExperimentsArgs>` key `without` the ``@EXTRA_ARGS@`` variable.
+
+num_threads
+^^^^^^^^^^^
+
+Same as for the :ref:`experiments args <AtVariablesExperimentsArgs>` key `without` the ``@EXTRA_ARGS@`` variable.
+
+procs_per_node
+^^^^^^^^^^^^^^
+
+Same as for the :ref:`experiments args <AtVariablesExperimentsArgs>` key `without` the ``@EXTRA_ARGS@`` variable.
