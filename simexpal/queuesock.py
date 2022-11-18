@@ -7,6 +7,7 @@ import sys
 
 from . import base
 from . import util
+from collections import OrderedDict
 
 
 class Queue:
@@ -49,8 +50,9 @@ class Queue:
 		self.socket.listen()
 		self.selector.register(self.socket, selectors.EVENT_READ)
 
-		requests = []
+		requests = OrderedDict()
 		num_completed_runs = 0
+		cur_queue_jobid = None
 		cur_subproc = None
 		cur_subproc_terminated = True
 		cur_run = None
@@ -74,7 +76,15 @@ class Queue:
 
 					if request:
 						if request['action'] == 'launch':
-							requests.append(request)
+							queue_jobid = util.extract_file_prefix_from_path(request['specfile_path'], '-spec')
+							requests[queue_jobid] = request
+						elif request['action'] == 'get_job_status_dict':
+							queried_jobs = {}
+							if cur_queue_jobid is not None:
+								queried_jobs[cur_queue_jobid] = int(base.Status.STARTED)
+							for queue_jobid in requests:
+								queried_jobs[queue_jobid] = int(base.Status.SUBMITTED)
+							sk.data.send(util.yaml_to_string(queried_jobs))
 						elif request['action'] == 'stop':
 							self._should_stop = True
 						elif request['action'] == 'kill':
@@ -92,7 +102,7 @@ class Queue:
 								"the current child process")
 						elif request['action'] == 'show':
 							pending_runs = []
-							for request in requests:
+							for request in requests.values():
 								specfile_path = request['specfile_path']
 								with open(specfile_path, 'r') as f:
 									manifest = util.read_yaml_file(f)['manifest']
@@ -117,23 +127,26 @@ class Queue:
 			if cur_subproc_terminated:
 
 				if cur_subproc is not None:
+					cur_queue_jobid = None
 					cur_run = None
 					cur_subproc = None
 					num_completed_runs += 1
 
 				if not len(requests) == 0:
-					request = requests.pop(0)
+					queue_jobid, request = requests.popitem(last=False)  # FIFO
 
 					specfile_path = request['specfile_path']
 					with open(specfile_path, 'r') as f:
 						manifest = util.read_yaml_file(f)['manifest']
 
+					cur_queue_jobid = queue_jobid
 					cur_run = self.get_run_display_name(manifest)
-					print("Launching run {}".format(cur_run))
+					print("Launching run {} with queue jobid '{}'".format(cur_run, cur_queue_jobid))
 
 					script = os.path.abspath(sys.argv[0])
 
-					cur_subproc = subprocess.Popen([script, 'internal-invoke', '--method=queue', specfile_path])
+					with open(os.path.join(manifest['config']['base_dir'], 'aux/_queue/' + queue_jobid + '.err'), 'w') as f:
+						cur_subproc = subprocess.Popen([script, 'internal-invoke', '--method=queue', specfile_path], stderr=f)
 				elif self._should_stop:
 					self.close()
 					break
@@ -204,4 +217,9 @@ def kill_queue():
 def show_queue():
 	return sendrecv({
 		'action': 'show'
+	})
+
+def get_job_status_dict():
+	return sendrecv({
+		'action': 'get_job_status_dict'
 	})

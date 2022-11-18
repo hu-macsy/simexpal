@@ -11,6 +11,7 @@ import tempfile
 import warnings
 
 from . import util
+from . import queuesock
 
 DEFAULT_DEV_BUILD_NAME = '_dev'
 EXPERIMENTS_LIST_THRESHOLD = 30
@@ -86,6 +87,9 @@ class Config:
 
 		self.slurm_queried = False
 		self.slurm_queried_jobs = {}
+
+		self.queue_queried = False
+		self.queue_queried_jobs = {}
 
 		self._insts = OrderedDict()
 		self._build_infos = OrderedDict()
@@ -460,6 +464,30 @@ class Config:
 		# This only holds for jobs that would receive the status
 		# 'submitted' or 'started' in Run._update_status_cache_dict().
 		return self.slurm_queried_jobs.get(jobid, Status.FAILED)
+
+	def query_queue(self):
+		if not self.queue_queried:
+			try:
+				self.queue_queried_jobs = queuesock.get_job_status_dict()
+			except FileNotFoundError:
+				#  There is no queue daemon running. The .extl.sock might have been deleted.
+				pass
+			except ConnectionRefusedError:
+				# A queue daemon that was not terminated properly is running.
+				pass
+
+			if len(self.queue_queried_jobs) > 0:
+				self.queue_queried = True
+
+	def get_queue_job_status(self, jobid):
+		# Returns 'failed' for jobs not listed in self.queue_queried_jobs
+		# This only holds for jobs that would receive the status
+		# 'submitted' or 'started' in Run._update_status_cache_dict()
+
+		# We receive queue_queried_jobs via communication with the queue socket, which can not
+		# communicate objects. Thus, we rely on using the int representation when communicating
+		# and need to cast it to its Status representation.
+		return Status(self.queue_queried_jobs.get(jobid, Status.FAILED))
 
 	def writeback_status_cache(self):
 		fd, path = tempfile.mkstemp(dir=self.basedir)
@@ -1296,6 +1324,16 @@ class Run:
 		except FileNotFoundError:
 			return None
 
+	def get_queue_jobid(self):
+		try:
+			with open(self.aux_file_path('run'), 'r') as f:
+				data = yaml.load(f, Loader=YmlLoader)
+				if data is None:
+					return None
+			return data.get('queue_jobid', None)
+		except FileNotFoundError:
+			return None
+
 	# Contains auxiliary files that SHOULD NOT be necessary to determine the result of the run.
 	def aux_file_path(self, ext):
 		return os.path.join(self.experiment.aux_subdir,
@@ -1329,23 +1367,29 @@ class Run:
 				status, last_mod = Status.STARTED, os.stat(self.output_file_path('out')).st_mtime
 
 				jobid = self.slurm_jobid
+				queue_jobid = self.get_queue_jobid()
 				if jobid is not None:
 					if not self._cfg.slurm_queried:
 						self._cfg.query_slurm()
 					status = self._cfg.get_slurm_job_status(jobid)
-
-					return status
+				elif queue_jobid is not None:
+					if not self._cfg.queue_queried:
+						self._cfg.query_queue()
+					status = self._cfg.get_queue_job_status(queue_jobid)
 
 			elif os.access(self.aux_file_path('run'), os.F_OK):
 				status, last_mod = Status.SUBMITTED, os.stat(self.aux_file_path('run')).st_mtime
 
 				jobid = self.slurm_jobid
+				queue_jobid = self.get_queue_jobid()
 				if jobid is not None:
 					if not self._cfg.slurm_queried:
 						self._cfg.query_slurm()
 					status = self._cfg.get_slurm_job_status(jobid)
-
-					return status
+				elif queue_jobid is not None:
+					if not self._cfg.queue_queried:
+						self._cfg.query_queue()
+					status = self._cfg.get_queue_job_status(queue_jobid)
 
 			elif os.access(self.aux_file_path('lock'), os.F_OK):
 				status, last_mod = Status.IN_SUBMISSION, os.stat(self.aux_file_path('lock')).st_mtime

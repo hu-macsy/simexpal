@@ -27,17 +27,19 @@ class QueueLauncher(common.Launcher):
 
 		if not common.lock_run(run):
 			return
-		common.create_run_file(run)
 
 		specfd, specfile = tempfile.mkstemp(prefix='', suffix='-spec.yml',
 											dir=os.path.join(cfg.basedir, 'aux/_queue'))
+
+		queue_jobid = util.extract_file_prefix_from_path(specfile, '-spec')
+		common.create_run_file(run, {'queue_jobid': queue_jobid})
 
 		specs = {'manifest': common.compile_manifest(run).yml}
 		with os.fdopen(specfd, 'w') as f:
 			util.write_yaml_file(f, specs)
 
-		print("Submitting run {}/{}[{}] to local queue launcher".format(
-				run.experiment.display_name, run.instance.shortname, run.repetition))
+		print("Submitting run {}/{}[{}] with queue jobid '{}' to local queue launcher".format(
+				run.experiment.display_name, run.instance.shortname, run.repetition, queue_jobid))
 
 		queuesock.sendrecv({
 			'action': 'launch',

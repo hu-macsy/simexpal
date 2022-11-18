@@ -215,3 +215,17 @@ def read_file(path):
 	else:
 		with f:
 			return f.read()
+
+def extract_file_prefix_from_path(file_path, suffix=None):
+	"""
+
+	:param file_path: absolute file path
+	:param suffix: (optional) suffix which will be removed from the extensionless basename of the file
+	:return: prefix of file
+	"""
+
+	prefix = os.path.splitext(os.path.basename(file_path))[0]
+	if suffix is not None:
+		prefix = prefix.split(suffix)[0]
+
+	return prefix
