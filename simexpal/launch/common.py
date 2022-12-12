@@ -347,8 +347,7 @@ def invoke_run(manifest):
 	def substitute(p):
 		if p == 'INSTANCE':
 			if manifest.instance_is_filess:
-				raise RuntimeError(f"The instance '{manifest.instance}' is fileless")
-
+				return manifest.instance_name
 			return manifest.instance_dir + '/' + manifest.instance_name
 		elif p.startswith('INSTANCE:'):
 			return get_qualified_filename(p.split(':')[1])
