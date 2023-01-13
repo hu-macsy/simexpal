@@ -264,12 +264,10 @@ The default value of ``repeat`` is ``1``.
 Timeout
 -------
 
-It is possible to set a timer for experiments. Once the timer expires, simexpal will terminate the
-experiment. In order to do so we use the
-
-- ``timeout``: integer - timeout in seconds
-
-key. For example we can set the timer for an experiment to two hours as follows:
+Use the ``timeout`` key in the experiments section to specify the time in
+seconds an experiment is allowed to run for. When the timeout is exceeded, the
+experiment will be terminated forcefully. The following is an example on how to
+set a timeout after 7200 seconds (2 hours): 
 
 .. code-block:: YAML
    :linenos:
@@ -279,6 +277,11 @@ key. For example we can set the timer for an experiment to two hours as follows:
      - name: experiment1
        ...
        timeout: 7200
+
+After the experiment has reached the limit of the specified timeout, the signal
+``SIGXCPU`` is sent to the running process. ``SIGXCPU`` can be handled by the
+process first, and after a grace period the signal ``SIGTERM`` is sent to the
+process for the final termination.
 
 .. _ExperimentsSettingEnvironmentVariables:
 
