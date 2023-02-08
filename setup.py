@@ -22,7 +22,7 @@ setup(
 	package_data={'simexpal': ['schemes/*.json']},
 	scripts=['scripts/simex'],
 	install_requires=[
-		'importlib-metadata==5.2.0',
+		'importlib-metadata<5.0',
 		'argcomplete',
 		'requests',
 		'pyyaml',
