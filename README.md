@@ -1,5 +1,10 @@
-# simexpal: Simplifying Experimental Algorithmics
+<p align="center">
+  <img width="60%" src="docs/logo/logo.png" alt="simexpal - Simplifying Experimental Algorithmics"><br>
+  <a href="https://github.com/hu-macsy/simexpal/actions"><img src="https://github.com/hu-macsy/simexpal/actions/workflows/ci.yml/badge.svg"></a>
+  <a href="https://badge.fury.io/py/simexpal"><img src="https://badge.fury.io/py/simexpal.svg"></a>
+</p>
 
+## 
 simexpal is a collection of tools to manage, launch, monitor and evaluate algorithmic experiments
 (e.g. performance benchmarks).
 The goal of this toolbox is to automatize various repetitive tasks that occur whenever such experiments
