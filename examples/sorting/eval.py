@@ -21,4 +21,4 @@ for successful_run in cfg.collect_successful_results():
 		results.append(parse(successful_run, f))
 
 df = pandas.DataFrame(results)
-print(df.groupby('experiment').agg('mean'))
+print(df.groupby('experiment')[['comparisons', 'swaps', 'time']].agg('mean'))
