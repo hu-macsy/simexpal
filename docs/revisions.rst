@@ -61,8 +61,9 @@ are:
 - we add another key ``develop`` and set its value to ``true`` *and*
 - we leave the values of the ``build_version`` dict as empty string ``''``.
 
-Values specified in the ``build_version`` dict will be ignored for develop revisions and simexpal will clone the
-latest project files.
+Values specified for the ``build_version`` key will be ignored for develop
+revisions. Instead, the latest commit of the default branch will be checked out
+after cloning the repository.
 
 .. code-block:: YAML
    :linenos:
@@ -76,6 +77,8 @@ latest project files.
 
 .. note::
    It is possible to have normal and develop revisions at the same time.
+   Use the regular git commands within the cloned repositories used as 
+   develop revisions to switch branches or checkout to another commit.
 
 Next
 ----
