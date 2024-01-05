@@ -63,7 +63,7 @@ are:
 
 Values specified for the ``build_version`` key will be ignored for develop
 revisions. Instead, the latest commit of the default branch will be checked out
-after cloning the repository.
+after cloning the repository initially.
 
 .. code-block:: YAML
    :linenos:
