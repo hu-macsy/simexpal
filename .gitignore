@@ -7,3 +7,5 @@ simexpal.egg-info/
 *aux/
 *instances/
 
+examples/*/validation.cache
+
