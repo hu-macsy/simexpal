@@ -1,0 +1,27 @@
+instances:
+  - repo: local
+    set: [file_less]
+    items:
+      - name: uniform-n1000-s1
+        files: []
+        extra_args: ['--seed=1', '1000']
+      - name: uniform-n1000-s2
+        files: []
+        extra_args: ['--seed=2', '1000']
+      - name: uniform-n1000-s3
+        files: []
+        extra_args: ['--seed=3', '1000']
+
+experiments:
+  - name: insertion-sort
+    args: ['./sort.py', '@EXTRA_ARGS@', '--algo=insertion-sort']
+    stdout: out
+  - name: bubble-sort
+    args: ['./sort.py', '@EXTRA_ARGS@', '--algo=bubble-sort']
+    stdout: out
+
+matrix:
+  include:
+    - experiments: [insertion-sort, bubble-sort]
+      instsets: [file_less]
+      axes: []
