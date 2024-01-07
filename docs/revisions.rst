@@ -77,8 +77,9 @@ after cloning the repository initially.
 
 .. note::
    It is possible to have normal and develop revisions at the same time.
-   Use the regular git commands within the cloned repositories used as 
-   develop revisions to switch branches or checkout to another commit.
+   To operate on develop revision git **repositories**, you must first 
+   clone all repositories (e.g. `simex develop --checkout`). Thereafter, 
+   navigate to the respective **repositories** and use regular git commands.
 
 Next
 ----
