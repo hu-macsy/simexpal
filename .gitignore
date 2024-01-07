@@ -8,4 +8,5 @@ simexpal.egg-info/
 *instances/
 
 examples/*/validation.cache
+examples/*/status.cache
 
