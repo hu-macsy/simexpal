@@ -347,7 +347,7 @@ def invoke_run(manifest):
 	def substitute(p):
 		if p == 'INSTANCE':
 			if manifest.instance_is_filess:
-				raise RuntimeError(f"The instance '{manifest.instance}' is fileless")
+				raise RuntimeError(f"The instance '{manifest.instance}' is fileless. Did you forget to remove the @INSTANCE@ variable in the argument list of the experiment?")
 
 			return manifest.instance_dir + '/' + manifest.instance_name
 		elif p.startswith('INSTANCE:'):
