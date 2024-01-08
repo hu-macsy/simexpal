@@ -266,6 +266,11 @@ key to specify our extra arguments.
             files: []
             extra_args: ['--seed', '10']
 
+.. note::
+   If you get an error message pointing out that the experiment is fileless, check if  you forgot to 
+   remove the ``@INSTANCE@`` variable in the experiment argument list. Since the experiment does not 
+   take an instance as input, this variable must not be part of the argument list!
+
 Generator Instances
 -------------------
 
