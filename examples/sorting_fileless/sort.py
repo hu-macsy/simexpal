@@ -75,19 +75,16 @@ def run_experiment(algo, array):
 
 def do_main():
 	parser = argparse.ArgumentParser()
-	parser.add_argument('-o', type=str, help="path of output file", default="/dev/stdout")
 	parser.add_argument('--seed', type=int, help="seed for random generator")
-	parser.add_argument('--range', type=int, help="range of integers", default=10e6)
 	parser.add_argument('n', type=int, help="number of integers to generate")
 	parser.add_argument('--algo', type=str, choices=['bubble-sort', 'insertion-sort'])
-	parser.add_argument('instance', type=str)
 
 	args = parser.parse_args()
 
 	numbers = []
 	random.seed(args.seed)
 	for i in range(args.n):
-		numbers.append(random.randint(1, args.range))
+		numbers.append(random.randint(1, 10e6))
 
 	args = parser.parse_args()
 	run_experiment(args.algo, numbers)
