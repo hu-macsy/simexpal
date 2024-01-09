@@ -126,6 +126,15 @@ on multiple inputs.
     (i.e., the functions ``collect_successful_results()`` and ``open_output_file()``)
     to gather all results. It uses ``pandas`` to aggregate statistics over all experiments.
 
+.. tip::
+    Simexpal supports autocomplete via `argcomplete <https://pypi.org/project/argcomplete/>`.
+    To enable autocomplete, install ``argcomplete`` and enable global completion:
+
+    .. code-block:: bash
+
+      $ pip install argcomplete
+      $ activate-global-python-argcomplete
+
 Running Experiments
 -------------------
 
