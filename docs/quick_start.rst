@@ -132,7 +132,7 @@ on multiple inputs.
 
     .. code-block:: bash
 
-      $ pip install argcomplete
+      $ pip3 install argcomplete
       $ activate-global-python-argcomplete
 
 Running Experiments
