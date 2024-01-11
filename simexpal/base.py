@@ -613,6 +613,10 @@ class Config:
 						return False
 			return True
 
+		for variant in scope.variants:
+			if variant not in self._variants:
+				raise RuntimeError("Variant {} does not exist".format(variant))
+
 		if scope.axes is None:
 			axes = self._axes.keys()
 		else:
