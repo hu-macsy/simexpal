@@ -1,0 +1,4 @@
+sphinx
+sphinx-rtd-theme
+readthedocs-sphinx-ext
+jinja2
