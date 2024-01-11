@@ -94,6 +94,7 @@ class Config:
 		self._insts = OrderedDict()
 		self._build_infos = OrderedDict()
 		self._revisions = OrderedDict()
+		self._axes = OrderedDict()
 		self._variants = OrderedDict()
 		self._exp_infos = OrderedDict()
 
@@ -117,11 +118,16 @@ class Config:
 					for idx in range(len(inst_yml['items'])):
 						yield Instance(self, inst_yml, idx)
 
-		def construct_variants():
+		def construct_axes():
 			if 'variants' in self.yml:
 				for axis_yml in self.yml['variants']:
 					check_for_reserved_name(axis_yml['axis'])
 
+					yield axis_yml['axis']
+
+		def construct_variants():
+			if 'variants' in self.yml:
+				for axis_yml in self.yml['variants']:
 					if 'items' in axis_yml:
 						for variant_yml in axis_yml['items']:
 							check_for_reserved_name(variant_yml['name'])
@@ -164,6 +170,11 @@ class Config:
 				if revision.name in self._revisions:
 					raise RuntimeError("The revision name '{}' is ambiguous".format(revision.name))
 				self._revisions[revision.name] = revision
+
+		for axis in sorted(construct_axes(), key=lambda axis: axis):
+			if axis in self._axes:
+				raise RuntimeError("The axis name '{}' is ambiguous".format(axis))
+			self._axes[axis] = axis
 
 		for variant in sorted(construct_variants(), key=lambda variant: variant.name):
 			if variant.name in self._variants:
@@ -265,6 +276,8 @@ class Config:
 		yield from self._variants.values()
 
 	def all_variants_for_axis(self, axis):
+		if axis not in self._axes:
+			raise RuntimeError("Axis {} does not exist".format(axis))
 		for var in self.all_variants():
 			if var.axis == axis:
 				yield var
@@ -601,7 +614,7 @@ class Config:
 			return True
 
 		if scope.axes is None:
-			axes = {var.axis for var in self.all_variants()}
+			axes = self._axes.keys()
 		else:
 			axes = scope.axes
 
