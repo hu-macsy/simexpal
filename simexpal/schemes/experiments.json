@@ -171,6 +171,7 @@
 								"extensions": {"$ref": "#/definitions/str_list"},
 								"extra_args": {"$ref": "#/definitions/str_list"},
 								"set": {"$ref": "#/definitions/str_or_str_list"},
+								"subdir": {"type": "string"},
 								"items": {
 									"oneOf": [
 										{
@@ -216,6 +217,7 @@
 								"repo": {"const": "local"},
 								"extra_args": {"$ref": "#/definitions/str_list"},
 								"set": {"$ref": "#/definitions/str_or_str_list"},
+								"subdir": {"type": "string"},
 								"items": {
 									"type": "array",
 									"items": {
@@ -374,6 +376,7 @@
 								"postprocess": {"const": "to_edgelist"},
 								"extra_args": {"$ref": "#/definitions/str_list"},
 								"set": {"$ref": "#/definitions/str_or_str_list"},
+								"subdir": {"type": "string"},
 								"items": {
 									"oneOf": [
 										{

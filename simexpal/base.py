@@ -695,7 +695,10 @@ class Instance:
 
 	@property
 	def fullpath(self):
-		return os.path.join(self._cfg.instance_dir(), self.unique_filename)
+		subdir = ''
+		if 'subdir' in self._inst_yml:
+			subdir = self._inst_yml['subdir']
+		return os.path.join(self._cfg.instance_dir(), subdir, self.unique_filename)
 
 	@property
 	def instsets(self):
