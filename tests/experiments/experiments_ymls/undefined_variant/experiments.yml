@@ -1,0 +1,56 @@
+builds:
+  - name: simexpal
+    git: 'https://github.com/hu-macsy/simexpal'
+    configure:
+      - args:
+          - 'cmake'
+          - '-DCMAKE_INSTALL_PREFIX=@THIS_PREFIX_DIR@'
+          - '@THIS_CLONE_DIR@/examples/sorting_cpp/'
+    compile:
+      - args:
+          - 'make'
+          - '-j@PARALLELISM@'
+    install:
+      - args:
+          - 'make'
+          - 'install'
+
+revisions:
+  - name: main
+    build_version:
+      'simexpal': 'd8d421e3c2eaa32311a6c678b15e9e22ea0d8eac'
+
+instances:
+  - repo: local
+    items:
+      - uniform-n1000-s1
+      - uniform-n1000-s2
+
+experiments:
+  - name: quick-sort
+    use_builds: [simexpal]
+    args: ['quicksort', '@INSTANCE@', '@EXTRA_ARGS@']
+    stdout: out
+
+variants:
+  - axis: 'block-algo'
+    items:
+      - name: 'ba-insert'
+        extra_args: ['insertion_sort']
+      - name: 'ba-bubble'
+        extra_args: ['bubble_sort']
+  - axis: 'block-size'
+    items:
+      - name: 'bs32'
+        extra_args: ['32']
+      - name: 'bs64'
+        extra_args: ['64']
+
+matrix:
+  include:
+    - experiments: [quick-sort]
+      variants: [ba-insert, bs32]
+      revisions: [main]
+    - experiments: [quick-sort]
+      variants: [ba-buble]
+      revisions: [main]
