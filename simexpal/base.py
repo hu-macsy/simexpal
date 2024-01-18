@@ -613,9 +613,10 @@ class Config:
 						return False
 			return True
 
-		for variant in scope.variants:
-			if variant not in self._variants:
-				raise RuntimeError("Variant {} does not exist".format(variant))
+		if scope.variants is not None:
+			for variant in scope.variants:
+				if variant not in self._variants:
+					raise RuntimeError("Variant {} does not exist".format(variant))
 
 		if scope.axes is None:
 			axes = self._axes.keys()
@@ -1495,4 +1496,3 @@ def config_for_dir(basedir=None):
 		basedir = '.'
 	yml = util.validate_setup_file(basedir, 'experiments.yml', 'experiments.json')
 	return Config(os.path.abspath(basedir), yml)
-
