@@ -29,7 +29,8 @@ customization is necessary.
 
 ## SimexPal Feature Set Summary
 
-The following is a non-exhaustive list of the functionality provided by SimexPal:
+The following is a non-exhaustive list of the functionality provided by
+SimexPal:
 
 - resolve external resources such as git repositories
 - describe and setup build processes
@@ -39,8 +40,32 @@ The following is a non-exhaustive list of the functionality provided by SimexPal
 - run and monitor experiments
 - evaluate experiments
 
-## Documentation
+## Why should I use SimexPal?
 
-Please refer to the [quick start guide](https://simexpal.readthedocs.io/en/latest/quick_start.html) for further information about
-how to install and use simexpal.
+Whether you're a student, an algorithm enthusiast, or a researcher, providing
+experiments that can easily be reproduced will support the validity of your
+findings. Self written scripts often bind experiments to a narrow set of soft-
+and hardware. If not well documented, such scripts may be a source of error, or
+the experiments may not be reproduced as intended.
+
+Even though _SimexPal_ may not yet be the perfect algorithmic experiment
+management software for all purposes, our goal was to abstract algorithmic
+experiments from their hard- and software requirements as well as to provide a
+clearly structured and well documented experiment setup. _SimexPal_ will allow
+you to share your experiments with third parties, and the third parties to
+validate your experimental results and findings with only a minimal description
+on how to build and run the experiments.
+
+Ultimately, _SimexPal_ represents an algorithmic experiment management tool with
+which one can clearly define their experiment setup and execution, and therefore
+majorly contributing to the goal of reproducible experiments.  
+
+# Documentation
+
+Please visit our [readthedocs](https://simexpal.readthedocs.io) document for a
+detailed documentation of the _SimexPal_ features.
+
+Our documentation also includes a [quick start
+guide](https://simexpal.readthedocs.io/en/latest/quick_start.html) for a quick
+and easy step-by-step guide to install and use _SimexPal_.
 
