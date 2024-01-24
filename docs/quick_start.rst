@@ -8,7 +8,7 @@ Quick Start
 Installation
 ------------
 
-simexpal requires Python 3 and can be installed via pip3:
+simexpal requires Python 3 and can be installed via pip3 using:
 
 .. code-block:: bash
 
@@ -19,8 +19,8 @@ simexpal requires Python 3 and can be installed via pip3:
 Quick Example
 -------------
 
-The simexpal repository contains a small example that you can try out to quickly get to know
-the tool. In this example, we compare different (inefficient) sorting algorithms
+The simexpal repository contains a small examples which can be used to quickly
+get to know the tool. In this example, we compare different sorting algorithms
 on multiple inputs.
 
 1.  Install simexpal as detailed above.
@@ -32,11 +32,12 @@ on multiple inputs.
         $ git clone https://github.com/hu-macsy/simexpal.git
         $ cd simexpal/examples/sorting/
 
-    This directory contains an ``experiments.yml`` file that stores the configuration
-    of all instances and experiments and some scripts:
-    ``generate.py`` is used to generate random instances,
-    the ``sort.py`` executes all algorithms and ``eval.py`` is a script that uses
-    simexpal's Python interface to evaluate benchmarking results.
+    This directory contains an ``experiments.yml`` file which describes the
+    configuration of all instances and experiments. In this case each instance
+    will be generated using the ``generate.py`` script. Each experiment calls
+    ``sort.py`` implementing the experiment given the parameters. ``eval.py`` is
+    a script that uses simexpal's Python interface to evaluate the experiment
+    results.
 
 3.  Generate some instances for the benchmark:
 
@@ -47,27 +48,36 @@ on multiple inputs.
         $ simex instances
 
     ::
-
+        Instance short name          Instance sets                                               
+        -------------------          -------------
         uniform-n1000-s1
         uniform-n1000-s2
         uniform-n1000-s3
 
     .. code-block:: bash
 
-        $ simex instances install # Generate missing instance files.
+        # Generate missing instance files.
+        $ simex instances install 
+
+    :: 
+      Generating instance 'uniform-n1000-s1'
+      Generating instance 'uniform-n1000-s2'
+      Generating instance 'uniform-n1000-s3'
 
     In the ``experiments.yml`` the instances are declared as part of the
-    ``instances`` stanza. This stanza also declares how to invoke the
-    generator script ``generate.py``.
+    ``instances`` stanza. This stanza also declares how to invoke the generator
+    script ``generate.py``.
 
 4.  Launch the algorithms on all instances:
 
+The argument ``experiments`` 
+
     .. code-block:: bash
 
-        $ simex experiments # List experiment configurations from experiments.yml.
+        # List experiment configurations from experiments.yml.
+        $ simex experiments 
 
     ::
-
         Experiment                           Instance                            Status
         ----------                           --------                            ------
         bubble-sort                          uniform-n1000-s1                    [0]
@@ -76,6 +86,7 @@ on multiple inputs.
         insertion-sort                       uniform-n1000-s1                    [0]
         insertion-sort                       uniform-n1000-s2                    [0]
         insertion-sort                       uniform-n1000-s3                    [0]
+        6 experiments in total
 
     .. code-block:: bash
 
@@ -444,4 +455,3 @@ the ``--launcher`` option (e.g., ``simex experiments launch --launcher local-clu
 to select a certain launcher. Note that the ``default: true`` attribute
 of a launcher overrides the default behavior of launching on the local machine
 (hence, there can only be one launcher with ``default: true``).
-
