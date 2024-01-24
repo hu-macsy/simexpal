@@ -1,3 +1,5 @@
+# This file is identical to examples/sorting/sorting_cpp
+# except for a minor typo
 builds:
   - name: simexpal
     git: 'https://github.com/hu-macsy/simexpal'
@@ -52,5 +54,6 @@ matrix:
       variants: [ba-insert, bs32]
       revisions: [main]
     - experiments: [quick-sort]
+      # The following variant contains a typo
       variants: [ba-buble]
       revisions: [main]
