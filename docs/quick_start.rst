@@ -8,7 +8,7 @@ Quick Start
 Installation
 ------------
 
-SimexPal requires Python 3 and can be installed via pip3:
+simexpal requires Python 3 and can be installed via pip3:
 
 .. code-block:: bash
 
@@ -19,21 +19,13 @@ SimexPal requires Python 3 and can be installed via pip3:
 Quick Example
 -------------
 
-The SimexPal repository contains a small example that you can try out to quickly get to know
+The simexpal repository contains a small example that you can try out to quickly get to know
 the tool. In this example, we compare different (inefficient) sorting algorithms
 on multiple inputs.
 
-.. note::
-    While this constitutes a toy example, more complex examples
-    can be handled using the same workflow. Indeed, SimexPal has successfully been
-    used to manage benchmarks that are published in algorithmic research papers.
+1.  Install simexpal as detailed above.
 
-..
-    TODO: Add page about papers, link to it.
-
-1.  Install SimexPal as detailed above.
-
-2.  Clone the SimexPal repository and navigate to the ``examples/sorting/`` directory:
+2.  Clone the simexpal repository and navigate to the ``examples/sorting/`` directory:
 
     .. code-block:: bash
 
@@ -44,7 +36,7 @@ on multiple inputs.
     of all instances and experiments and some scripts:
     ``generate.py`` is used to generate random instances,
     the ``sort.py`` executes all algorithms and ``eval.py`` is a script that uses
-    SimexPal's Python interface to evaluate benchmarking results.
+    simexpal's Python interface to evaluate benchmarking results.
 
 3.  Generate some instances for the benchmark:
 
@@ -122,7 +114,7 @@ on multiple inputs.
         bubble-sort        499500.0  253437.333333  0.091776
         insertion-sort     241891.0  257609.000000  0.039501
 
-    ``eval.py`` is a simple 25 line script that uses the SimexPal Python interface
+    ``eval.py`` is a simple 25 line script that uses the simexpal Python interface
     (i.e., the functions ``collect_successful_results()`` and ``open_output_file()``)
     to gather all results. It uses ``pandas`` to aggregate statistics over all experiments.
 
@@ -160,11 +152,11 @@ Now we can run a sorting algorithm on a specific instance with:
 
 To keep the example simple, we assume that instances are lists of integers.
 
-We can now start to configure SimexPal to automatize the experimental pipeline.
+We can now start to configure simexpal to automatize the experimental pipeline.
 First, we need to create a new `experiments.yml
 <https://github.com/hu-macsy/simexpal/blob/master/examples/sorting/experiments.yml>`_
 file within the ``sorting`` directory.
-This is a configuration file that is read by SimexPal to run the experiments on the
+This is a configuration file that is read by simexpal to run the experiments on the
 desired instances and it is structured as below:
 
 .. literalinclude:: ../examples/sorting/experiments.yml
@@ -182,7 +174,7 @@ At this point, our ``sorting`` directory looks like this:
    └── instances
        └── random_500.list
 
-After having completed this steps, we can start using SimexPal to run our experiments.
+After having completed this steps, we can start using simexpal to run our experiments.
 A complete list of experiments and their status can be seen by:
 
 .. code-block:: bash
@@ -207,7 +199,7 @@ This instruction will launch the non executed experiments on the local machine.
 Evaluating Results
 ------------------
 
-After experiments have been run, SimexPal can assist with locating and collecting output data.
+After experiments have been run, simexpal can assist with locating and collecting output data.
 To do this, simexpal can be imported as a Python package. As simexpal is output format
 and algorithm agnostic,
 you need to provide functionality to parse output files and evaluate results.
