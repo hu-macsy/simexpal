@@ -69,3 +69,29 @@ Our documentation also includes a [quick start
 guide](https://simexpal.readthedocs.io/en/latest/quick_start.html) for a quick
 and easy step-by-step guide to install and use _SimexPal_.
 
+# Reference
+
+Whether you're using _SimexPal_ for you open source project, as part of your
+research, or any other purpose, please use the following article as reference
+from [MDPI](https://www.mdpi.com/1999-4893/12/7/127):
+
+Angriman, E.; van der Grinten, A.; von Looz, M.; Meyerhenke, H.; Nöllenburg, M.;
+Predari, M.; Tzovas, C. Guidelines for Experimental Algorithmics: A Case Study
+in Network Analysis. Algorithms 2019, 12, 127. https://doi.org/10.3390/a12070127
+
+BibTex format (w/o abstract):
+
+```tex
+@article{SimexPal2019,
+  author         = {Angriman, Eugenio and van der Grinten, Alexander and von Looz, Moritz and Meyerhenke, Henning and Nöllenburg, Martin and Predari, Maria and Tzovas, Charilaos},
+  title          = {Guidelines for Experimental Algorithmics: A Case Study in Network Analysis},
+  journal        = {Algorithms},
+  volume         = {12},
+  year           = {2019},
+  number         = {7},
+  article-number = {127},
+  url            = {https://www.mdpi.com/1999-4893/12/7/127},
+  issn           = {1999-4893},
+  doi            = {10.3390/a12070127}
+}
+```
