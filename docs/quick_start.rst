@@ -70,12 +70,11 @@ on multiple inputs.
 
 4.  Launch the algorithms on all instances:
 
-The argument ``experiments`` 
+List experiment configurations from experiments.yml.
 
     .. code-block:: bash
 
-        # List experiment configurations from experiments.yml.
-        $ simex experiments 
+        $ simex e 
 
     ::
         Experiment                           Instance                            Status
@@ -88,46 +87,58 @@ The argument ``experiments``
         insertion-sort                       uniform-n1000-s3                    [0]
         6 experiments in total
 
-    .. code-block:: bash
-
-        $ simex experiments launch # Launch all configurations locally.
+Launch all experiments using process forks.
 
     .. code-block:: bash
 
-        $ simex experiments # Review the status of the experiments.
+        $ simex e launch --launch-through=fork
+    
+    ::
+        Launching run bubble-sort/uniform-n1000-s1[0] on local machine
+        Launching run bubble-sort/uniform-n1000-s2[0] on local machine
+        Launching run bubble-sort/uniform-n1000-s3[0] on local machine
+        Launching run insertion-sort/uniform-n1000-s1[0] on local machine
+        Launching run insertion-sort/uniform-n1000-s2[0] on local machine
+        Launching run insertion-sort/uniform-n1000-s3[0] on local machine
+
+View the status of the experiments.
+
+    .. code-block:: bash
+
+        $ simex e list
 
     ::
-
-        Experiment                           Instance                            Status
-        ----------                           --------                            ------
-        bubble-sort                          uniform-n1000-s1                    [0] finished
-        bubble-sort                          uniform-n1000-s2                    [0] finished
-        bubble-sort                          uniform-n1000-s3                    [0] finished
-        insertion-sort                       uniform-n1000-s1                    [0] finished
-        insertion-sort                       uniform-n1000-s2                    [0] finished
-        insertion-sort                       uniform-n1000-s3                    [0] finished
-
-    In the ``experiments.yml`` file, all experiment configurations
-    (including the invocation of ``sort.py``) are declared
-    as part of the ``experiments`` stanza.
+        Experiment                                    Instance                            Status
+        ----------                                    --------                            ------
+        bubble-sort                                   uniform-n1000-s1                    [0] finished
+        bubble-sort                                   uniform-n1000-s2                    [0] finished
+        bubble-sort                                   uniform-n1000-s3                    [0] finished
+        insertion-sort                                uniform-n1000-s1                    [0] finished
+        insertion-sort                                uniform-n1000-s2                    [0] finished
+        insertion-sort                                uniform-n1000-s3                    [0] finished
+        6 experiments in total
 
 5.  Evaluate the results:
 
+To evaluate the experiment results, we call the ``eval.py`` script which uses
+pandas package to aggregate the results. Please make sure that the python
+package pandas is installed on your machine, or install it via ``pip3 install
+pandas``. The script also uses the simexpal Python interface (i.e., the functions
+``collect_successful_results()`` and ``open_output_file()``) to gather all
+results.
+
     .. code-block:: bash
 
-        # Here, we use the popular pandas package to aggregate the results.
-        # Make sure that pandas is installed on your machine (pip3 install pandas).
-        $ ./eval.py
+        $ python3 eval.py
 
     ::
 
-        experiment      comparisons          swaps      time
-        bubble-sort        499500.0  253437.333333  0.091776
-        insertion-sort     241891.0  257609.000000  0.039501
+        comparisons          swaps      time
+        experiment                                          
+        bubble-sort        499500.0  253437.333333  0.053750
+        insertion-sort     241891.0  257609.000000  0.027219
 
-    ``eval.py`` is a simple 25 line script that uses the simexpal Python interface
-    (i.e., the functions ``collect_successful_results()`` and ``open_output_file()``)
-    to gather all results. It uses ``pandas`` to aggregate statistics over all experiments.
+    
 
 .. tip::
     Simexpal supports autocomplete via `argcomplete <https://pypi.org/project/argcomplete/>`_.
