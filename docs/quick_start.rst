@@ -13,11 +13,23 @@ data.
 Installation
 ------------
 
-simexpal requires Python 3 and can be installed via pip3 using:
+simexpal requires Python 3.
+
+Either you install it via pip3 using:
 
 .. code-block:: bash
 
    $ pip3 install simexpal
+
+Or you install it using the latest commit of our default branch from GitHub. Of
+course, you can also choose to install a specific version (using our tags) or
+branch. 
+
+.. code-block:: bash
+
+   $ git clone https://github.com/hu-macsy/simexpal.git
+   $ cd simexpal
+   $ pip3 install -e .
 
 .. _sortingExample:
 
