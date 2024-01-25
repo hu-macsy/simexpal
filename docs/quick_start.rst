@@ -33,7 +33,7 @@ branch.
 
 .. _sortingExample:
 
-Quick Example
+Minimal Example and Fundamentals
 -------------
 
 The simexpal repository contains a small examples which can be used to quickly
