@@ -5,6 +5,11 @@ Quick Start
 
 .. highlight:: none
 
+The following will introduce you to the most fundamental mechanics of simexpal.
+Including installation, instance and input parameter management, launching
+experiments, monitor experiments, and evaluate the experiments using the output
+data.
+
 Installation
 ------------
 
