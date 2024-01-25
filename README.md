@@ -7,12 +7,16 @@
 # simexpal 
 
 _simexpal_ is a python based tool to setup, manage, launch, monitor, and
-evaluate algorithmic experiments. _simexpal_ is mainly developed by the MACSy
-(Modelling and Analysis of Complex Systems) group where graph data is at the
-core of most projects. Therefore, the tool provides some special functionality
-for graph algorithm experiments. However, this does not limit _simexpal_ to be
-only used for graph algorithm experiments, but is a tool that can be used to
-setup and manage almost all algorithmic experiments. 
+evaluate algorithmic experiments. If you can not wait to try it out and dive
+into it, you may find our [quick start
+guide](https://simexpal.readthedocs.io/en/latest/quick_start.html) handy. 
+
+_simexpal_ is mainly developed by the MACSy (Modelling and Analysis of Complex
+Systems) group where graph data is at the core of most projects. Therefore, the
+tool provides some special functionality for graph algorithm experiments.
+However, this does not limit _simexpal_ to be only used for graph algorithm
+experiments, but is a tool that can be used to setup and manage almost all
+algorithmic experiments. 
 
 Since algorithmic experiments require several tasks in a specific order, the
 goal of this tool is to clearly describe and automatize these ordered, and
