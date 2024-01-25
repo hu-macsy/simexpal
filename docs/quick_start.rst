@@ -169,23 +169,26 @@ results.
 Running Experiments
 -------------------
 
-As a simple example, we compare Insertion Sort and Bubble Sort on a set of instances
-(such an example is available in the  within `examples
-<https://github.com/hu-macsy/simexpal/tree/master/examples>`_).
-To this purpose, we created a new `sorting
-<https://github.com/hu-macsy/simexpal/tree/master/examples/sorting>`_
-directory, and wrote a short Python script
-`sort.py
+Let us dive now a bit more into running experiments. As an example, we compare
+the sorting algorithms *insertion sort* and *bubble sort* using a set of
+instances. Please find the resources in our `example folder
+<https://github.com/hu-macsy/simexpal/tree/master/examples>`_. 
+
+If you look at the `sorting directory
+<https://github.com/hu-macsy/simexpal/tree/master/examples/sorting>`_ in our
+examples, you will find `sort.py
 <https://github.com/hu-macsy/simexpal/blob/master/examples/sorting/sort.py>`_
-where we implemented the two algorithms.
-``sort.py`` accepts two arguments: the algorithm name (i.e. insertion-sort or bubble-sort)
-and the path to the instance.
-Then, you generated a bunch of instances and placed them in a directory called "instances"
-within "project" (in this example we just deal with a single instance
-`random_500.list
+including an implementation of the two algorithms  *insertion sort* and *bubble
+sort*. ``sort.py`` expects two arguments: 
+
+1. The algorithm name (i.e. insertion-sort or bubble-sort) 
+2. The path to the instance. 
+
+In the above example, we generated a bunch of instances which were written to
+the *instances* at root level where the ``experiments.yml`` file is present. For
+this example, just deal with a single instance `random_500.list
 <https://github.com/hu-macsy/simexpal/blob/master/examples/sorting/instances/random_500.list>`_).
-Now we can run a sorting algorithm on a specific instance with:
-::
+Now we can run a sorting algorithm on a specific instance with: ::
 
    python3 sort.py --algo=insertion-sort ./instances/random_500.list
 
