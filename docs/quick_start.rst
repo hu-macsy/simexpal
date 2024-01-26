@@ -304,6 +304,12 @@ The color of each line represents the status of the experiment:
 .. role:: yellow
 .. role:: red
 
+.. raw:: html
+
+    <style> .red {color:red} </style>
+    <style> .yellow {color:yellow} </style>
+    <style> .green {color:green} </style>
+
 - :green:`green` represents *finished*
 - :yellow:`yellow` represents *running*
 - :red:`red` represents *failed*
