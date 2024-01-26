@@ -56,13 +56,15 @@ using multiple instances as input.
     a script that uses simexpal's Python interface to evaluate the experiment
     results.
 
-3.  Generate some instances for the benchmark:
+3.  Generate some instances for the benchmark. First, we list all instances:
 
     .. code-block:: bash
 
         # List the instances declared in experiments.yml.
         # Note that missing instances will appear in red.
         $ simex instances
+
+    Output:
 
     ::
 
@@ -72,10 +74,14 @@ using multiple instances as input.
         uniform-n1000-s2
         uniform-n1000-s3
 
+    Then, install all instances:
+
     .. code-block:: bash
 
         # Generate missing instance files.
         $ simex instances install 
+
+    Output:
 
     :: 
 
@@ -95,6 +101,8 @@ using multiple instances as input.
 
         $ simex e 
 
+    Output:
+
     ::
 
         Experiment                           Instance                            Status
@@ -113,6 +121,8 @@ using multiple instances as input.
 
         $ simex e launch --launch-through=fork
 
+    Output:
+
     ::
 
         Launching run bubble-sort/uniform-n1000-s1[0] on local machine
@@ -127,6 +137,9 @@ using multiple instances as input.
     .. code-block:: bash
 
         $ simex e list
+
+    Output:
+
     ::
 
         Experiment                                    Instance                            Status
@@ -151,7 +164,9 @@ using multiple instances as input.
     .. code-block:: bash
 
         $ python3 eval.py
-        
+
+    Output:
+
     ::
 
         comparisons          swaps      time
@@ -195,18 +210,24 @@ For this example, we generate a new instance using the ``generate.py`` script.
 First we navigate to the ``sorting`` folder:
 
 .. code-block:: bash
+
   $ cd examples/sorting
 
 Then we generate a new instance file which contains 500 randomly generated
 integers in list form with one integer per line:
 
 .. code-block:: bash
+
   $ python3 generate.py -o ./instances/random-500 500
 
 Now we can run *insertion-sort* on the newly generate instance: 
 
 .. code-block:: bash
+
    python3 sort.py --algo=insertion-sort ./instances/random-500
+
+Output:
+
 ::
   ...
   - 9949624
@@ -231,16 +252,18 @@ The structure of the configuration file will get more attention later on. At
 this point, our ``sorting`` directory looks like this: 
 
 ::
-   sorting
-   ├── sort.py
-   ├── experiments.yml
-   └── instances
-       └── random_500.list
+
+  sorting
+  ├── sort.py
+  ├── experiments.yml
+  └── instances
+      └── random_500.list
 
 To add the instance to be used in our experiments, we must add a local file with
 it's name *random-500* (no extension) to our instances stanza:
 
 .. code-block:: yaml  
+
   instances:
     - generator:
         args: ['./generate.py', '--seed=1', '1000']
@@ -288,14 +311,20 @@ The color of each line represents the status of the experiment:
 Experiments can be launched with:
 
 .. code-block:: bash
+
    $ simex e launch --launch-through=fork
 
 This instruction will launch the non executed experiments on the local machine.
 After all experiments have ben run, all experiment entries should be finished:
 
 .. code-block:: bash
+
    $ simex e list
+
+Output:
+
 ::
+  
   Experiment                                    Instance                            Status
   ----------                                    --------                            ------
   bubble-sort                                   random-500                          [0] finished
