@@ -229,6 +229,7 @@ Now we can run *insertion-sort* on the newly generate instance:
 Output:
 
 ::
+
   ...
   - 9949624
   - 9984385
