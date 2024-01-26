@@ -347,12 +347,12 @@ Output:
 Evaluating Results
 ------------------
 
-After experiments have been run, simexpal can assist with locating and collecting output data.
-To do this, simexpal can be imported as a Python package. As simexpal is output format
-and algorithm agnostic,
-you need to provide functionality to parse output files and evaluate results.
-Parsing output files can usually be greatly simplified by using standardized
-formats and appropriate libraries.
+After experiments have been run, simexpal can assist with locating and
+collecting output data. For this purpose, simexpal can be imported as a Python
+package. As simexpal is output format and algorithm agnostic, you need to
+provide functionality to parse output files and evaluate results. Parsing output
+files can usually be greatly simplified by using standardized formats and
+appropriate libraries.
 
 The example below (i.e., ``eval.py`` from ``examples/sorting/``)
 demonstrates this concept. It uses the simexpal Python package
@@ -365,6 +365,21 @@ A user-supplied parsing function is employed to parse the output files.
    :linenos:
    :lines: 7-24
    :language: python
+
+Run this python script to evaluate the experiments:
+
+.. code-block:: bash
+
+  $ python3 eval.py
+
+Output:
+
+::
+
+                  comparisons      swaps      time
+  experiment                                      
+  bubble-sort        405812.5  205647.25  0.043447
+  insertion-sort     196834.5  208978.00  0.021463
 
 Managing Instances
 ------------------
