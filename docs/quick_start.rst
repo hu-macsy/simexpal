@@ -347,7 +347,7 @@ Output:
 Evaluating Results
 ------------------
 
-After experiments have been run, simexpal can assist with locating and
+After the experiments have been run, simexpal can assist with locating and
 collecting output data. For this purpose, simexpal can be imported as a Python
 package. As simexpal is output format and algorithm agnostic, you need to
 provide functionality to parse output files and evaluate results. Parsing output
