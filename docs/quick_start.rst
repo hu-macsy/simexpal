@@ -306,13 +306,13 @@ The color of each line represents the status of the experiment:
 
 .. raw:: html
 
-    <style> .red {color:red, background-color: black} </style>
-    <style> .yellow {color:yellow, background-color: black} </style>
-    <style> .green {color:green, background-color: black} </style>
+    <style> .red {color:red} </style>
+    <style> .yellow {color:yellow} </style>
+    <style> .green {color:green} </style>
 
-- :green:`green` represents *finished*
-- :yellow:`yellow` represents *running*
-- :red:`red` represents *failed*
+- green :green:`🮆` represents *finished*
+- yellow :yellow:`🮆` represents *running*
+- red :red:`🮆` represents *failed*
 - and the default color represents *not executed*
 
 Experiments can be launched with:
