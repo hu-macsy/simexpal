@@ -185,7 +185,7 @@ using multiple instances as input.
 Running Experiments
 -------------------
 
-Let us dive now a bit more into running experiments. As an example, we compare
+Let us now take a closer look at running experiments. As an example, we compare
 the sorting algorithms *insertion sort* and *bubble sort* using a set of
 instances. Please find the resources in our `example folder
 <https://github.com/hu-macsy/simexpal/tree/master/examples>`_. 
