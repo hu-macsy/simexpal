@@ -306,9 +306,9 @@ The color of each line represents the status of the experiment:
 
 .. raw:: html
 
-    <style> .red {color:red} </style>
-    <style> .yellow {color:yellow} </style>
-    <style> .green {color:green} </style>
+    <style> .red {color:red, background-color: black} </style>
+    <style> .yellow {color:yellow, background-color: black} </style>
+    <style> .green {color:green, background-color: black} </style>
 
 - :green:`green` represents *finished*
 - :yellow:`yellow` represents *running*
@@ -331,7 +331,7 @@ After all experiments have ben run, all experiment entries should be finished:
 Output:
 
 ::
-  
+
   Experiment                                    Instance                            Status
   ----------                                    --------                            ------
   bubble-sort                                   random-500                          [0] finished
