@@ -45,6 +45,7 @@ using multiple instances as input.
 2.  Clone the simexpal repository and navigate to the ``examples/sorting/`` directory:
 
     .. code-block:: bash
+
         $ git clone https://github.com/hu-macsy/simexpal.git
         $ cd simexpal/examples/sorting/
 
@@ -58,10 +59,13 @@ using multiple instances as input.
 3.  Generate some instances for the benchmark:
 
     .. code-block:: bash
+
         # List the instances declared in experiments.yml.
         # Note that missing instances will appear in red.
         $ simex instances
+
     ::
+
         Instance short name          Instance sets                                               
         -------------------          -------------
         uniform-n1000-s1
@@ -69,9 +73,12 @@ using multiple instances as input.
         uniform-n1000-s3
 
     .. code-block:: bash
+
         # Generate missing instance files.
         $ simex instances install 
+
     :: 
+
       Generating instance 'uniform-n1000-s1'
       Generating instance 'uniform-n1000-s2'
       Generating instance 'uniform-n1000-s3'
@@ -82,11 +89,14 @@ using multiple instances as input.
 
 4.  Launch the algorithms on all instances:
 
-List experiment configurations from experiments.yml.
+    List experiment configurations from experiments.yml.
 
     .. code-block:: bash
+
         $ simex e 
+
     ::
+
         Experiment                           Instance                            Status
         ----------                           --------                            ------
         bubble-sort                          uniform-n1000-s1                    [0]
@@ -97,11 +107,14 @@ List experiment configurations from experiments.yml.
         insertion-sort                       uniform-n1000-s3                    [0]
         6 experiments in total
 
-Launch all experiments using process forks.
+    Launch all experiments using process forks.
 
     .. code-block:: bash
+
         $ simex e launch --launch-through=fork
+
     ::
+
         Launching run bubble-sort/uniform-n1000-s1[0] on local machine
         Launching run bubble-sort/uniform-n1000-s2[0] on local machine
         Launching run bubble-sort/uniform-n1000-s3[0] on local machine
@@ -109,11 +122,13 @@ Launch all experiments using process forks.
         Launching run insertion-sort/uniform-n1000-s2[0] on local machine
         Launching run insertion-sort/uniform-n1000-s3[0] on local machine
 
-View the status of the experiments.
+    View the status of the experiments.
 
     .. code-block:: bash
+
         $ simex e list
     ::
+
         Experiment                                    Instance                            Status
         ----------                                    --------                            ------
         bubble-sort                                   uniform-n1000-s1                    [0] finished
@@ -134,7 +149,9 @@ View the status of the experiments.
     to gather all results.
 
     .. code-block:: bash
+
         $ python3 eval.py
+        
     ::
 
         comparisons          swaps      time
