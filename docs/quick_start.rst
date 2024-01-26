@@ -178,65 +178,134 @@ If you look at the `sorting directory
 <https://github.com/hu-macsy/simexpal/tree/master/examples/sorting>`_ in our
 examples, you will find `sort.py
 <https://github.com/hu-macsy/simexpal/blob/master/examples/sorting/sort.py>`_
-including an implementation of the two algorithms  *insertion sort* and *bubble
-sort*. ``sort.py`` expects two arguments: 
+including an implementation of the two algorithms *insertion sort* and *bubble
+sort*. 
 
-1. The algorithm name (i.e. insertion-sort or bubble-sort) 
+``sort.py`` expects two arguments: 
+
+1. The algorithm name (i.e. *insertion-sort* or *bubble-sort*). 
 2. The path to the instance. 
 
 In the above example, we generated a bunch of instances which were written to
-the *instances* at root level where the ``experiments.yml`` file is present. For
-this example, just deal with a single instance `random_500.list
-<https://github.com/hu-macsy/simexpal/blob/master/examples/sorting/instances/random_500.list>`_).
-Now we can run a sorting algorithm on a specific instance with: ::
+the *instances* folder at root level where the ``experiments.yml`` file is
+present. 
 
-   python3 sort.py --algo=insertion-sort ./instances/random_500.list
+For this example, we generate a new instance using the ``generate.py`` script.
+First we navigate to the ``sorting`` folder:
 
-To keep the example simple, we assume that instances are lists of integers.
+.. code-block:: bash
+  $ cd examples/sorting
 
-We can now start to configure simexpal to automatize the experimental pipeline.
-First, we need to create a new `experiments.yml
+Then we generate a new instance file which contains 500 randomly generated
+integers in list form with one integer per line:
+
+.. code-block:: bash
+  $ python3 generate.py -o ./instances/random-500 500
+
+Now we can run *insertion-sort* on the newly generate instance: 
+
+.. code-block:: bash
+   python3 sort.py --algo=insertion-sort ./instances/random-500
+::
+  ...
+  - 9949624
+  - 9984385
+  - 9984385
+  swaps: 65114
+  time: 0.006702899932861328
+
+Let us continue with configuring simexpal to automatize the experimental pipeline.
+
+Consider the ``experiments.yml`` `file
 <https://github.com/hu-macsy/simexpal/blob/master/examples/sorting/experiments.yml>`_
-file within the ``sorting`` directory.
-This is a configuration file that is read by simexpal to run the experiments on the
-desired instances and it is structured as below:
+in the root directory. It represents the simexpal configuration read in to run
+the experiments on the desired instances. The file is structured as below:
 
 .. literalinclude:: ../examples/sorting/experiments.yml
    :linenos:
    :language: yaml
-   :caption: Example of experiments.yml file
+   :caption: Example of an experiments.yml simexpal configuration file.
 
-The structure of this file will be better explained later in the guide.
-At this point, our ``sorting`` directory looks like this:
+The structure of the configuration file will get more attention later on. At
+this point, our ``sorting`` directory looks like this: 
+
 ::
-
    sorting
    ├── sort.py
    ├── experiments.yml
    └── instances
        └── random_500.list
 
-After having completed this steps, we can start using simexpal to run our experiments.
-A complete list of experiments and their status can be seen by:
+To add the instance to be used in our experiments, we must add a local file with
+it's name *random-500* (no extension) to our instances stanza:
+
+.. code-block:: yaml  
+  instances:
+    - generator:
+        args: ['./generate.py', '--seed=1', '1000']
+      items:
+        - uniform-n1000-s1
+    - generator:
+        args: ['./generate.py', '--seed=2', '1000']
+      items:
+        - uniform-n1000-s2
+    - generator:
+        args: ['./generate.py', '--seed=3', '1000']
+      items:
+        - uniform-n1000-s3
+    - repo: local
+      items:
+        - random-500
+
+  experiments:
+    - name: insertion-sort
+      args: ['./sort.py', '--algo=insertion-sort', '@INSTANCE@']
+      stdout: out
+    - name: bubble-sort
+      args: ['./sort.py', '--algo=bubble-sort', '@INSTANCE@']
+      stdout: out
+
+After having completed this step, we can start using simexpal to run our
+experiments including the new instance. A complete list of experiments and their
+status can be seen by:
 
 .. code-block:: bash
 
-   $ simex experiments list
+   $ simex e list
 
 The color of each line represents the status of the experiment:
 
-- Green: finished
-- Yellow: running
-- Red: failed
-- Default: not executed
+.. role:: green
+.. role:: yellow
+.. role:: red
+
+- :green:`green` represents *finished*
+- :yellow:`yellow` represents *running*
+- :red:`red` represents *failed*
+- and the default color represents *not executed*
 
 Experiments can be launched with:
 
 .. code-block:: bash
-
-   $ simex experiments launch
+   $ simex e launch --launch-through=fork
 
 This instruction will launch the non executed experiments on the local machine.
+After all experiments have ben run, all experiment entries should be finished:
+
+.. code-block:: bash
+   $ simex e list
+::
+  Experiment                                    Instance                            Status
+  ----------                                    --------                            ------
+  bubble-sort                                   random-500                          [0] finished
+  bubble-sort                                   uniform-n1000-s1                    [0] finished
+  bubble-sort                                   uniform-n1000-s2                    [0] finished
+  bubble-sort                                   uniform-n1000-s3                    [0] finished
+  insertion-sort                                random-500                          [0] finished
+  insertion-sort                                uniform-n1000-s1                    [0] finished
+  insertion-sort                                uniform-n1000-s2                    [0] finished
+  insertion-sort                                uniform-n1000-s3                    [0] finished
+  8 experiments in total
 
 Evaluating Results
 ------------------
