@@ -383,27 +383,71 @@ Output:
 
 Managing Instances
 ------------------
-Before launching the experiments, make sure that all your instances are available.
-Instances can be checked with:
+
+Before launching the experiments, we neede to make sure that all our instances
+are available. Instances can be checked with:
 
 .. code-block:: bash
 
-   $ simex instances list
+  $ simex instances list
 
-Unavailable instances will be shown in red, otherwise they will be shown in green.
-If instances are taken from a public repository, they can be downloaded automatically.
-We configured the YAML file below to use instances from `SNAP <https://snap.stanford.edu/data/>`_.
+An example output:
+
+::
+
+Instance short name                      Instance sets                                               
+-------------------                      -------------                                               
+random-500                                                                                           
+uniform-n1000-s1                                                                                     
+uniform-n1000-s2                                                                                     
+uniform-n1000-s3 
+
+Unavailable instances will be shown in red, otherwise they will be shown in
+green. 
+
+If instances are taken from a public repository, they can be downloaded
+automatically. We configured the YAML file below to use instances from `SNAP
+<https://snap.stanford.edu/data/>`_.
 
 .. literalinclude:: ../examples/download_instances/experiments.yml
    :linenos:
    :language: yaml
    :caption: experiments.yml with instances from public repositories.
 
-All the listed instances can be downloaded within the ``./graphs`` directory with:
+Please navigate to the subfolder ``examples/download_instances`` and list all
+instances:
+
+.. code-block:: bash
+
+  $ simex instances list
+
+Output:
+
+:: 
+
+  Instance short name                      Instance sets                                               
+  -------------------                      -------------                                               
+  cit-HepTh                                                                                            
+  facebook_combined  
+
+The listed instances are shown as not available. To download them, use the
+following command:
 
 .. code-block:: bash
 
    $ simex instances install
+
+Output:
+
+:: 
+  
+  Downloading instance 'cit-HepTh' from snap repository
+  [==================================================]100% (1.26MB/1.26MB)
+  Downloading instance 'facebook_combined' from snap repository
+  [==================================================]100% (0.21MB/0.21MB)
+
+Now when repeating the ``simex instances list`` command, you'll see that all
+instances are available.
 
 .. _parametersAndVariants:
 
