@@ -36,16 +36,15 @@ branch.
 Minimal Example and Fundamentals
 -------------
 
-The simexpal repository contains a small examples which can be used to quickly
-get to know the tool. In this example, we compare different sorting algorithms
-on multiple inputs.
+The simexpal repository contains a small example which can be used to quickly
+get to know the tool. For this section, we compare different sorting algorithms
+using multiple instances as input.
 
 1.  Install simexpal as detailed above.
 
 2.  Clone the simexpal repository and navigate to the ``examples/sorting/`` directory:
 
     .. code-block:: bash
-
         $ git clone https://github.com/hu-macsy/simexpal.git
         $ cd simexpal/examples/sorting/
 
@@ -59,11 +58,9 @@ on multiple inputs.
 3.  Generate some instances for the benchmark:
 
     .. code-block:: bash
-
         # List the instances declared in experiments.yml.
         # Note that missing instances will appear in red.
         $ simex instances
-
     ::
         Instance short name          Instance sets                                               
         -------------------          -------------
@@ -72,10 +69,8 @@ on multiple inputs.
         uniform-n1000-s3
 
     .. code-block:: bash
-
         # Generate missing instance files.
         $ simex instances install 
-
     :: 
       Generating instance 'uniform-n1000-s1'
       Generating instance 'uniform-n1000-s2'
@@ -90,9 +85,7 @@ on multiple inputs.
 List experiment configurations from experiments.yml.
 
     .. code-block:: bash
-
         $ simex e 
-
     ::
         Experiment                           Instance                            Status
         ----------                           --------                            ------
@@ -107,9 +100,7 @@ List experiment configurations from experiments.yml.
 Launch all experiments using process forks.
 
     .. code-block:: bash
-
         $ simex e launch --launch-through=fork
-    
     ::
         Launching run bubble-sort/uniform-n1000-s1[0] on local machine
         Launching run bubble-sort/uniform-n1000-s2[0] on local machine
@@ -121,9 +112,7 @@ Launch all experiments using process forks.
 View the status of the experiments.
 
     .. code-block:: bash
-
         $ simex e list
-
     ::
         Experiment                                    Instance                            Status
         ----------                                    --------                            ------
@@ -137,17 +126,15 @@ View the status of the experiments.
 
 5.  Evaluate the results:
 
-To evaluate the experiment results, we call the ``eval.py`` script which uses
-pandas package to aggregate the results. Please make sure that the python
-package pandas is installed on your machine, or install it via ``pip3 install
-pandas``. The script also uses the simexpal Python interface (i.e., the functions
-``collect_successful_results()`` and ``open_output_file()``) to gather all
-results.
+    To evaluate the experiment results, we call the ``eval.py`` script which
+    uses pandas package to aggregate the results. Please make sure that the
+    python package pandas is installed on your machine, or install it via ``pip3
+    install pandas``. The script also uses the simexpal Python interface (i.e.,
+    the functions ``collect_successful_results()`` and ``open_output_file()``)
+    to gather all results.
 
     .. code-block:: bash
-
         $ python3 eval.py
-
     ::
 
         comparisons          swaps      time
@@ -155,14 +142,11 @@ results.
         bubble-sort        499500.0  253437.333333  0.053750
         insertion-sort     241891.0  257609.000000  0.027219
 
-    
-
 .. tip::
     Simexpal supports autocomplete via `argcomplete <https://pypi.org/project/argcomplete/>`_.
     To enable autocomplete, install ``argcomplete`` and enable global completion:
 
     .. code-block:: bash
-
       $ pip3 install argcomplete
       $ activate-global-python-argcomplete
 
