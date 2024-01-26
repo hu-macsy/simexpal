@@ -456,10 +456,9 @@ instances are available.
 Dealing with Parameters and Variants of an Algorithm
 ----------------------------------------------------
 
-When benchmarking algorithms, it is often useful to compare different
-variants or parameter configurations of the same algorithm.
-simexpal can manage those variants without requiring you to duplicate
-the ``experiments`` stanza multiple times.
+When benchmarking algorithms, it is often useful to compare different variants
+or parameter configurations. simexpal can manage those variants without
+requiring you to duplicate the ``experiments`` stanza multiple times.
 
 As an example, imagine that you want to benchmark the running time of
 merge sort using different minimum block sizes, as well as
