@@ -395,12 +395,12 @@ An example output:
 
 ::
 
-Instance short name                      Instance sets                                               
--------------------                      -------------                                               
-random-500                                                                                           
-uniform-n1000-s1                                                                                     
-uniform-n1000-s2                                                                                     
-uniform-n1000-s3 
+  Instance short name                      Instance sets                                               
+  -------------------                      -------------                                               
+  random-500                                                                                           
+  uniform-n1000-s1                                                                                     
+  uniform-n1000-s2                                                                                    
+  uniform-n1000-s3 
 
 Unavailable instances will be shown in red, available instances will be shown in
 green. 
