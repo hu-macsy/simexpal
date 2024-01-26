@@ -402,11 +402,13 @@ uniform-n1000-s1
 uniform-n1000-s2                                                                                     
 uniform-n1000-s3 
 
-Unavailable instances will be shown in red, otherwise they will be shown in
+Unavailable instances will be shown in red, available instances will be shown in
 green. 
 
 If instances are taken from a public repository, they can be downloaded
-automatically. We configured the YAML file below to use instances from `SNAP
+automatically. We configured the `YAML file
+<https://github.com/hu-macsy/simexpal/blob/master/examples/download_instances/experiments.yml>`_
+under ``examples/download_instances`` below to use instances from `SNAP
 <https://snap.stanford.edu/data/>`_.
 
 .. literalinclude:: ../examples/download_instances/experiments.yml
