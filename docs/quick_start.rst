@@ -508,21 +508,28 @@ experiment. Finally, we must add groups of experiments where for
 to parameterize these experiments. The experiment group with ``merge-sort`` will
 be using the variant axes ``block-size`` and ``block-algo``. 
 
-After launching all (remaining) experiments, listing the experiments should
-print:
+After successfully running all (remaining) experiments, listing the experiments
+with:
+
+.. code-block:: bash
+
+  simex e list --full
+
+
+prints:
 
 ::
 
-  Experiment                     started    finished   failures             other
-  ----------                     -------    --------   --------             -----
-  bubble-sort                               4/4                             
-  insertion-sort                            4/4                             
-  merge-sort ~ bba-insertion, bs            4/4                             
-  merge-sort ~ bba-insertion, bs            4/4                             
-  merge-sort ~ bba-insertion, bs            4/4                             
-  merge-sort ~ bba-selection, bs            4/4                             
-  merge-sort ~ bba-selection, bs            4/4                             
-  merge-sort ~ bba-selection, bs            4/4                             
+  Experiment                        started    finished   failures             other
+  ----------                        -------    --------   --------             -----
+  bubble-sort                                  4/4                             
+  insertion-sort                               4/4                             
+  merge-sort ~ bba-insertion, bs2              4/4                             
+  merge-sort ~ bba-insertion, bs20             4/4                             
+  merge-sort ~ bba-insertion, bs200            4/4                             
+  merge-sort ~ bba-selection, bs2              4/4                             
+  merge-sort ~ bba-selection, bs20             4/4                             
+  merge-sort ~ bba-selection, bs200            4/4                             
   32 experiments in total
 
 Automated Builds and Revision Support
