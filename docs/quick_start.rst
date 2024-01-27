@@ -555,7 +555,7 @@ to ``experiments.yml``. For experiments, to use the correct project, we must use
 the ``simexpal`` build. 
 
 .. literalinclude:: ../examples/sorting_cpp/experiments.yml
-   :emphasize-lines: 1, 18, 31
+   :emphasize-lines: 1, 18, 39
    :linenos: 
    :language: yaml
    :caption: experiments.yml for the C++ example of sorting algorithms.
