@@ -453,49 +453,76 @@ instances are available.
 
 .. _parametersAndVariants:
 
-Dealing with Parameters and Variants of an Algorithm
-----------------------------------------------------
+Parameterize Algorithms
+-----------------------
 
 When benchmarking algorithms, it is often useful to compare different variants
 or parameter configurations. simexpal can manage those variants without
 requiring you to duplicate the ``experiments`` stanza multiple times.
 
-As an example, imagine that you want to benchmark the running time of
-merge sort using different minimum block sizes, as well as
-its running time depending on different algorithms for minimal blocks.
+As an example, imagine that you want to benchmark the running time of a *merge
+sort* algorithm using different minimum block sizes and sorting algorithms for
+these blocks. The ``sort.py`` script under ``examples/sorting`` provides an
+implementation of *merge sort*.
 
-..
-    TODO: This example is implemented in directory TODO of the simexpal repository.
-
-Those variants can be handled by simexpal using the following stanzas:
+The following extends the original ``experiments.yml`` file with additional
+variants for *merge sort* after we defined our instances:
 
 .. code-block:: YAML
 
     experiments:
+      ...
       - name: 'merge-sort'
         stdout: out
-        args: ['python3', 'sort.py', '--algo=insertion-sort', '@EXTRA_ARGS@', '@INSTANCE@']
+        args: ['python3', 'sort.py', '--algo=merge-sort', '@EXTRA_ARGS@', '@INSTANCE@']
 
     variants:
       - axis: 'block-size'
         items:
-          - name: 'bbs1'
-            extra_args: ['--base-block-size=1']
-          - name: 'bbs10'
-            extra_args: ['--base-block-size=10']
-          - name: 'bbs50'
-            extra_args: ['--base-block-size=50']
+          - name: 'bs2'
+            extra_args: ['--block_size=2']
+          - name: 'bs20'
+            extra_args: ['--block_size=20']
+          - name: 'bs200'
+            extra_args: ['--block_size=200']
       - axis: 'block-algo'
         items:
           - name: 'bba-insertion'
-            extra_args: ['--base-block-algorithm=insertion-sort']
+            extra_args: ['--block_algorithm=insertion-sort']
           - name: 'bba-selection'
-            extra_args: ['--base-block-algorithm=selection-sort']
+            extra_args: ['--block_algorithm=bubble-sort']
 
-simexpal will duplicate the experiment for each possible combination
-of variants. Such a combination will consist of exactly one variant
-for every ``axis`` property.
+    matrix:
+      include:
+        - experiments: [insertion-sort, bubble-sort]
+          axes: []
+        - experiments: [merge-sort]
+          axes: [block-size, block-algo]
 
+First, we define the new experiment ``merge-sort`` adding the @-Variable
+``@EXTRA_ARGS@``. This will allow simexpal to insert additional program
+arguments. Second, we define ``variants`` as possible parameter groups for our
+experiment. Finally, we must add groups of experiments where for
+``insertion-sort`` and ``bubble-sort`` the axes remain empty - as we do not want
+to parameterize these experiments. The experiment group with ``merge-sort`` will
+be using the variant axes ``block-size`` and ``block-algo``. 
+
+After launching all (remaining) experiments, listing the experiments should
+print:
+
+::
+
+  Experiment                     started    finished   failures             other
+  ----------                     -------    --------   --------             -----
+  bubble-sort                               4/4                             
+  insertion-sort                            4/4                             
+  merge-sort ~ bba-insertion, bs            4/4                             
+  merge-sort ~ bba-insertion, bs            4/4                             
+  merge-sort ~ bba-insertion, bs            4/4                             
+  merge-sort ~ bba-selection, bs            4/4                             
+  merge-sort ~ bba-selection, bs            4/4                             
+  merge-sort ~ bba-selection, bs            4/4                             
+  32 experiments in total
 
 Automated Builds and Revision Support
 -------------------------------------

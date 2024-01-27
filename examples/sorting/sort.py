@@ -129,11 +129,11 @@ def run_experiment(algo, instance, blockalgorithm, blocksize):
 def do_main():
 	parser = argparse.ArgumentParser()
 	parser.add_argument('--algo', type=str, choices=['bubble-sort', 'insertion-sort', 'merge-sort'])
-	parser.add_argument('--blockalgorithm', type=str, choices=['bubble-sort', 'insertion-sort'], default='bubble-sort')
-	parser.add_argument('--blocksize', type=int, default=50)
+	parser.add_argument('--block_algorithm', type=str, choices=['bubble-sort', 'insertion-sort'], default='bubble-sort')
+	parser.add_argument('--block_size', type=int, default=50)
 	parser.add_argument('instance', type=str)
 
 	args = parser.parse_args()
-	run_experiment(args.algo, args.instance, args.blockalgorithm, args.blocksize)
+	run_experiment(args.algo, args.instance, args.block_algorithm, args.block_size)
 
 do_main()
