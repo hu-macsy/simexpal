@@ -585,35 +585,28 @@ using:
 Run Matrix
 ----------
 
-In the :ref:`parametersAndVariants` section we saw how we can use simexpal to specify
-variants of experiments. For the following example we will consider this ``variants`` stanza:
+In the :ref:`parametersAndVariants` section we saw how we can use simexpal to
+specify axes and variants of parameters. For the following example we will take
+a look at the ``variants`` stanza of the `C++ Sorting Example
+<https://github.com/hu-macsy/simexpal/tree/master/examples/sorting_cpp/experiments.yml>`:
 
-.. code-block:: YAML
+.. literalinclude:: ../examples/sorting_cpp/experiments.yml
+   :emphasize-lines: 43
+   :linenos: 
+   :language: yaml
+   :caption: experiments.yml for the C++ example of sorting algorithms.
 
-    variants:
-      - axis: 'block-algo'
-        items:
-          - name: 'ba-insert'
-            extra_args: ['insertion_sort']
-          - name: 'ba-bubble'
-            extra_args: ['bubble_sort']
-      - axis: 'block-size'
-        items:
-          - name: 'bs32'
-            extra_args: ['32']
-          - name: 'bs64'
-            extra_args: ['64']
+simexpal will build every permutation of the experiment, instance, variant and
+revision sets. However, there are cases where this is not desired. For example,
+you might only want to run certain instance/variant combinations, not all.
 
-simexpal will build every possible combination of experiment, instance,
-variant and revision. There are cases where this is not desired. For example, you might only want
-to run certain instance/variant combinations.
+Assume you want to run the *quick sort* algorithm with *insertion sort* as base
+block algorithm and ``32`` as minimal block size. Additionally you want to run
+*quick sort* with *bubble sort* as base block algorithm and use both ``32`` and
+``64`` as minimal block sizes.
 
-Assume you want to run Quicksort with Insertionsort as base block algorithm and ``32`` as
-minimal block size. Additionally you want to run Quicksort with Bubblesort as base block
-algorithm and use both ``32`` and ``64`` as minimal block sizes.
-
-To achieve this, we need to add a ``matrix`` stanza to ``experiments.yml``.
-In our example, this looks like:
+To achieve this, we need to add a ``matrix`` stanza to ``experiments.yml``. In
+our example, this looks like:
 
 .. code-block:: YAML
 
@@ -623,24 +616,31 @@ In our example, this looks like:
           variants: [ba-insert, bs32]
           revisions: [main]
         - experiments: [quick-sort]
-          variants: [ba-bubble]     # We could explicitly specify [ba-bubble, bs32, bs64]. In this case it is not
-                                    # necessary as bs32 and bs64 are all the possible values for the block-size axis
+          variants: [ba-bubble]    
           revisions: [main]
 
-(The full ``experiments.yml`` can be found `here <https://github.com/hu-macsy/simexpal/tree/master/examples/sorting_cpp>`_ .)
+We could explicitly specify ``[ba-bubble, bs32, bs64]`` for the variants of
+``quick-sort``. In this case however, it is not necessary as ``bs32`` and
+``bs64`` are all the possible values for the ``block-size`` axis.
 
-Using ``simex experiments list`` we can confirm that we got our desired experiments:
+Using ``simex experiments list --full`` we can confirm that we got our desired
+experiments:
 
 .. code-block:: bash
 
-    Experiment                                    Instance                     Status
-    ----------                                    --------                     ------
-    quick-sort ~ ba-bubble, bs32 @ main           uniform-n1000-s1             [0] not submitted
-    quick-sort ~ ba-bubble, bs32 @ main           uniform-n1000-s2             [0] not submitted
-    quick-sort ~ ba-bubble, bs64 @ main           uniform-n1000-s1             [0] not submitted
-    quick-sort ~ ba-bubble, bs64 @ main           uniform-n1000-s2             [0] not submitted
-    quick-sort ~ ba-insert, bs32 @ main           uniform-n1000-s1             [0] not submitted
-    quick-sort ~ ba-insert, bs32 @ main           uniform-n1000-s2             [0] not submitted
+    Experiment                          Instance                            Status
+    ----------                          --------                            ------
+    quick-sort ~ ba-bubble, bs32 @ main uniform-n1000-s1                    [0] not submitted
+    quick-sort ~ ba-bubble, bs32 @ main uniform-n1000-s2                    [0] not submitted
+    quick-sort ~ ba-bubble, bs32 @ main uniform-n1000-s3                    [0] not submitted
+    quick-sort ~ ba-bubble, bs64 @ main uniform-n1000-s1                    [0] not submitted
+    quick-sort ~ ba-bubble, bs64 @ main uniform-n1000-s2                    [0] not submitted
+    quick-sort ~ ba-bubble, bs64 @ main uniform-n1000-s3                    [0] not submitted
+    quick-sort ~ ba-insert, bs32 @ main uniform-n1000-s1                    [0] not submitted
+    quick-sort ~ ba-insert, bs32 @ main uniform-n1000-s2                    [0] not submitted
+    quick-sort ~ ba-insert, bs32 @ main uniform-n1000-s3                    [0] not submitted
+    9 experiments in total
+
 
 Launchers / Support for Batch Schedulers
 ----------------------------------------
