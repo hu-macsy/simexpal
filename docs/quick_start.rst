@@ -527,9 +527,9 @@ print:
 Automated Builds and Revision Support
 -------------------------------------
 
-To make sure that experiments are always run from exactly the same binaries,
-it is possible to let simexpal pull your programs from some VCS
-(as of version 0.1, only Git is supported) and build them automatically.
+To make sure that experiments are always run using the same binaries, it is
+possible to let simexpal clone your git projects  and automatize the build
+process.
 
 Automated builds are controlled by the ``builds`` and ``revisions`` stanzas
 in ``experiments.yml``.
