@@ -291,8 +291,9 @@ it's name *random-500* (no extension) to our instances stanza:
       stdout: out
 
 After having completed this step, we can start using simexpal to run our
-experiments including the new instance. A complete list of experiments and their
-status can be seen by:
+experiments including the new instance. The @-Variable ``@INSTANCE@`` will be
+use for all instances. A complete list of experiments and their status can be
+seen by:
 
 .. code-block:: bash
 
