@@ -587,7 +587,7 @@ Run Matrix
 In the :ref:`parametersAndVariants` section we saw how we can use simexpal to
 specify axes and variants of parameters. For the following example we will take
 a look at the ``variants`` stanza of the `C++ Sorting Example
-<https://github.com/hu-macsy/simexpal/tree/master/examples/sorting_cpp/experiments.yml>`:
+<https://github.com/hu-macsy/simexpal/tree/master/examples/sorting_cpp/experiments.yml>`_:
 
 .. literalinclude:: ../examples/sorting_cpp/experiments.yml
    :emphasize-lines: 43
