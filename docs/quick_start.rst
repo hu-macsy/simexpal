@@ -472,7 +472,6 @@ variants for *merge sort* after we defined our instances:
 .. code-block:: YAML
 
     experiments:
-      ...
       - name: 'merge-sort'
         stdout: out
         args: ['python3', 'sort.py', '--algo=merge-sort', '@EXTRA_ARGS@', '@INSTANCE@']
