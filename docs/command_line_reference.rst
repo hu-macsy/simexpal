@@ -3,7 +3,8 @@
 Command-line Reference
 ======================
 
-Simexpal instructions are written as:
+simexpal instructions are written as:
+
 ::
 
    simex <instruction> [action] [selection option] [args...]
