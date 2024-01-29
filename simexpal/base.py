@@ -171,7 +171,7 @@ class Config:
 					raise RuntimeError("The revision name '{}' is ambiguous".format(revision.name))
 				self._revisions[revision.name] = revision
 
-		for axis in sorted(construct_axes(), key=lambda axis: axis):
+		for axis in sorted(construct_axes()):
 			if axis in self._axes:
 				raise RuntimeError("The axis name '{}' is ambiguous".format(axis))
 			self._axes[axis] = axis
