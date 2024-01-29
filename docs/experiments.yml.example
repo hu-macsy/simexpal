@@ -1,10 +1,15 @@
 instances:
   - repo: local
+    subdir: large
     items:
       - random_500.list
       - partially_sorted_500.list
+  - repo: local
+    subdir: small
+      - random_100.list
+      - partially_sorted_100.list
 
-instdir: "<path_to_instances_directory>"
+instdir: "./instances"
 
 experiments:
   - name: insertion-sort
