@@ -20,6 +20,7 @@ where the ``experiments.yml`` file is located.
 
 builds
 ------
+
 Responsible to download Git repositories and install executables.
 It supports the following actions:
 
@@ -33,6 +34,7 @@ not specifying the ``--revisions`` argument will lead to the selection of every 
 
 develop
 -------
+
 Responsible to download Git repositories and install executables. It also allows you to redo arbitrary
 build steps after changing local Git files to take over the local changes.
 
@@ -65,23 +67,23 @@ experiments
 Responsible to check, execute and remove experiments. The experiments command
 accepts the following actions flags:
 
-:info    Displays all related instances, instance sets, variant axes and variants
+:info:   Displays all related instances, instance sets, variant axes and variants
          of experiments on the command-line.
 
-:list    Lists all the experiments. Executed experiments are shown in green,
+:list:   Lists all the experiments. Executed experiments are shown in green,
          failed ones are shown in red, running ones in yellow, and the non
          executed ones in the default command-line color. With the argument
          ``--detailed`` it will show every single run. With ``--compact`` all
          runs with the same experiment will be grouped together. The ``--full``
          option forces simexpal to display the full experiment name.
 
-:launch  Launches all the non executed experiments.
+:launch: Launches all the non executed experiments.
 
-:print   Displays all experimental output, including error outputs, on the command-line.
+:print:  Displays all experimental output, including error outputs, on the command-line.
 
-:purge   Deletes the experimental data. To confirm this action it needs the ``-f`` argument.
+:purge:  Deletes the experimental data. To confirm this action it needs the ``-f`` argument.
 
-:kill    Terminates jobs submitted to or started by Slurm. To confirm this
+:kill:   Terminates jobs submitted to or started by Slurm. To confirm this
          action it needs the ``-f`` argument.
 
 All the above actions can be applied to a subset of experiments according to a `selection option`,
