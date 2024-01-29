@@ -267,7 +267,7 @@ def compile_manifest(run):
 	return RunManifest({
 		'config': {
 			'base_dir': run.config.basedir,
-			'instance_dir': run.config.instance_dir()
+			'instance_dir': run.instance.instance_dir
 		},
 		'experiment': exp.name,
 		'variants': variants_yml,

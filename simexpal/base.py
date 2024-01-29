@@ -695,10 +695,7 @@ class Instance:
 
 	@property
 	def fullpath(self):
-		subdir = ''
-		if 'subdir' in self._inst_yml:
-			subdir = self._inst_yml['subdir']
-		return os.path.join(self._cfg.instance_dir(), subdir, self.unique_filename)
+		return os.path.join(self.instance_dir, self.unique_filename)
 
 	@property
 	def instsets(self):
@@ -754,12 +751,16 @@ class Instance:
 		return self._inst_yml.get('commit', None)
 
 	@property
+	def instance_dir(self):
+		return os.path.join(self._cfg.instance_dir(), self._inst_yml.get('subdir', ''))
+
+	@property
 	def git_subdir(self):
 		return self._inst_yml.get('git_subdir', None)
 
 	def check_available(self):
 		for file in self.filenames:
-			if not os.path.isfile(os.path.join(self._cfg.instance_dir(), file)):
+			if not os.path.isfile(os.path.join(self.instance_dir, file)): # check all usages of self._cfg.instance_dir
 				return False
 		return True
 
@@ -772,8 +773,9 @@ class Instance:
 			return
 
 		util.try_mkdir(self._cfg.instance_dir())
+		util.try_mkdir(self.instance_dir)
 
-		partial_path = os.path.join(self._cfg.instance_dir(), self.unique_filename)
+		partial_path = os.path.join(self.instance_dir, self.unique_filename)
 		if 'repo' in self._inst_yml:
 
 			if self._inst_yml['repo'] == 'local':
@@ -788,7 +790,7 @@ class Instance:
 					self._inst_yml['repo']))
 
 			instances.download_instance(self._inst_yml,
-					self.config.instance_dir(), self.unique_filename, partial_path, '.post0')
+					self.instance_dir, self.unique_filename, partial_path, '.post0')
 		elif 'generator' in self._inst_yml:
 			import subprocess
 
@@ -811,7 +813,7 @@ class Instance:
 			print(f"Downloading instance '{self.shortname}' with method '{self.method}'")
 
 			instances.download_instance(self._inst_yml,
-					self.config.instance_dir(), self.unique_filename, partial_path, '.post0')
+					self.instance_dir, self.unique_filename, partial_path, '.post0')
 		else:
 			raise RuntimeError(f"Unknown installation option for instance '{self.shortname}'")
 
