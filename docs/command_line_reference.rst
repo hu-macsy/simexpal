@@ -44,19 +44,19 @@ command above).
 
 It further supports the following additional arguments:
 
-:``--checkout``: deletes the local Git repository and (re-)clones it.
-:``--compile``: (re-)compiles the build.
-:``--configure``: (re-)configures the build.
-:``--delete-source``: deletes the source directory when purging.
-:``--install``: (re-)installs the build.
-:``--purge``: deletes all related build files.
-:``--recheckout``: deletes the local build Git repository, reclones, regenerates, reconfigures, recompiles
-    and reinstalls it.
-:``--recompile``: recompiles and reinstall the build.
-:``--reconfigure``: reconfigures, recompiles and reinstalls the build.
-:``--regenerate``: (re-)regenerates the build.
-:``--reinstall``: reinstalls the build.
-:``--reregenerate``: regenerates, reconfigures, recompiles and reinstalls the build.
+:--checkout:      Deletes the local Git repository and clones it.
+:--compile:       Compiles the build.
+:--configure:     Configures the build.
+:--delete-source: Deletes the source directory when purging.
+:--install:       Installs the build files.
+:--purge:         Deletes all related build files.
+:--recheckout:    Deletes the cloned git repository, re-clones, regenerates,
+                  reconfigures, re-compiles, and reinstalls it.
+:--recompile:     Re-compiles and reinstall the build.
+:--reconfigure:   Re-configures the build.
+:--regenerate:    Re-generates the build.
+:--reinstall:     Re-installs the build.
+:--reregenerate:  Re-generates, re-configures, re-compiles, and reinstalls the build.
 
 The ``--checkout``, ``--recheckout`` and ``--purge`` arguments further require the ``-f`` argument to confirm
 their actions.
@@ -89,18 +89,23 @@ accepts the following actions flags:
 All the above actions can be applied to a subset of experiments according to a `selection option`,
 which can be specified as an additional argument. Supported selection options are:
 
-:``--all``: selects all the experiments.
-:``--axes [axes...]``: selects all experiments with the variant axes from the space separated list of axes.
-:``--run <r>``: selects the single run given as ``<experiment_display_name>/<instance>``, where
-    ``<experiment_display_name>`` is the name of the experiment as displayed on the command-line and
-    ``<instance>`` is the instance name as displayed on the command-line.
-:``--experiment <e>``: selects the experiment named ``e``.
-:``--failed``: selects all the failed experiments.
-:``--instance <i>``: selects all experiments with the instance named ``i``.
-:``--instset <i>``: selects all experiments with the instance set named ``i``.
-:``--unfinished``: selects all the unfinished experiments.
-:``--revision <i>``: selects all experiments with the revision named ``r``.
-:``--variants [variants...]``: selects all experiments with the variants from the space separated list of variants.
+:--all:                    Selects all the experiments.
+:--axes [axes...]:         Selects all experiments with the variant axes from
+                           the space separated list of *axes*.
+:--run <r>:                Selects the single run given as
+                           ``<experiment_display_name>/<instance>``, where
+                           ``<experiment_display_name>`` is the name of the
+                           experiment as displayed on the command-line and
+                           ``<instance>`` is the instance name as displayed on
+                           the command-line.
+:--experiment <e>:         Selects the experiment named *e*.
+:--failed:                 Selects all the failed experiments.
+:--instance <i>:           Selects all experiments with the instance named *i*.
+:--instset <i>:            Selects all experiments with the instance set named *i*.
+:--unfinished:             Selects all the unfinished experiments.
+:--revision <i>:           Selects all experiments with the revision named *r*.
+:--variants [variants...]: Selects all experiments with the variants from the
+                           space separated list of variants.
 
 instances
 ---------
