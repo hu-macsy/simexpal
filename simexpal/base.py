@@ -759,10 +759,8 @@ class Instance:
 		return self._inst_yml.get('git_subdir', None)
 
 	def check_available(self):
-		for file in self.filenames:
-			if not os.path.isfile(os.path.join(self.instance_dir, file)): # check all usages of self._cfg.instance_dir
-				return False
-		return True
+		files_available = [os.path.isfile(os.path.join(self.instance_dir, file)) for file in self.filenames]
+		return all(files_available)
 
 	def install(self):
 		from . import instances
