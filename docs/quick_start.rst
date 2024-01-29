@@ -155,8 +155,8 @@ using multiple instances as input.
 5.  Evaluate the results:
 
     To evaluate the experiment results, we call the ``eval.py`` script which
-    uses pandas package to aggregate the results. Please make sure that the
-    python package pandas is installed on your machine, or install it via ``pip3
+    uses the pandas package to aggregate the results. Please make sure that the
+    Python package pandas is installed on your machine, or install it via ``pip3
     install pandas``. The script also uses the simexpal Python interface (i.e.,
     the functions ``collect_successful_results()`` and ``open_output_file()``)
     to gather all results.
@@ -367,7 +367,7 @@ A user-supplied parsing function is employed to parse the output files.
    :lines: 7-24
    :language: python
 
-Run this python script to evaluate the experiments:
+Run this Python script to evaluate the experiments:
 
 .. code-block:: bash
 
