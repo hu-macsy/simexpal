@@ -36,7 +36,7 @@ customization is necessary.
 The following is a non-exhaustive list of the functionality provided by
 SimexPal:
 
-- **resolve external resources** such as git repositories
+- **resolve external resources** such as Git repositories
 - describe and setup **build processes**
 - declaratively describe **experiments** the YAML language 
 - define **parameters** and parameter permutations
