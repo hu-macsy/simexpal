@@ -38,7 +38,7 @@ SimexPal:
 
 - **resolve external resources** such as Git repositories
 - describe and setup **build processes**
-- declaratively describe **experiments** the YAML language 
+- declaratively describe **experiments** using the YAML language 
 - define **parameters** and parameter permutations
 - manage **data sets** and specifically graph data
 - **run and monitor** experiments on multiple computing platforms
