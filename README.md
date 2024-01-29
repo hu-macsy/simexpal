@@ -48,7 +48,7 @@ SimexPal:
 
 Whether you're a student, an algorithm enthusiast, or a researcher: developing
 experiments that can easily be reproduced will support the validity of your
-findings. Self written scripts often bind experiments to a narrow set of soft-
+findings. Self-written scripts often bind experiments to a narrow set of soft-
 and hardware. If not well documented, such scripts may be a source of error, or
 the experiments may not be reproduced as intended.
 
