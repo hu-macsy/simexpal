@@ -54,6 +54,7 @@ matrix:
       variants: [ba-insert, bs32]
       revisions: [main]
     - experiments: [quick-sort]
-      # The following axis contains a typo
+      # The following axis contains a typo:
+      # "block.size" instead of "block-size"
       axes: [block.size]
       revisions: [main]
