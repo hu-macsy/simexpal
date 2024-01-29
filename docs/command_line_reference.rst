@@ -120,3 +120,18 @@ supports the following flags:
 
 :run-transform:   Manually runs the defined transformation on instance files.
 
+queue
+-----
+
+Triggers actions, or prints information concerning the configured experiment
+launcher and its queue.
+
+:daemon:       Prints info on the running daemon.
+
+:stop:         Stops the elements in the queue from being processed.
+
+:interactive:  Provides an interactive shell with the queue.
+
+:kill:         Kills the queue process.
+
+:show:         Prints the queued experiments using the queue daemon.
