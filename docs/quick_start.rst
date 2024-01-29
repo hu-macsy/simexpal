@@ -322,7 +322,7 @@ Experiments can be launched with:
 
    $ simex e launch --launch-through=fork
 
-This instruction will launch the non executed experiments on the local machine.
+This instruction will launch the non-executed experiments on the local machine.
 After all experiments have ben run, all experiment entries should be finished:
 
 .. code-block:: bash
