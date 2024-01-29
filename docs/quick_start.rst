@@ -179,6 +179,7 @@ using multiple instances as input.
     To enable autocomplete, install ``argcomplete`` and enable global completion:
 
     .. code-block:: bash
+      
       $ pip3 install argcomplete
       $ activate-global-python-argcomplete
 
