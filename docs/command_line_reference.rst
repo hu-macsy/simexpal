@@ -104,14 +104,19 @@ which can be specified as an additional argument. Supported selection options ar
 
 instances
 ---------
-Checks and eventually downloads the instances for the experiments.
-It supports the following actions:
 
-:install: downloads all the missing instances if they are taken from a public repository.
-   With the argument ``--overwrite`` it will also download the available instances and
-   overwrite them.
-:list: lists all the instances found in the experiments.yml file.
-   Available instances are shown in green, unavailable instances in red.
-:process: caches information about instances.
-:run-transform: manually runs a transformation on instance files.
+The instance command can check the availability, and install instances. It
+supports the following flags:
+
+:install:         Installs missing instances. This can also trigger a download if an
+                  instance resource is configured accordingly. With the argument
+                  ``--overwrite``, this command will re-install all instances and
+                  overwrite existing ones.
+
+:list:            Lists all defined instances. Available instances are shown in green,
+                  unavailable instances in red.
+
+:process:         Caches information about instances.
+
+:run-transform:   Manually runs the defined transformation on instance files.
 
