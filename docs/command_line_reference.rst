@@ -61,22 +61,28 @@ their actions.
 
 experiments
 -----------
-Responsible to check, execute and remove experiments.
-It supports the following actions:
 
-:info: displays all related instances, instance sets, variant axes and variants of experiments
-   on the command-line.
-:list: lists all the experiments.
-   Executed experiments are shown in green, failed ones are shown in red, running ones in
-   yellow, and the non executed ones in the default command-line color. With the argument
-   ``--detailed`` it will show every single run. With ``--compact`` all runs with the same
-   experiment will be grouped together. The ``--full`` option forces simexpal to display the
-   full experiment name.
-:launch: launches all the non executed experiments.
-:print: displays all experimental output, including error outputs, on the command-line.
-:purge: deletes the experimental data. To confirm this action it needs the ``-f`` argument.
-:kill: terminates jobs submitted to or started by Slurm. To confirm this action it needs
-    the ``-f`` argument.
+Responsible to check, execute and remove experiments. The experiments command
+accepts the following actions flags:
+
+:info    Displays all related instances, instance sets, variant axes and variants
+         of experiments on the command-line.
+
+:list    Lists all the experiments. Executed experiments are shown in green,
+         failed ones are shown in red, running ones in yellow, and the non
+         executed ones in the default command-line color. With the argument
+         ``--detailed`` it will show every single run. With ``--compact`` all
+         runs with the same experiment will be grouped together. The ``--full``
+         option forces simexpal to display the full experiment name.
+
+:launch  Launches all the non executed experiments.
+
+:print   Displays all experimental output, including error outputs, on the command-line.
+
+:purge   Deletes the experimental data. To confirm this action it needs the ``-f`` argument.
+
+:kill    Terminates jobs submitted to or started by Slurm. To confirm this
+         action it needs the ``-f`` argument.
 
 All the above actions can be applied to a subset of experiments according to a `selection option`,
 which can be specified as an additional argument. Supported selection options are:
