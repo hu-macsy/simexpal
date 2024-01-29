@@ -536,7 +536,7 @@ Builds and Revisions
 --------------------
 
 To make sure that experiments always run using the same program binaries,
-simexpal can manage internal projects as well as external git repositories,
+simexpal can manage internal projects as well as external Git repositories,
 automatizing the build process.
 
 Automated builds are controlled by the ``builds`` and ``revisions`` stanzas
