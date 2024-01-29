@@ -40,21 +40,46 @@
 		},
 		"slurm_settings": {
 			"type": "object",
-			"properties": {
-				"num_nodes": {
-					"type": ["integer", "string"],
-					"minimum": 1
+			"allOf": [
+				{
+					"not": {
+						"anyOf": [
+							{
+								"required": ["exclusive", "num_nodes"],
+								"properties": {
+									"exclusive": { "const": true }
+								}
+							},
+							{
+								"required": ["exclusive", "num_threads"],
+								"properties": {
+									"exclusive": { "const": true }
+								}
+							}
+						]
+					}
 				},
-				"procs_per_node": {
-					"type":  ["integer", "string"],
-					"minimum": 1
-				},
-				"num_threads": {
-					"type": ["integer", "string"],
-					"minimum": 1
-				},
-				"slurm_args": {"$ref": "#/definitions/str_or_str_list"}
-			}
+				{
+					"properties": {
+						"num_nodes": {
+							"type": ["integer", "string"],
+							"minimum": 1
+						},
+						"procs_per_node": {
+							"type":  ["integer", "string"],
+							"minimum": 1
+						},
+						"num_threads": {
+							"type": ["integer", "string"],
+							"minimum": 1
+						},
+						"slurm_args": {"$ref": "#/definitions/str_or_str_list"},
+						"exclusive": {
+							"type": "boolean"
+						}
+					}
+				}
+			]
 		}
 	},
 
@@ -442,6 +467,7 @@
 							"num_nodes": {},
 							"procs_per_node": {},
 							"num_threads": {},
+							"exclusive": {},
 							"slurm_args": {}
 						},
 						"additionalProperties": false
@@ -481,6 +507,7 @@
 										"num_nodes": {},
 										"procs_per_node": {},
 										"num_threads": {},
+										"exclusive": {},
 										"slurm_args": {}
 									},
 									"additionalProperties": false
@@ -511,6 +538,7 @@
 										"num_nodes": {},
 										"procs_per_node": {},
 										"num_threads": {},
+										"exclusive": {},
 										"slurm_args": {}
 									},
 									"additionalProperties": false
@@ -567,6 +595,7 @@
 													"num_nodes": {},
 													"procs_per_node": {},
 													"num_threads": {},
+													"exclusive": {},
 													"slurm_args": {}
 												},
 												"additionalProperties": false

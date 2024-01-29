@@ -125,12 +125,15 @@ class SlurmLauncher(common.Launcher):
 		sbatch_args = ['sbatch', '-J', experiment.display_name]
 		if self.queue:
 			sbatch_args += ['-p', self.queue]
-		if ps and ps['num_nodes']:
-			sbatch_args += ['-N', str(ps['num_nodes'])]
+		if not experiment.is_effective_exclusive:
+			if ps and ps['num_nodes']:
+				sbatch_args += ['-N', str(ps['num_nodes'])]
+			if ts and ts['num_threads']:
+				sbatch_args += ['-c', str(ts['num_threads'])]
+		else:
+			sbatch_args += ['--exclusive']
 		if ps and ps['procs_per_node']:
 			sbatch_args += ['--ntasks-per-node', str(ps['procs_per_node'])]
-		if ts and ts['num_threads']:
-			sbatch_args += ['-c', str(ts['num_threads'])]
 		log_pattern = '%A-%a' if use_array else '%A'
 		sbatch_args.extend(['-o', os.path.join(cfg.basedir, 'aux/_slurm/' + log_pattern + '.out'),
 				'-e', os.path.join(cfg.basedir, 'aux/_slurm/' + log_pattern + '.err')])
