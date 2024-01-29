@@ -67,16 +67,12 @@ def merge_sort(array, min_block_size, min_block_sort_algorithm):
 			j = j + 1
 		k = k + 1
 
-	if i < len(left_array):
-		while i < len(left_array):
-			array[k] = left_array[i]
-			i = i + 1
-			k = k + 1
-	else:
-		while j < len(right_array):
-			array[k] = right_array[j]
-			j = j + 1
-			k = k + 1
+	larger_array, index = (left_array, i) if i < len(left_array) else (right_array, j)
+
+	while index < len(larger_array):
+		array[k] = larger_array[index]
+		index = index + 1
+		k = k + 1
 
 	return array
 
