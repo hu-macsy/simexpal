@@ -6,7 +6,7 @@
 
 # simexpal 
 
-_simexpal_ is a python based tool to setup, manage, launch, monitor, and
+_simexpal_ is a Python based tool to setup, manage, launch, monitor, and
 evaluate algorithmic experiments. If you can not wait to try it out and dive
 into it, you may find our [quick start
 guide](https://simexpal.readthedocs.io/en/latest/quick_start.html) handy. 
@@ -26,7 +26,7 @@ easy to rerun. When describing the necessary steps, even users with no knowledge
 of _simexpal_ should be able to quickly setup and execute the described
 experiments.
 
-_simexpal_ consists of both a command line interface (CLI) utility and a python
+_simexpal_ consists of both a command line interface (CLI) utility and a Python
 package. While the CLI can be used to perform many common tasks with minimal
 configuration, the Python package can be employed when more extensive
 customization is necessary.
