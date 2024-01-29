@@ -15,8 +15,8 @@ valid_experiments = ['../../examples/sorting',
                      '../../examples/download_instances'
                      ]
 
-invalid_experiments = ['experiments_ymls/undefined_axes',
-                       'experiments_ymls/undefined_variant'
+invalid_experiments = [('experiments_ymls/undefined_axes', 'Axis block.size does not exist'),
+                       ('experiments_ymls/undefined_variant', 'Variant undefined-variant does not exist')
                        ]
 
 @pytest.mark.parametrize('rel_yml_path', yml_dirs)
@@ -44,12 +44,14 @@ def test_valid_experiments(rel_exp_path):
 
     assert isinstance(cfg, base.Config)
 
-@pytest.mark.parametrize('rel_exp_path', invalid_experiments)
-def test_invalid_experiments(rel_exp_path):
+@pytest.mark.parametrize('rel_exp_path, error_message', invalid_experiments)
+def test_invalid_experiments(rel_exp_path, error_message):
     experiments_dir = os.path.join(file_dir, rel_exp_path)
     cfg = base.config_for_dir(experiments_dir)
 
     assert isinstance(cfg, base.Config)
 
-    with pytest.raises(RuntimeError):
+    with pytest.raises(RuntimeError) as error:
         a = list(cfg.discover_all_runs())
+
+    assert error_message == str(error.value)
