@@ -7,6 +7,11 @@ simexpal.egg-info/
 *aux/
 *instances/
 
+validation.cache
+
 examples/*/validation.cache
 examples/*/status.cache
 examples/sorting_cpp/builds/*
+
+tests/builds/experiments_ymls/vcs_less/dev-builds/*
+tests/builds/experiments_ymls/vcs_less/develop/vcs-less@main/*
