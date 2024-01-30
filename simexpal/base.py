@@ -1191,9 +1191,7 @@ class Experiment:
 				))
 			s = variant
 
-		if s is not None:
-			return s.process_settings
-		return self.info.process_settings
+		return s.process_settings if s is not None else self.info.process_settings
 
 	@property
 	def effective_thread_settings(self):
@@ -1208,9 +1206,7 @@ class Experiment:
 				))
 			s = variant
 
-		if s is not None:
-			return s.thread_settings
-		return self.info.thread_settings
+		return s.thread_settings if s is not None else self.info.thread_settings
 
 	@property
 	def is_exclusive(self):
