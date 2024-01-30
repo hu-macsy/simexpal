@@ -1,0 +1,17 @@
+# This file contains instances to test the instdir property and
+# the instance subdir property
+instdir: test_instances
+
+instances:
+  - repo: local
+    subdir: 'subdir1'
+    items:
+    - name: 'instance1'
+    - name: 'instance2'
+  - repo: local
+    subdir: 'subdir2'
+    items:
+    - name: 'instance3'
+  - repo: local
+    items:
+    - name: 'instance4'
