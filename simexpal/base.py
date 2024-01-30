@@ -1057,7 +1057,7 @@ class Variant:
 
 	@property
 	def is_exclusive(self):
-		return self.variant_yml.get('exclusive', False)
+		return self.variant_yml.get('exclusive', None)
 
 	@property
 	def slurm_args(self):
@@ -1100,7 +1100,7 @@ class ExperimentInfo:
 	
 	@property
 	def is_exclusive(self):
-		return self._exp_yml.get('exclusive', False)
+		return self._exp_yml.get('exclusive', None)
 
 	@property
 	def slurm_args(self):
@@ -1217,9 +1217,9 @@ class Experiment:
 		s = None
 		for variant in self.variation:
 			vs = variant.is_exclusive
-			if not vs:
+			if vs is None:
 				continue
-			if s:
+			if s is not None and s.is_exclusive != vs:
 				raise RuntimeError("Exclusive flag for experiments '{}' overridden by multiple variants: {}".format(
 					self.name, [s.name, variant.name]
 				))
