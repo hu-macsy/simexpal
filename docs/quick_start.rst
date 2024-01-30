@@ -548,8 +548,8 @@ For the remainder of this section, we will will use the `C++ implementation
 sorting example. We will use simexpal to resolve the dependency and to configure
 and compile the C++ project. 
 
-simexpal will invokes CMake commands to build the program; these steps are
-merely a list of shell input strings, thus you may use any build environment..
+simexpal will invoke CMake commands to build the program; these steps are merely
+a list of shell input strings, thus you may use any build environment..
 
 To enable automated builds, we need to add ``builds`` and ``revisions`` stanzas
 to ``experiments.yml``. For experiments, to use the correct project, we must use
