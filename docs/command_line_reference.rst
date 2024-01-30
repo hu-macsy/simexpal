@@ -50,13 +50,13 @@ It further supports the following additional arguments:
 :--delete-source: Deletes the source directory when purging.
 :--install:       Installs the build files.
 :--purge:         Deletes all related build files.
-:--recheckout:    Deletes the cloned git repository, re-clones, regenerates,
-                  reconfigures, re-compiles, and reinstalls it.
-:--recompile:     Re-compiles and reinstall the build.
-:--reconfigure:   Re-configures the build.
-:--regenerate:    Re-generates the build.
-:--reinstall:     Re-installs the build.
-:--reregenerate:  Re-generates, re-configures, re-compiles, and reinstalls the build.
+:--recheckout:    Deletes the cloned git repository, reclones, regenerates,
+                  reconfigures, recompiles, and reinstalls it.
+:--recompile:     Recompiles and reinstall the build.
+:--reconfigure:   Reconfigures the build.
+:--regenerate:    Regenerates the build.
+:--reinstall:     Reinstalls the build.
+:--reregenerate:  Regenerates, reconfigures, recompiles, and reinstalls the build.
 
 The ``--checkout``, ``--recheckout`` and ``--purge`` arguments further require the ``-f`` argument to confirm
 their actions.
@@ -68,18 +68,18 @@ Responsible to check, execute and remove experiments. The experiments command
 accepts the following actions flags:
 
 :info:   Displays all related instances, instance sets, variant axes and variants
-         of experiments on the command-line.
+         of experiments on the command line.
 
 :list:   Lists all the experiments. Executed experiments are shown in green,
          failed ones are shown in red, running ones in yellow, and the non
-         executed ones in the default command-line color. With the argument
-         ``--detailed`` it will show every single run. With ``--compact`` all
+         executed ones in the default command line color. With the argument
+         ``--detailed`` it will show every single run. With ``--compact``, all
          runs with the same experiment will be grouped together. The ``--full``
          option forces simexpal to display the full experiment name.
 
 :launch: Launches all the non executed experiments.
 
-:print:  Displays all experimental output, including error outputs, on the command-line.
+:print:  Displays all experimental output, including error outputs, on the command line.
 
 :purge:  Deletes the experimental data. To confirm this action it needs the ``-f`` argument.
 
@@ -95,9 +95,9 @@ which can be specified as an additional argument. Supported selection options ar
 :--run <r>:                Selects the single run given as
                            ``<experiment_display_name>/<instance>``, where
                            ``<experiment_display_name>`` is the name of the
-                           experiment as displayed on the command-line and
+                           experiment as displayed on the command line and
                            ``<instance>`` is the instance name as displayed on
-                           the command-line.
+                           the command line.
 :--experiment <e>:         Selects the experiment named *e*.
 :--failed:                 Selects all the failed experiments.
 :--instance <i>:           Selects all experiments with the instance named *i*.
@@ -115,7 +115,7 @@ supports the following flags:
 
 :install:         Installs missing instances. This can also trigger a download if an
                   instance resource is configured accordingly. With the argument
-                  ``--overwrite``, this command will re-install all instances and
+                  ``--overwrite``, this command will reinstall all instances and
                   overwrite existing ones.
 
 :list:            Lists all defined instances. Available instances are shown in green,
@@ -128,7 +128,7 @@ supports the following flags:
 queue
 -----
 
-Triggers actions, or prints information concerning the configured experiment
+Triggers actions or prints information concerning the configured experiment
 launcher and its queue.
 
 :daemon:       Prints info on the running daemon.
