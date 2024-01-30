@@ -213,19 +213,9 @@ def select_phases_from_cli(args):
 		return [phase for phase in simexpal.build.Phase if phase >= start_phase]
 
 	if args.recheckout:
-		if not args.f:
-			print("This would delete the local git repository for the build and reclone it (does not apply to"
-					" VCS-less dev-builds). Confirm this action by using the '-f' flag.")
-			return []
-		else:
-			return subsequent_phases(simexpal.build.Phase.CHECKOUT)
+		return subsequent_phases(simexpal.build.Phase.CHECKOUT)
 	elif args.checkout:
-		if not args.f:
-			print("This would delete the local git repository for the build and reclone it (does not apply to"
-					" VCS-less dev-builds). Confirm this action by using the '-f' flag.")
-			return []
-		else:
-			return [simexpal.build.Phase.CHECKOUT]
+		return [simexpal.build.Phase.CHECKOUT]
 	elif args.reregenerate:
 		return subsequent_phases(simexpal.build.Phase.REGENERATE)
 	elif args.regenerate:
@@ -361,7 +351,7 @@ def do_builds_make(args):
 	ordered_revisions, sel = select_builds_from_cli(args, cfg.all_non_dev_builds())
 	for revision in ordered_revisions:
 
-		simexpal.build.make_builds(cfg, revision,
+		simexpal.build.make_builds(args, cfg, revision,
 				[build.info for build in sel[revision]], [], [])
 
 builds_make_parser = builds_subcmds.add_parser('make', parents=[build_selection_parser])
@@ -385,7 +375,7 @@ def do_builds_remake(args):
 	ordered_revisions, sel = select_builds_from_cli(args, cfg.all_non_dev_builds())
 	for revision in ordered_revisions:
 
-		simexpal.build.make_builds(cfg, revision,
+		simexpal.build.make_builds(args, cfg, revision,
 				[build.info for build in sel[revision]], [build.name for build in sel[revision]], wanted_phases)
 
 builds_remake_parser = builds_subcmds.add_parser('remake', parents=[build_selection_parser])
@@ -407,7 +397,7 @@ def do_develop(args):
 		ordered_revisions, sel = select_builds_from_cli(args, cfg.all_dev_builds())
 		for revision in ordered_revisions:
 
-			simexpal.build.make_builds(cfg, revision,
+			simexpal.build.make_builds(args, cfg, revision,
 					[build.info for build in sel[revision]], [build.name for build in sel[revision]], wanted_phases)
 
 dev_builds_parser = main_subcmds.add_parser('develop', help='Build local programs',
