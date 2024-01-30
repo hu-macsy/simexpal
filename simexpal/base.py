@@ -1213,20 +1213,7 @@ class Experiment:
 		return self.info.thread_settings
 
 	@property
-	def is_effective_exclusive(self):
-		s = None
-		for variant in self.variation:
-			vs = variant.is_exclusive
-			if vs is None:
-				continue
-			if s is not None and s.is_exclusive != vs:
-				raise RuntimeError("Exclusive flag for experiments '{}' overridden by multiple variants: {}".format(
-					self.name, [s.name, variant.name]
-				))
-			s = variant
-
-		if s is not None:
-			return s.is_exclusive
+	def is_exclusive(self):
 		return self.info.is_exclusive
 
 	@property

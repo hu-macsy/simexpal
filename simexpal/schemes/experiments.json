@@ -501,7 +501,6 @@
 										"num_nodes": {},
 										"procs_per_node": {},
 										"num_threads": {},
-										"exclusive": {},
 										"slurm_args": {}
 									},
 									"additionalProperties": false
@@ -532,7 +531,6 @@
 										"num_nodes": {},
 										"procs_per_node": {},
 										"num_threads": {},
-										"exclusive": {},
 										"slurm_args": {}
 									},
 									"additionalProperties": false
@@ -589,7 +587,6 @@
 													"num_nodes": {},
 													"procs_per_node": {},
 													"num_threads": {},
-													"exclusive": {},
 													"slurm_args": {}
 												},
 												"additionalProperties": false
