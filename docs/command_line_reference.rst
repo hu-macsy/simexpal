@@ -83,8 +83,8 @@ accepts the following actions flags:
 
 :purge:  Deletes the experimental data. To confirm this action it needs the ``-f`` argument.
 
-:kill:   Terminates jobs submitted to or started by Slurm. To confirm this
-         action it needs the ``-f`` argument.
+:kill:   Terminates jobs submitted to or started by the scheduler. To confirm
+         this action it needs the ``-f`` argument.
 
 All the above actions can be applied to a subset of experiments according to a `selection option`,
 which can be specified as an additional argument. Supported selection options are:
