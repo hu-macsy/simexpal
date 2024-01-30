@@ -26,7 +26,7 @@
 				"type": "integer"
 			}
 		},
-		"build_arguments": {
+		"commands": {
 			"type": "array",
 			"items": {
 				"type": "object",
@@ -74,10 +74,10 @@
 					"git": {"type":  "string"},
 					"recursive-clone": {"type": "boolean"},
 					"requires": {"$ref": "#/definitions/str_or_str_list"},
-					"regenerate": {"$ref": "#/definitions/build_arguments"},
-					"configure": {"$ref": "#/definitions/build_arguments"},
-					"compile": {"$ref": "#/definitions/build_arguments"},
-					"install": {"$ref": "#/definitions/build_arguments"},
+					"regenerate": {"$ref": "#/definitions/commands"},
+					"configure": {"$ref": "#/definitions/commands"},
+					"compile": {"$ref": "#/definitions/commands"},
+					"install": {"$ref": "#/definitions/commands"},
 					"exports_python": {"type": "string"},
 					"extra_paths": {"$ref": "#/definitions/str_or_str_list"}
 				},
@@ -134,6 +134,7 @@
 								},
 								"extra_args": {"$ref": "#/definitions/str_list"},
 								"set": {"$ref": "#/definitions/str_or_str_list"},
+								"postprocess": {"$ref": "#/definitions/commands"},
 								"items": {
 									"oneOf": [
 										{
@@ -171,6 +172,7 @@
 								"extensions": {"$ref": "#/definitions/str_list"},
 								"extra_args": {"$ref": "#/definitions/str_list"},
 								"set": {"$ref": "#/definitions/str_or_str_list"},
+								"postprocess": {"$ref": "#/definitions/commands"},
 								"items": {
 									"oneOf": [
 										{
@@ -216,6 +218,7 @@
 								"repo": {"const": "local"},
 								"extra_args": {"$ref": "#/definitions/str_list"},
 								"set": {"$ref": "#/definitions/str_or_str_list"},
+								"postprocess": {"$ref": "#/definitions/commands"},
 								"items": {
 									"type": "array",
 									"items": {
@@ -256,7 +259,7 @@
 											"url": {"type": "string"},
 											"extra_args": {"$ref": "#/definitions/str_list"},
 											"set": {"$ref": "#/definitions/str_or_str_list"},
-											"postprocess": {"const": "to_edgelist"},
+											"postprocess": {"$ref": "#/definitions/commands"},
 											"items": {
 												"oneOf": [
 													{
@@ -296,7 +299,7 @@
 											"commit": {"type": "string"},
 											"git_subdir": {"type": "string"},
 											"set": {"$ref": "#/definitions/str_or_str_list"},
-											"postprocess": {"const": "to_edgelist"},
+											"postprocess": {"$ref": "#/definitions/commands"},
 											"items": {
 												"oneOf": [
 													{
@@ -371,7 +374,17 @@
 									"enum": ["local", "konect", "snap"]
 								},
 								"repo-subdir": {"type": "string"},
-								"postprocess": {"const": "to_edgelist"},
+								"postprocess": {
+									"oneOf": [
+										{
+											"const": "to_edgelist"
+										},
+										{
+											"$ref": "#/definitions/commands"
+										}
+
+									]
+								},
 								"extra_args": {"$ref": "#/definitions/str_list"},
 								"set": {"$ref": "#/definitions/str_or_str_list"},
 								"items": {

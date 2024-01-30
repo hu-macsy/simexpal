@@ -22,12 +22,16 @@ Instances
 This entry is a list of instances that will be used for experiments. The following keys are
 used for specifying instances:
 
+- ``args``: list of postprocessing arguments
+- ``environ``: dictionary of (environment variable, value)-pairs
 - ``extensions``: list of extensions that the instance has
 - ``files``: list of files the instance consists of
 - ``items``: list of instances
 - ``name``: name of the instance (used when dealing with instances that consist of unrelated files)
+- ``postprocess``: list or string of postprocessing arguments
 - ``repo``: source of instances
 - ``set``: list of sets the instance belongs to
+- ``workdir``: path of the working directory
 
 For detailed usage examples, see the :ref:`Instances` page.
 

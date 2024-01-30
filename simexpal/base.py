@@ -763,64 +763,191 @@ class Instance:
 	def install(self):
 		from . import instances
 
-		global DID_WARN_KONECT
-
-		if self.check_available() or self.is_fileless:
+		if self.is_fileless:
 			return
 
-		util.try_mkdir(self._cfg.instance_dir())
+		instance_dir = self._cfg.instance_dir()
+		util.try_mkdir(instance_dir)
 
-		partial_path = os.path.join(self._cfg.instance_dir(), self.unique_filename)
-		if 'repo' in self._inst_yml:
+		if not self.check_available():
+			if 'repo' in self._inst_yml:
 
-			if self._inst_yml['repo'] == 'local':
-				return
-			elif self._inst_yml['repo'] == 'konect':
-				if not DID_WARN_KONECT:
-					print("Downloading instances from konect is no longer possible.")
-					DID_WARN_KONECT = True
-				return
+				global DID_WARN_KONECT
 
-			print("Downloading instance '{}' from {} repository".format(self.shortname,
-					self._inst_yml['repo']))
+				if self._inst_yml['repo'] == 'local':
+					return
+				elif self._inst_yml['repo'] == 'konect':
+					if not DID_WARN_KONECT:
+						print("Downloading instances from konect is no longer possible.")
+						DID_WARN_KONECT = True
+					return
+				else:
+					print("Downloading instance '{}' from {} repository".format(
+						self.shortname,	self._inst_yml['repo']))
 
-			instances.download_instance(self._inst_yml,
-					self.config.instance_dir(), self.unique_filename, partial_path, '.post0')
-		elif 'generator' in self._inst_yml:
-			import subprocess
+					instances.download_instance(self._inst_yml, instance_dir, self.unique_filename,
+						os.path.join(instance_dir, self.unique_filename), '.post0')
 
-			def substitute(p):
-				if p == 'INSTANCE_FILENAME':
-					return self.unique_filename
-				raise RuntimeError("Unexpected parameter {}".format(p))
+			elif 'generator' in self._inst_yml:
+				import subprocess
 
-			print("Generating instance '{}'".format(self.shortname))
+				def substitute(p):
+					if p == 'INSTANCE_FILENAME':
+						return self.unique_filename
+					raise RuntimeError("Unexpected parameter {}".format(p))
 
-			assert isinstance(self._inst_yml['generator']['args'], list)
-			cmd = [util.expand_at_params(arg_tmpl, substitute) for arg_tmpl
-					in self._inst_yml['generator']['args']]
+				print("Generating instance '{}'".format(self.shortname))
 
-			with open(partial_path + '.gen', 'w') as f:
-				subprocess.check_call(cmd, cwd=self.config.basedir,
-						stdout=f, stderr=subprocess.PIPE)
-			os.rename(partial_path + '.gen', partial_path + '.post0')
-		elif 'method' in self._inst_yml:
-			print(f"Downloading instance '{self.shortname}' with method '{self.method}'")
+				assert isinstance(self._inst_yml['generator']['args'], list)
+				cmd = [util.expand_at_params(arg_tmpl, substitute) for arg_tmpl
+						in self._inst_yml['generator']['args']]
 
-			instances.download_instance(self._inst_yml,
-					self.config.instance_dir(), self.unique_filename, partial_path, '.post0')
-		else:
-			raise RuntimeError(f"Unknown installation option for instance '{self.shortname}'")
+				partial_path = os.path.join(instance_dir, self.unique_filename)
+				with open(partial_path + '.gen', 'w') as f:
+					subprocess.check_call(cmd, cwd=self.config.basedir,
+							stdout=f, stderr=subprocess.PIPE)
+				os.rename(partial_path + '.gen', partial_path + '.post0')
+			elif 'method' in self._inst_yml:
+				print(f"Downloading instance '{self.shortname}' with method '{self.method}'")
+
+				instances.download_instance(self._inst_yml,	instance_dir, self.unique_filename,
+					os.path.join(instance_dir, self.unique_filename), '.post0')
+			else:
+				raise RuntimeError(f"Unknown installation option for instance '{self.shortname}'")
 
 		stage = 0
+		filenames = self.filenames
 		if 'postprocess' in self._inst_yml:
-			assert self._inst_yml['postprocess'] == 'to_edgelist'
-			instances.convert_to_edgelist(self._inst_yml,
-					partial_path + '.post0', partial_path + '.post1')
-			os.unlink(partial_path + '.post0')
-			stage = 1
 
-		os.rename(partial_path + '.post{}'.format(stage), partial_path)
+			did_work = False
+			postprocessed = os.path.isfile(os.path.join(instance_dir, self.yml_name) + '.postprocessed')
+			if not postprocessed:
+
+				# Make sure that the .post0 files exist.
+				# For cases like 'repo: local' instances, adding the 'postprocess' key
+				# after downloading the instance or re-postprocessing instances.
+				for file in filenames:
+					if not os.path.isfile(os.path.join(instance_dir, file + '.post0')):
+						os.rename(os.path.join(instance_dir, file), os.path.join(instance_dir, file + '.post0'))
+
+				print("simexpal: Start postprocessing of instance '{}'".format(self.shortname))
+				if isinstance(self._inst_yml['postprocess'], str):
+					assert self._inst_yml['postprocess'] == 'to_edgelist'
+
+					partial_path = os.path.join(instance_dir, self.unique_filename)
+					try:
+						print("simexpal: Converting instance '{}' to edge list format".format(self.shortname))
+						instances.convert_to_edgelist(self._inst_yml, partial_path + '.post0', partial_path + '.post1')
+						os.rename(partial_path + '.post0', partial_path + '.original')
+					except RuntimeError as e:
+						print("simexpal: An error occurred while postprocessing the instance '{}': {}".format(
+							self.shortname, e))
+						print("simexpal: Restoring original instance files")
+						os.rename(partial_path + '.post0', partial_path)
+						print("simexpal: Skipping postprocessing of instance '{}'".format(self.shortname))
+						return
+
+					stage = 1
+					util.touch(os.path.join(instance_dir, self.yml_name) + '.postprocessed')
+					did_work = True
+				else:
+					assert isinstance(self._inst_yml['postprocess'], list)
+
+					import subprocess
+					import shutil
+
+					def get_qualified_filename(identifier):
+						if identifier.isdigit():
+							identifier = int(identifier)
+							if not self.has_multi_files:
+								raise RuntimeError(
+									f"Instance '{self.shortname}' does not have any files specified in the experiments.yml"
+								) from None
+							if len(self.filenames) <= identifier:
+								raise IndexError('File index out of range: {}'.format(identifier))
+							return os.path.join(instance_dir, filenames[identifier] + '.post0')
+						else:
+							if not self.has_multi_ext:
+								raise RuntimeError(
+									f"Instance '{self.shortname}' does not have any extensions specified in the experiments.yml"
+								) from None
+							if identifier not in self.extensions:
+								raise RuntimeError(
+									f"Unexpected file extension for instance '{self.shortname}': .{identifier}"
+								) from None
+							return os.path.join(instance_dir, self.yml_name + '.' + identifier + '.post0')
+
+					def substitute(var):
+						if var == 'BASE_DIR':
+							return self._cfg.basedir
+						elif var == 'INSTANCE_DIR':
+							return instance_dir
+						elif var == 'INSTANCE':
+							return os.path.join(instance_dir, self.yml_name + '.post0')
+						elif var.startswith('INSTANCE:'):
+							return get_qualified_filename(var.split(':')[1])
+
+					def prepend_env(var, items):
+						if var in os.environ:
+							return ':'.join(items) + ':' + os.environ[var]
+						return ':'.join(items)
+
+					def do_step(step_yml, default_workdir=None):
+						workdir = default_workdir
+						if 'workdir' in step_yml:
+							workdir = util.expand_at_params(step_yml['workdir'], substitute)
+
+						environ = os.environ.copy()
+						if 'environ' in step_yml:
+							for (var, value) in step_yml['environ'].items():
+								environ[var] = prepend_env(var, util.expand_at_params(value, substitute))
+
+						if isinstance(step_yml['args'], list):
+							shell = False
+							args = [util.expand_at_params(arg, substitute) for arg in step_yml['args']]
+						else:
+							assert isinstance(step_yml['args'], str)
+							shell = True
+							args = util.expand_at_params(step_yml['args'], substitute)
+
+						subprocess.check_call(args, cwd=workdir, env=environ, shell=shell)
+
+					# Preserve original files before postprocessing.
+					for file in filenames:
+						with open(os.path.join(instance_dir, file + '.post0'), 'rb') as f_in:
+							with open(os.path.join(instance_dir, file + '.original'), 'wb') as f_out:
+								shutil.copyfileobj(f_in, f_out)
+
+					for command_yml in self._inst_yml['postprocess']:
+						try:
+							do_step(command_yml, instance_dir)
+						except Exception as e:
+							print("simexpal: An error occurred while postprocessing the instance '{}': {}".format(
+								self.shortname, e))
+							print("simexpal: Restoring original instance files")
+							for file in filenames:
+								os.rename(os.path.join(instance_dir, file + '.original'), os.path.join(instance_dir, file))
+								os.unlink(os.path.join(instance_dir, file + '.post0'))
+							print("simexpal: Skipping postprocessing of instance '{}'".format(self.shortname))
+							return
+
+					for file in filenames:
+						os.rename(os.path.join(instance_dir, file + '.post0'), os.path.join(instance_dir, file + '.post1'))
+
+					stage = 1
+					util.touch(os.path.join(instance_dir, self.yml_name) + '.postprocessed')
+					did_work = True
+
+			if not did_work:
+				print("simexpal: No postprocessing to do for instance '{}'".format(self.shortname))
+			else:
+				print("simexpal: Finished postprocessing of instance '{}'".format(self.shortname))
+
+		for file in filenames:
+			try:
+				os.rename(os.path.join(instance_dir, file + '.post{}'.format(stage)), os.path.join(instance_dir, file))
+			except FileNotFoundError:
+				pass
 
 	def run_transform(self, transform, out_path):
 		assert transform == 'to_edgelist'

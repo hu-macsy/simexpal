@@ -302,7 +302,10 @@ def do_instances_install(args):
 
 	for instance in cfg.all_instances():
 		if args.overwrite:
-			util.try_rmfile(os.path.join(cfg.instance_dir(), instance.unique_filename))
+			fullpath = instance.fullpath
+			util.try_rmfile(fullpath)
+			util.try_rmfile(fullpath + '.postprocessed')
+			util.try_rmfile(fullpath + '.original')
 		instance.install()
 
 instances_install_parser = instances_subcmds.add_parser('install')

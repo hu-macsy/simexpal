@@ -1,0 +1,62 @@
+# This file contains postprocessed SNAP, local, multiple extension
+# arbitrary file, URL and Git instances.
+instances:
+  # SNAP Instances
+  - repo: snap
+    items:
+      - 'facebook_combined'
+      - 'cit-HepTh'
+    postprocess: to_edgelist
+  - repo: snap
+    items:
+      - 'ca-CondMat'
+      - 'cit-HepPh'
+    postprocess:
+      - args: ['echo', '1', '@INSTANCE@']
+  # Local Instances
+  - repo: local
+    items:
+      - 'instance1'
+      - 'instance2'
+    postprocess:
+      - args: ['echo', '1', '@INSTANCE@']
+  # Multiple Extensions
+  - repo: local
+    extensions:
+      - 'graph'
+      - 'xyz'
+    items:
+      - 'instance3'
+      - 'instance4'
+    postprocess:
+      - args: ['echo', '1', '@INSTANCE:graph@']
+      - args: ['echo', '2', '@INSTANCE:xyz@']
+  # Arbitrary Files
+  - repo: local
+    items:
+      - name: foo
+        files:
+          - 'instance5'
+          - 'instance6'
+    postprocess:
+      - args: ['echo', '1', '@INSTANCE:0@']
+      - args: ['echo', '2', '@INSTANCE:1@']
+  # URL Instances
+  - method: url
+    url: 'https://raw.githubusercontent.com/hu-macsy/simexpal/master/simexpal/schemes/@INSTANCE_FILENAME@'
+    items:
+      - 'experiments.json'
+      - 'launchers.json'
+    postprocess:
+      - args: ['echo', '1', '@INSTANCE@']
+  # Git Instances
+  - method: git
+    git: 'https://github.com/hu-macsy/simexpal'
+    repo_name: 'foo'
+    commit: 'master'
+    items:
+      - 'setup.py'
+      - 'pytest.ini'
+    postprocess:
+      - args: ['echo', '1', '@INSTANCE@']
+
