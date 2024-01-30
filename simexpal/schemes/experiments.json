@@ -45,12 +45,6 @@
 					"not": {
 						"anyOf": [
 							{
-								"required": ["exclusive", "num_nodes"],
-								"properties": {
-									"exclusive": { "const": true }
-								}
-							},
-							{
 								"required": ["exclusive", "num_threads"],
 								"properties": {
 									"exclusive": { "const": true }
