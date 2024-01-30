@@ -38,7 +38,7 @@ Local Instances
 ---------------
 
 To add local instances to the ``instances`` key, we add a list of dictionaries with two keys
-to its value:
+and an optional third key to its value:
 
 - ``repo``:   source of the instances
 - ``subdir``: subdirectory of the instances in the ``instdir`` directory
