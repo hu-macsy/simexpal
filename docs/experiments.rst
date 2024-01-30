@@ -33,10 +33,10 @@ In this section we will see how to specify experiments with different kinds of :
 Experiments with Local/Remote Instances
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Assuming we have a ``./sort.py`` file in the same directory as the ``experiments.yml`` that
-takes a keyword argument ``--algo`` and a path to a single
-(:ref:`local <LocalInstances>`/:ref:`remote <RemoteInstances>`) instance as input, we can define
-our ``experiments.yml`` as follows:
+Assuming we have a ``./my_sort.py`` file in the same directory as the
+``experiments.yml`` that takes a keyword argument ``--algo`` and a path to a
+single (:ref:`local <LocalInstances>`/:ref:`remote <RemoteInstances>`) instance
+as input, we can define our ``experiments.yml`` as follows:
 
 .. code-block:: YAML
    :linenos:
@@ -44,7 +44,7 @@ our ``experiments.yml`` as follows:
 
    experiments:
      - name: insertion-sort
-       args: ['./sort.py', '--algo=insertion-sort', '@INSTANCE@']
+       args: ['./my_sort.py', '--algo=insertion-sort', '@INSTANCE@']
        stdout: out
 
 In the examples above we created an experiment named `insertion-sort`. As experiment arguments we have
@@ -54,7 +54,7 @@ a list of strings (instead of one space separated string). Note that the :ref:`@
 
 If the instances have :ref:`InstanceExtraArguments`, we further need to add the :ref:`@-variable <AtVariables>`
 ``@EXTRA_ARGS@`` to the experiment arguments, e.g,
-``args: ['./sort.py', '--algo=insertion-sort', '@INSTANCE@', '@EXTRA_ARGS@']`` for the example above.
+``args: ['./my_sort.py', '--algo=insertion-sort', '@INSTANCE@', '@EXTRA_ARGS@']`` for the example above.
 ``@EXTRA_ARGS@`` will resolve to the specified extra arguments of the respective instance (and also the used
 :ref:`variants <ExperimentsWithVariants>`, see below).
 

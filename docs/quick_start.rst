@@ -52,7 +52,7 @@ using multiple instances as input.
     This directory contains an ``experiments.yml`` file which describes the
     configuration of all instances and experiments. In this case each instance
     will be generated using the ``generate.py`` script. Each experiment calls
-    ``sort.py`` implementing the experiment given the parameters. ``eval.py`` is
+    ``my_sort.py`` implementing the experiment given the parameters. ``eval.py`` is
     a script that uses simexpal's Python interface to evaluate the experiment
     results.
 
@@ -193,12 +193,12 @@ instances. Please find the resources in our `example folder
 
 If you look at the `sorting directory
 <https://github.com/hu-macsy/simexpal/tree/master/examples/sorting>`_ in our
-examples, you will find `sort.py
-<https://github.com/hu-macsy/simexpal/blob/master/examples/sorting/sort.py>`_
+examples, you will find `my_sort.py
+<https://github.com/hu-macsy/simexpal/blob/master/examples/sorting/my_sort.py>`_
 including an implementation of the two algorithms *insertion sort* and *bubble
 sort*. 
 
-``sort.py`` expects two arguments: 
+``my_sort.py`` expects two arguments: 
 
 1. The algorithm name (i.e. *insertion-sort* or *bubble-sort*). 
 2. The path to the instance. 
@@ -225,7 +225,7 @@ Now we can run *insertion-sort* on the newly generate instance:
 
 .. code-block:: bash
 
-   python3 sort.py --algo=insertion-sort ./instances/random-500
+   python3 my_sort.py --algo=insertion-sort ./instances/random-500
 
 Output:
 
@@ -256,7 +256,7 @@ this point, our ``sorting`` directory looks like this:
 ::
 
   sorting
-  ├── sort.py
+  ├── my_sort.py
   ├── experiments.yml
   └── instances
       └── random_500.list
@@ -285,10 +285,10 @@ it's name *random-500* (no extension) to our instances stanza:
 
   experiments:
     - name: insertion-sort
-      args: ['./sort.py', '--algo=insertion-sort', '@INSTANCE@']
+      args: ['./my_sort.py', '--algo=insertion-sort', '@INSTANCE@']
       stdout: out
     - name: bubble-sort
-      args: ['./sort.py', '--algo=bubble-sort', '@INSTANCE@']
+      args: ['./my_sort.py', '--algo=bubble-sort', '@INSTANCE@']
       stdout: out
 
 After having completed this step, we can start using simexpal to run our
@@ -464,7 +464,7 @@ requiring you to duplicate the ``experiments`` stanza multiple times.
 
 As an example, imagine that you want to benchmark the running time of a *merge
 sort* algorithm using different minimum block sizes and sorting algorithms for
-these blocks. The ``sort.py`` script under ``examples/sorting`` provides an
+these blocks. The ``my_sort.py`` script under ``examples/sorting`` provides an
 implementation of *merge sort*.
 
 The following extends the original ``experiments.yml`` file with additional
@@ -475,7 +475,7 @@ variants for *merge sort* after we defined our instances:
     experiments:
       - name: 'merge-sort'
         stdout: out
-        args: ['python3', 'sort.py', '--algo=merge-sort', '@EXTRA_ARGS@', '@INSTANCE@']
+        args: ['python3', 'my_sort.py', '--algo=merge-sort', '@EXTRA_ARGS@', '@INSTANCE@']
 
     variants:
       - axis: 'block-size'
