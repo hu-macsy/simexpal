@@ -127,9 +127,8 @@ class SlurmLauncher(common.Launcher):
 			sbatch_args += ['-p', self.queue]
 		if experiment.is_exclusive:
 			sbatch_args += ['--exclusive']
-		else:
-			if ts and ts['num_threads']:
-				sbatch_args += ['-c', str(ts['num_threads'])]
+		if ts and ts['num_threads']:
+			sbatch_args += ['-c', str(ts['num_threads'])]
 		if ps and ps['num_nodes']:
 			sbatch_args += ['-N', str(ps['num_nodes'])]
 		if ps and ps['procs_per_node']:

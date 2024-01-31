@@ -40,40 +40,24 @@
 		},
 		"slurm_settings": {
 			"type": "object",
-			"allOf": [
-				{
-					"not": {
-						"anyOf": [
-							{
-								"required": ["exclusive", "num_threads"],
-								"properties": {
-									"exclusive": { "const": true }
-								}
-							}
-						]
-					}
+			"properties": {
+				"num_nodes": {
+					"type": ["integer", "string"],
+					"minimum": 1
 				},
-				{
-					"properties": {
-						"num_nodes": {
-							"type": ["integer", "string"],
-							"minimum": 1
-						},
-						"procs_per_node": {
-							"type":  ["integer", "string"],
-							"minimum": 1
-						},
-						"num_threads": {
-							"type": ["integer", "string"],
-							"minimum": 1
-						},
-						"slurm_args": {"$ref": "#/definitions/str_or_str_list"},
-						"exclusive": {
-							"type": "boolean"
-						}
-					}
+				"procs_per_node": {
+					"type":  ["integer", "string"],
+					"minimum": 1
+				},
+				"num_threads": {
+					"type": ["integer", "string"],
+					"minimum": 1
+				},
+				"slurm_args": {"$ref": "#/definitions/str_or_str_list"},
+				"exclusive": {
+					"type": "boolean"
 				}
-			]
+			}
 		}
 	},
 
