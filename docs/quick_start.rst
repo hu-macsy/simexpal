@@ -212,14 +212,14 @@ the *instances* folder at root level where the ``experiments.yml`` file is
 present. 
 
 For this example, we generate a new instance using the ``generate.py`` script.
-First we navigate to the ``sorting`` folder:
+First, we navigate to the ``sorting`` folder:
 
 .. code-block:: bash
 
   $ cd examples/sorting
 
-Then we generate a new instance file which contains 500 randomly generated
-integers in list form with one integer per line:
+Thereafter, we generate a new instance file which contains 500 randomly
+generated integers in list form with one integer per line:
 
 .. code-block:: bash
 
