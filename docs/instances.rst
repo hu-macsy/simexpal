@@ -38,18 +38,33 @@ Local Instances
 ---------------
 
 To add local instances to the ``instances`` key, we add a list of dictionaries with two keys
-to its value:
+and an optional third key to its value:
 
-- ``repo``: source of the instances
-- ``items``: a list of instances.
+- ``repo``:   source of the instances
+- ``subdir``: subdirectory of the instances in the ``instdir`` directory
+- ``items``:  a list of instances.
 
 An example of how to list a local set of instances is:
 
 .. literalinclude:: ./experiments.yml.example
    :linenos:
-   :lines: 1-7
+   :lines: 1-12
    :language: yaml
    :caption: How to list local instances in the experiments.yml file.
+
+The above setup resembles the following structure:
+
+::
+
+  example
+  ├── instances
+  │   ├── large
+  │   │   ├── partially_sorted_500.list
+  │   │   └──  random_500.list
+  │   └── small
+  │       ├── partially_sorted_100.list
+  │       └── random_100.list
+  └── experiments.yml
 
 .. _RemoteInstances:
 
