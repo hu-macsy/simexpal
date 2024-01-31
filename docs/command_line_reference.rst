@@ -92,7 +92,7 @@ which can be specified as an additional argument. Supported selection options ar
 :--all:                    Selects all the experiments.
 :--axes [axes...]:         Selects all experiments with the variant axes from
                            the space separated list of *axes*.
-:--run <r>:                Selects the single run given as
+:--run <r>:                Selects the single run *r* given as
                            ``<experiment_display_name>/<instance>``, where
                            ``<experiment_display_name>`` is the name of the
                            experiment as displayed on the command line and
@@ -103,7 +103,7 @@ which can be specified as an additional argument. Supported selection options ar
 :--instance <i>:           Selects all experiments with the instance named *i*.
 :--instset <i>:            Selects all experiments with the instance set named *i*.
 :--unfinished:             Selects all the unfinished experiments.
-:--revision <i>:           Selects all experiments with the revision named *r*.
+:--revision <r>:           Selects all experiments with the revision named *r*.
 :--variants [variants...]: Selects all experiments with the variants from the
                            space separated list of variants.
 
