@@ -8,7 +8,11 @@ Quick Start
 The following will introduce you to the most fundamental mechanics of simexpal.
 The quick start guide will explain simexpal installation, as well as the
 features: instance and input parameter management, launch experiments, monitor
-experiments, and evaluate experiments using the output data.
+experiments, and evaluate experiments using the output data. Thereafter, we will
+have a closer look at the different phases of experiments set up using simexpal
+including running experiments, evaluating results, managing instances,
+parameterize algorithms, builds and revisions, the run matrix, and launchers and
+support for batch schedulers.
 
 Installation
 ------------
