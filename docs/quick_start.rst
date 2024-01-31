@@ -390,7 +390,7 @@ Output:
 Managing Instances
 ------------------
 
-Before launching the experiments, we neede to make sure that all our instances
+Before launching the experiments, we need to make sure that all our instances
 are available. Instances can be checked with:
 
 .. code-block:: bash
