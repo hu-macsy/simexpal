@@ -14,10 +14,10 @@ instances:
 
 experiments:
   - name: insertion-sort
-    args: ['./my_sort.py', '@EXTRA_ARGS@', '--algo=insertion-sort']
+    args: ['./sort.py', '@EXTRA_ARGS@', '--algo=insertion-sort']
     stdout: out
   - name: bubble-sort
-    args: ['./my_sort.py', '@EXTRA_ARGS@', '--algo=bubble-sort']
+    args: ['./sort.py', '@EXTRA_ARGS@', '--algo=bubble-sort']
     stdout: out
 
 matrix:

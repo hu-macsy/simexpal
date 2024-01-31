@@ -1,44 +1,20 @@
 #!/usr/bin/env python3
 
-import argparse
-import sys
 from time import time
-import yaml
 import argparse
+import argparse
+import os
 import random
+import sys
+import yaml
 
-n_comparisons = 0
-n_swaps = 0
+script_dir = os.path.dirname( __file__ )
+my_sort_dir = os.path.join( script_dir, '..', 'sorting', )
+sys.path.append( my_sort_dir )
 
-def insertion_sort(array):
-	global n_comparisons
-	global n_swaps
+import my_sorting_algorithms
 
-	for i in range(1, len(array)):
-		elem = array[i]
-		for k in range(i):
-			n_comparisons += 1
-			if array[k] > elem:
-				break
-		for j in reversed(range(k + 1, i)):
-			n_swaps += 1
-			array[j + 1] = array[j]
-		array[k] = elem
-	return array
-
-def bubble_sort(array):
-	global n_comparisons
-	global n_swaps
-
-	for i in range(len(array)):
-		for j in reversed(range(i + 1, len(array))):
-			n_comparisons += 1
-			if array[j] < array[j - 1]:
-				n_swaps += 1
-				array[j], array[j - 1] = array[j - 1], array[j]
-	return array
-
-def write_result(algo, sorted_array, t):
+def write_result(algo, sorted_array, n_comparisons, n_swaps, t):
 	result_dict = {
 		'algo' : algo,
 		'result' : sorted_array,
@@ -61,17 +37,17 @@ def run_experiment(algo, array):
 	sorted_array = []
 	if algo == 'bubble-sort':
 		t = -time()
-		sorted_array = bubble_sort(array)
+		sorted_array, n_comparisons, n_swaps = my_sorting_algorithms.bubble_sort(array)
 		t += time()
 	elif algo == 'insertion-sort':
 		t = -time()
-		sorted_array = insertion_sort(array)
+		sorted_array, n_comparisons, n_swaps = my_sorting_algorithms.insertion_sort(array)
 		t += time()
 	else:
 		print("Unknown algorithm: ", algo, file=sys.stderr)
 		sys.exit(1)
 
-	write_result(algo, sorted_array, t)
+	write_result(algo, sorted_array, n_comparisons, n_swaps, t)
 
 def do_main():
 	parser = argparse.ArgumentParser()
