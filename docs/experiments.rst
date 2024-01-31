@@ -329,7 +329,7 @@ the ``experiments.yml``:
 - ``procs_per_node``: number of tasks to invoke on each node (slurm: ``--ntasks-per-node=n``)
 - ``num_threads``:    number of cpus required per task (slurm: ``-c``, ``--cpus-per-task=ncpus``)
 - ``num_nodes``:      number of nodes on which to run (N = min[-max]) (slurm: ``-N``, ``--nodes=N``)
-- ``exclusive``:      boolean to set the ``--exclusive`` flag, so the job allocation reserves all resources of a node
+- ``exclusive``:      boolean flag to run an experiment exclusively on specified computing resources (slurm: ``--exclusive``)
 
 .. code-block:: YAML
    :linenos:
