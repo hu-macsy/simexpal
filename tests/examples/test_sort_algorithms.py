@@ -20,4 +20,24 @@ def random_array():
     return [random.randint(1, max_int) for _ in range(array_size)]
 
 def test_insertion_sort(random_array):
-    assert my_sorting_algorithms.insertion_sort(random_array)[0] == sorted(random_array)
+    our_sorted_array, num_comparisons, num_swaps = my_sorting_algorithms.insertion_sort(random_array)
+
+    assert our_sorted_array == sorted(random_array)
+    assert num_comparisons > 0
+    assert num_swaps > 0
+
+def test_bubble_sort(random_array):
+    our_sorted_array, num_comparisons, num_swaps = my_sorting_algorithms.bubble_sort(random_array)
+
+    assert our_sorted_array == sorted(random_array)
+    assert num_comparisons > 0
+    assert num_swaps > 0
+
+def test_merge_sort(random_array):
+    min_blocksize: int = 10
+    block_algorithm = my_sorting_algorithms.bubble_sort
+    our_sorted_array, num_comparisons, num_swaps = my_sorting_algorithms.merge_sort(random_array, min_blocksize, block_algorithm)
+
+    assert our_sorted_array == sorted(random_array)
+    assert num_comparisons > 0
+    assert num_swaps > 0
