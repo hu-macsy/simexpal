@@ -43,10 +43,13 @@ def try_mkdir(path):
 
 def try_rmfile(path):
 	try:
-		os.remove(path)
+		if os.access(path, os.O_RDWR):
+			os.remove(path)
+			return True
 	except OSError as error:
 		if error.errno != errno.ENOENT:
 			raise
+	return False
 
 def try_rmtree(path):
 	try:

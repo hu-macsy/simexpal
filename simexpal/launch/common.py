@@ -26,7 +26,7 @@ def lock_run(run):
 	# can be considered a bug (or deliberate misuse) and will lead to hard failures.
 	try:
 		lockfd = os.open(run.aux_file_path('lock'),
-				os.O_RDONLY | os.O_CREAT | os.O_EXCL, mode=0)
+				os.O_RDONLY | os.O_CREAT | os.O_EXCL, mode=0o666)
 	except FileExistsError:
 		# TODO: Those warnings should be behind a flag.
 #				print("Warning: .lock file exists for experiment '{}', instance '{}'".format(
