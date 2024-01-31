@@ -21,8 +21,8 @@ where the ``experiments.yml`` file is located.
 builds
 ------
 
-Responsible to download Git repositories and install executables.
-It supports the following actions:
+Used to download Git repositories and install executables. It supports the
+following actions:
 
 :make: downloads a Git repository and executes all build commands.
 :purge: deletes all related build files. To confirm this action it needs the ``-f`` argument.
@@ -35,8 +35,9 @@ not specifying the ``--revisions`` argument will lead to the selection of every 
 develop
 -------
 
-Responsible to download Git repositories and install executables. It also allows you to redo arbitrary
-build steps after changing local Git files to take over the local changes.
+Used to download Git repositories and install executables. It also allows you to
+redo arbitrary build steps after changing local Git files to take over the local
+changes.
 
 The ``develop`` action can be applied to a subset of builds according to the ``--revisions`` and
 positional ``builds`` argument (analogously to how it works for the :ref:`simex builds <cli_builds>`
@@ -64,8 +65,8 @@ their actions.
 experiments
 -----------
 
-Responsible to check, execute and remove experiments. The experiments command
-accepts the following actions flags:
+Used to check, execute and remove experiments. The experiments command accepts
+the following actions flags:
 
 :info:   Displays all related instances, instance sets, variant axes and variants
          of experiments on the command line.
