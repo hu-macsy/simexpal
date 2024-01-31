@@ -110,8 +110,8 @@ which can be specified as an additional argument. Supported selection options ar
 instances
 ---------
 
-The instance command can check the availability, and install instances. It
-supports the following flags:
+The instance command can check the availability of instances, and install
+instances. It supports the following flags:
 
 :install:         Installs missing instances. This can also trigger a download if an
                   instance resource is configured accordingly. With the argument
