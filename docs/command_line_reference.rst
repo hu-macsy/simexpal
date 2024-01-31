@@ -121,7 +121,10 @@ instances. It supports the following flags:
 :list:            Lists all defined instances. Available instances are shown in green,
                   unavailable instances in red.
 
-:process:         Caches information about instances.
+:process:         This command will read in all available instances, read the
+                  count of vertices and edges per file and print it to a file
+                  with the same name as the instance with extension `.info`.
+                  This command is therefore specific for graph files.
 
 :run-transform:   Manually runs the defined transformation on instance files.
 
