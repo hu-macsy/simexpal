@@ -5,13 +5,13 @@ import subprocess
 
 from . import util
 
-def make_builds(args, cfg, revision, infos, wanted_builds, wanted_phases):
+def make_builds(cfg, revision, infos, wanted_builds, wanted_phases, reclone=False):
 	order = compute_order(cfg, infos)
 
 	print("simexpal: Making builds {} @ {}".format(', '.join([info.name for info in order]),
 			revision.name))
 	for info in order:
-		make_build_in_order(args, cfg, cfg.get_build(info.name, revision), wanted_builds, wanted_phases)
+		make_build_in_order(cfg, cfg.get_build(info.name, revision), wanted_builds, wanted_phases, reclone)
 
 def compute_order(cfg, desired):
 	class State(Enum):
@@ -65,7 +65,7 @@ class Phase(IntEnum):
 	COMPILE = 4
 	INSTALL = 5
 
-def make_build_in_order(args, cfg, build, wanted_builds, wanted_phases):
+def make_build_in_order(cfg, build, wanted_builds, wanted_phases, reclone):
 	if not build.revision.is_dev_build:
 		util.try_mkdir(cfg.basedir + '/builds/')
 		checkout_dir = build.clone_dir
@@ -265,22 +265,24 @@ def make_build_in_order(args, cfg, build, wanted_builds, wanted_phases):
 						generic_tag])
 			else:
 				branch = build.revision.version_for_build(build.name)
-				if os.path.isdir(build.source_dir):
+				if os.path.isdir(build.source_dir) and not reclone:
 					# Repository already cloned, check for local changes
 					status = subprocess.check_output(['git', 'status', '--porcelain'], cwd=build.source_dir)
-					if len(status) == 0:
-						# If there are no local changes, checkout the given branch
-						subprocess.check_call(['git', 'checkout', branch], cwd=build.source_dir)
-					else:
-						# If there are local changes, discard them
-						if not args.f:
-							print("This will discard the local changes for the build and checkout to the latest commit of the branch."
-			 						" Confirm this action by using the '-f' flag.")
-							return
-						else:
-							subprocess.check_call(['git', 'checkout', branch], cwd=build.source_dir)
+					if len(status) != 0:
+						print("There are local changes that have not yet been commited and pushed. Please clean them up before proceeding.")
+						return
+
+					# or non-pushed commits
+					unpushed_commits = subprocess.check_output(['git', 'log', '--branches', '--not', '--remotes'], cwd=build.source_dir)
+					if len(unpushed_commits) != 0:
+						print("There are local commits that have not yet been pushed. Please clean them up before proceeding.")
+						return
+
+					subprocess.check_call(['git', 'checkout', branch], cwd=build.source_dir)
+					subprocess.check_call(['git', 'pull'], cwd=build.source_dir)
 				else:
 					# Clone the branch of the repository into the build.source_dir
+					util.try_rmtree(build.source_dir)
 					util.try_mkdir(build.source_dir)
 
 					subprocess.check_call(['git', 'clone', build.info.git_repo, build.source_dir])
