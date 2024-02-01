@@ -1,16 +1,9 @@
 #!/usr/bin/env python3
 
-from time import time
 import argparse
-import argparse
-import os
-import random
 import sys
+from time import time
 import yaml
-
-script_dir = os.path.dirname( __file__ )
-my_sort_dir = os.path.join( script_dir, '..', 'sorting', )
-sys.path.append( my_sort_dir )
 
 import my_sorting_algorithms
 
@@ -32,7 +25,10 @@ def read_list(instance):
 	except IOError as error:
 		raise
 
-def run_experiment(algo, array):
+def run_experiment(algo, instance, blockalgorithm, blocksize):
+	n_comparisons: int = 0
+	n_swaps: int = 0
+	array = read_list(instance)
 	t = 0
 	sorted_array = []
 	if algo == 'bubble-sort':
@@ -43,6 +39,14 @@ def run_experiment(algo, array):
 		t = -time()
 		sorted_array, n_comparisons, n_swaps = my_sorting_algorithms.insertion_sort(array)
 		t += time()
+	elif algo == 'merge-sort':
+		t = -time()
+
+		chosen_blockalgorithm = my_sorting_algorithms.bubble_sort if blockalgorithm == 'bubble-sort' else my_sorting_algorithms.insertion_sort
+		sorted_array, n_comparisons, n_swaps = my_sorting_algorithms.merge_sort(array, blocksize, chosen_blockalgorithm)
+
+		t += time()
+
 	else:
 		print("Unknown algorithm: ", algo, file=sys.stderr)
 		sys.exit(1)
@@ -51,18 +55,12 @@ def run_experiment(algo, array):
 
 def do_main():
 	parser = argparse.ArgumentParser()
-	parser.add_argument('--seed', type=int, help="seed for random generator")
-	parser.add_argument('n', type=int, help="number of integers to generate")
-	parser.add_argument('--algo', type=str, choices=['bubble-sort', 'insertion-sort'])
+	parser.add_argument('--algo', type=str, choices=['bubble-sort', 'insertion-sort', 'merge-sort'])
+	parser.add_argument('--block_algorithm', type=str, choices=['bubble-sort', 'insertion-sort'], default='bubble-sort')
+	parser.add_argument('--block_size', type=int, default=50)
+	parser.add_argument('instance', type=str)
 
 	args = parser.parse_args()
-
-	numbers = []
-	random.seed(args.seed)
-	for i in range(args.n):
-		numbers.append(random.randint(1, 10e6))
-
-	args = parser.parse_args()
-	run_experiment(args.algo, numbers)
+	run_experiment(args.algo, args.instance, args.block_algorithm, args.block_size)
 
 do_main()

@@ -21,10 +21,18 @@ revisions:
       'simexpal': 'd8d421e3c2eaa32311a6c678b15e9e22ea0d8eac'
 
 instances:
-  - repo: local
+  - generator:
+      args: ['./generate.py', '--seed=1', '10000']
     items:
       - uniform-n1000-s1
+  - generator:
+      args: ['./generate.py', '--seed=2', '10000']
+    items:
       - uniform-n1000-s2
+  - generator:
+      args: ['./generate.py', '--seed=3', '10000']
+    items:
+      - uniform-n1000-s3
 
 experiments:
   - name: quick-sort
