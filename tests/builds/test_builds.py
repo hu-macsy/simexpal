@@ -12,7 +12,6 @@ def test_simex_d_vcs_less():
     revision = cfg.get_revision('main')
     vcs_less_build = cfg.get_build('vcs-less', revision)
 
-    # Passing None for args is fine since it's properties are not used for vcs-less builds
     build.make_builds(cfg, revision, [vcs_less_build.info], ['vcs-less'], [build.Phase.INSTALL])
 
     def check_files_in_dir(files, dir):
