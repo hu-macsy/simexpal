@@ -327,8 +327,9 @@ Currently, simexpal supports the following three ``sbatch`` parameters by using 
 the ``experiments.yml``:
 
 - ``procs_per_node``: number of tasks to invoke on each node (slurm: ``--ntasks-per-node=n``)
-- ``num_threads``: number of cpus required per task (slurm: ``-c``, ``--cpus-per-task=ncpus``)
-- ``num_nodes``: number of nodes on which to run (N = min[-max]) (slurm: ``-N``, ``--nodes=N``)
+- ``num_threads``:    number of cpus required per task (slurm: ``-c``, ``--cpus-per-task=ncpus``)
+- ``num_nodes``:      number of nodes on which to run (N = min[-max]) (slurm: ``-N``, ``--nodes=N``)
+- ``exclusive``:      boolean flag to run an experiment exclusively on specified computing resources (slurm: ``--exclusive``)
 
 .. code-block:: YAML
    :linenos:

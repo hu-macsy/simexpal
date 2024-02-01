@@ -1077,6 +1077,10 @@ class Variant:
 		return extract_thread_settings(self.variant_yml)
 
 	@property
+	def is_exclusive(self):
+		return self.variant_yml.get('exclusive', None)
+
+	@property
 	def slurm_args(self):
 		return self.variant_yml.get('slurm_args', [])
 
@@ -1114,6 +1118,10 @@ class ExperimentInfo:
 	@property
 	def thread_settings(self):
 		return extract_thread_settings(self._exp_yml)
+	
+	@property
+	def is_exclusive(self):
+		return self._exp_yml.get('exclusive', None)
 
 	@property
 	def slurm_args(self):
@@ -1204,9 +1212,7 @@ class Experiment:
 				))
 			s = variant
 
-		if s is not None:
-			return s.process_settings
-		return self.info.process_settings
+		return s.process_settings if s is not None else self.info.process_settings
 
 	@property
 	def effective_thread_settings(self):
@@ -1221,9 +1227,11 @@ class Experiment:
 				))
 			s = variant
 
-		if s is not None:
-			return s.thread_settings
-		return self.info.thread_settings
+		return s.thread_settings if s is not None else self.info.thread_settings
+
+	@property
+	def is_exclusive(self):
+		return self.info.is_exclusive
 
 	@property
 	def display_name(self):

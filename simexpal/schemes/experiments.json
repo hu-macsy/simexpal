@@ -53,7 +53,10 @@
 					"type": ["integer", "string"],
 					"minimum": 1
 				},
-				"slurm_args": {"$ref": "#/definitions/str_or_str_list"}
+				"slurm_args": {"$ref": "#/definitions/str_or_str_list"},
+				"exclusive": {
+					"type": "boolean"
+				}
 			}
 		}
 	},
@@ -445,6 +448,7 @@
 							"num_nodes": {},
 							"procs_per_node": {},
 							"num_threads": {},
+							"exclusive": {},
 							"slurm_args": {}
 						},
 						"additionalProperties": false
