@@ -180,6 +180,25 @@ def make_build_in_order(cfg, build, wanted_builds, wanted_phases, reclone):
 	def log_phase(step):
 		print("simexpal: Running {}-phase for build {}".format(step, build.name))
 
+	def do_develop_checkout(build, reclone):
+		branch = build.revision.version_for_build(build.name)
+		if os.path.isdir(build.source_dir) and not reclone:
+			# Repository already cloned, check for local changes
+			status = subprocess.check_output(['git', 'status', '--porcelain'], cwd=build.source_dir)
+			if len(status) != 0:
+				print("There are local changes that have not yet been commited and pushed. Please clean them up before proceeding.")
+				return
+
+			subprocess.check_call(['git', 'checkout', branch], cwd=build.source_dir)
+			subprocess.check_call(['git', 'pull'], cwd=build.source_dir)
+		else:
+			# Clone the branch of the repository into the build.source_dir
+			util.try_rmtree(build.source_dir)
+			util.try_mkdir(build.source_dir)
+
+			subprocess.check_call(['git', 'clone', build.info.git_repo, build.source_dir])
+			subprocess.check_call(['git', 'checkout', branch], cwd=build.source_dir)
+
 	did_work = False
 
 	def do_step(step_yml, default_workdir=None):
@@ -264,29 +283,7 @@ def make_build_in_order(cfg, build, wanted_builds, wanted_phases, reclone):
 						build.clone_dir,
 						generic_tag])
 			else:
-				branch = build.revision.version_for_build(build.name)
-				if os.path.isdir(build.source_dir) and not reclone:
-					# Repository already cloned, check for local changes
-					status = subprocess.check_output(['git', 'status', '--porcelain'], cwd=build.source_dir)
-					if len(status) != 0:
-						print("There are local changes that have not yet been commited and pushed. Please clean them up before proceeding.")
-						return
-
-					# or non-pushed commits
-					unpushed_commits = subprocess.check_output(['git', 'log', '--branches', '--not', '--remotes'], cwd=build.source_dir)
-					if len(unpushed_commits) != 0:
-						print("There are local commits that have not yet been pushed. Please clean them up before proceeding.")
-						return
-
-					subprocess.check_call(['git', 'checkout', branch], cwd=build.source_dir)
-					subprocess.check_call(['git', 'pull'], cwd=build.source_dir)
-				else:
-					# Clone the branch of the repository into the build.source_dir
-					util.try_rmtree(build.source_dir)
-					util.try_mkdir(build.source_dir)
-
-					subprocess.check_call(['git', 'clone', build.info.git_repo, build.source_dir])
-					subprocess.check_call(['git', 'checkout', branch], cwd=build.source_dir)
+				do_develop_checkout(build, reclone)
 
 			util.touch(os.path.join(checkout_dir, 'checkedout.simexpal'))
 
