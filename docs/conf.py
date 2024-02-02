@@ -2,11 +2,11 @@ import os, sys
 sys.path.insert(0, os.path.abspath('../simexpal'))
 
 project = 'simexpal'
-copyright = '2019, Eugenio Angriman, Alexander van der Grinten'
-author = 'Eugenio Angriman, Alexander van der Grinten'
+copyright = 'Humboldt-Universität zu Berlin, 2024'
+author = 'Florian Willich, Eugenio Angriman, Alexander van der Grinten'
 
 version = ''
-release = '1.0'
+release = '1.1'
 
 extensions = [
     'sphinx.ext.autodoc',
