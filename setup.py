@@ -8,7 +8,7 @@ with open('README.md', 'r') as f:
 setup(
 	# First, state all metadata about the package.
 	name='simexpal',
-	version='1.0',
+	version='1.1',
 	description='Tool to Simplify Experimental Algorithmics',
 	url='https://github.com/hu-macsy/simexpal',
 	author='Alexander van der Grinten, MACSy group HU-Berlin',
