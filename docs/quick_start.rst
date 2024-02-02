@@ -173,7 +173,7 @@ using multiple instances as input.
 
     ::
 
-        comparisons          swaps      time
+                        comparisons          swaps      time
         experiment                                          
         bubble-sort        499500.0  253437.333333  0.053750
         insertion-sort     241891.0  257609.000000  0.027219
