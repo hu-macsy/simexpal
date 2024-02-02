@@ -60,7 +60,7 @@ def do_main():
 	numbers = []
 	random.seed(args.seed)
 	for i in range(args.n):
-		numbers.append(random.randint(1, 10e6))
+		numbers.append(random.randint(1, int(10e6)))
 
 	args = parser.parse_args()
 	run_experiment(args.algo, numbers)
