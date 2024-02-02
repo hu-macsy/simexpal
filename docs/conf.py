@@ -6,7 +6,7 @@ copyright = 'Humboldt-Universität zu Berlin, 2024'
 author = 'Florian Willich, Eugenio Angriman, Alexander van der Grinten'
 
 version = ''
-release = '1.0'
+release = '1.1'
 
 extensions = [
     'sphinx.ext.autodoc',
