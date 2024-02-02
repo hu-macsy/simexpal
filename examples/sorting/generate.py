@@ -14,7 +14,7 @@ args = parser.parse_args()
 numbers = []
 random.seed(args.seed)
 for i in range(args.n):
-    numbers.append(random.randint(1, args.range))
+    numbers.append(random.randint(1, int(args.range)))
 
 with open(args.o, 'w') as f:
     for num in numbers:
