@@ -213,9 +213,19 @@ def select_phases_from_cli(args):
 		return [phase for phase in simexpal.build.Phase if phase >= start_phase]
 
 	if args.recheckout:
-		return subsequent_phases(simexpal.build.Phase.CHECKOUT)
+		if not args.f:
+			print("This would delete the local git repository for the build and reclone it (does not apply to"
+					" VCS-less dev-builds). Confirm this action by using the '-f' flag.")
+			return []
+		else:
+			return subsequent_phases(simexpal.build.Phase.CHECKOUT)
 	elif args.checkout:
-		return [simexpal.build.Phase.CHECKOUT]
+		if not args.f:
+			print("This would delete the local git repository for the build and reclone it (does not apply to"
+					" VCS-less dev-builds). Confirm this action by using the '-f' flag.")
+			return []
+		else:
+			return [simexpal.build.Phase.CHECKOUT]
 	elif args.reregenerate:
 		return subsequent_phases(simexpal.build.Phase.REGENERATE)
 	elif args.regenerate:
@@ -236,12 +246,10 @@ def select_phases_from_cli(args):
 
 phase_selection_parser = argparse.ArgumentParser(add_help=False)
 phase_selection_mechanism = phase_selection_parser.add_mutually_exclusive_group()
-phase_selection_mechanism.add_argument('--reclone', action='store_true',
-			help='Delete local build git repository, reclone, regenerate, reconfigure, recompile and reinstall it')
 phase_selection_mechanism.add_argument('--recheckout', action='store_true',
-			help='Checkout local build git repository, regenerate, reconfigure, recompile and reinstall it')
+			help='Delete local build git repository, reclone, regenerate, reconfigure, recompile and reinstall it')
 phase_selection_mechanism.add_argument('--checkout', action='store_true',
-			help='Checkout local build git repository')
+			help='Delete local git repository for build and (re-)clone it')
 phase_selection_mechanism.add_argument('--reregenerate', action='store_true',
 			help='Regenerate, reconfigure, recompile and reinstall build')
 phase_selection_mechanism.add_argument('--regenerate', action='store_true',
@@ -388,10 +396,6 @@ builds_remake_parser.set_defaults(cmd=do_builds_remake)
 def do_develop(args):
 	cfg = extl.base.config_for_dir()
 
-	# If user wants to reclone, execute all phases (but do clone instead of checkout)
-	if args.reclone:
-		args.recheckout = True
-
 	wanted_phases = select_phases_from_cli(args)
 	if not wanted_phases:
 		return
@@ -404,8 +408,7 @@ def do_develop(args):
 		for revision in ordered_revisions:
 
 			simexpal.build.make_builds(cfg, revision,
-					[build.info for build in sel[revision]], [build.name for build in sel[revision]], wanted_phases,
-					args.reclone)
+					[build.info for build in sel[revision]], [build.name for build in sel[revision]], wanted_phases)
 
 dev_builds_parser = main_subcmds.add_parser('develop', help='Build local programs',
 		aliases=['d'], parents=[phase_selection_parser, build_selection_parser])
