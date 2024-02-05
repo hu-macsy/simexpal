@@ -34,7 +34,7 @@ customization is necessary.
 ## Feature Set Summary
 
 The following is a non-exhaustive list of the functionality provided by
-SimexPal:
+_simexpal_:
 
 - **resolve external resources** such as Git repositories
 - describe and setup **build processes**
@@ -44,7 +44,7 @@ SimexPal:
 - **run and monitor** experiments on multiple computing platforms
 - **evaluate** experiment results
 
-## Why should I use SimexPal?
+## Why should I use _simexpal_?
 
 Whether you're a student, an algorithm enthusiast, or a researcher: developing
 experiments that can easily be reproduced will support the validity of your
@@ -86,7 +86,7 @@ in Network Analysis. Algorithms 2019, 12, 127. https://doi.org/10.3390/a12070127
 BibTex format (w/o abstract):
 
 ```tex
-@article{SimexPal2019,
+@article{simexpal2019,
   author         = {Angriman, Eugenio and van der Grinten, Alexander and von Looz, Moritz and Meyerhenke, Henning and Nöllenburg, Martin and Predari, Maria and Tzovas, Charilaos},
   title          = {Guidelines for Experimental Algorithmics: A Case Study in Network Analysis},
   journal        = {Algorithms},
