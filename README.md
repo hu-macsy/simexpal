@@ -58,20 +58,21 @@ hard- and software requirements, as well as to provide a clearly structured and
 well documented experiment setup. _simexpal_ will allow you to share your
 experiments with third parties, and it allows the third parties to validate your
 experimental results and findings with only a minimal description on how to
-build and run the experiments on your side.
+build and run the experiments on their side.
 
 Ultimately, _simexpal_ represents an algorithmic experiment management tool with
-which one can clearly define their experiment setup and execution, and therefore
-majorly contributing to the goal of reproducible experiments.  
+which one can clearly define their experiment setup and execution. Therefore, by
+using _simexpal_ one contributes to the goal of reproducible algorithmic
+experiments.  
 
 # Documentation
 
-Please see [readthedocs](https://simexpal.readthedocs.io) for documentation of
-the _simexpal_ features.
+Please see [readthedocs](https://simexpal.readthedocs.io) for our documentation
+of _simexpal_ features.
 
 Our documentation also includes a [quick start
-guide](https://simexpal.readthedocs.io/en/latest/quick_start.html) for a quick
-and easy step-by-step guide to install and use _simexpal_.
+guide](https://simexpal.readthedocs.io/en/latest/quick_start.html) including a
+step-by-step guide to install and use _simexpal_.
 
 # Reference
 
