@@ -352,6 +352,11 @@ def invoke_run(manifest):
 			return manifest.instance_dir + '/' + manifest.instance_name
 		elif p.startswith('INSTANCE:'):
 			return get_qualified_filename(p.split(':')[1])
+		elif p == 'INSTANCE_FILENAME':
+			if manifest.instance_is_filess:
+				raise RuntimeError(f"The instance '{manifest.instance}' is fileless. Did you forget to remove the @INSTANCE_FILENAME@ variable in the argument list of the experiment?")
+
+			return manifest.instance_name
 		elif p == 'REPETITION':
 			return str(manifest.repetition)
 		elif p == 'OUTPUT':
