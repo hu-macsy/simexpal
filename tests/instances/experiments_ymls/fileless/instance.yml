@@ -1,0 +1,11 @@
+# This file contains a fileless instance and an experiment that tries using the @-variable 'INSTANCE'.
+# Since that property is the full path to the instance file, it can not be used for fileless instances.
+instances:
+  - repo: local
+    items:
+      - name: fileless-instance
+        files: []
+
+experiments:
+  - name: empty-experiment
+    args: ['@INSTANCE@']

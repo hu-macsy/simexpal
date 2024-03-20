@@ -352,6 +352,9 @@ def invoke_run(manifest):
 			return manifest.instance_dir + '/' + manifest.instance_name
 		elif p.startswith('INSTANCE:'):
 			return get_qualified_filename(p.split(':')[1])
+		elif p == 'INSTANCE_FILENAME':
+			# @INSTANCE_FILENAME@ is only the instance name and hence can still be used for fileless instances
+			return manifest.instance_name
 		elif p == 'REPETITION':
 			return str(manifest.repetition)
 		elif p == 'OUTPUT':
