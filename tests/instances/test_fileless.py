@@ -21,6 +21,10 @@ def test_invalid_fileless_experiments_yml(rel_yml_path, error_message):
     cfg = Config(yml_dir, yml)
 
     for run in cfg.discover_all_runs():
+        if not common.lock_run(run):
+            return
+        common.create_run_file(run)
+
         manifest = common.compile_manifest(run)
 
         with pytest.raises(RuntimeError) as error:
