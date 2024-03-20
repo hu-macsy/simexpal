@@ -1,0 +1,11 @@
+# This file contains a fileless instance and an experiment that uses the @-variable 'INSTANCE_FILENAME'.
+instances:
+  - repo: local
+    items:
+      - name: fileless-instance
+        files: []
+
+experiments:
+  - name: empty-experiment
+    args: ['echo', '@INSTANCE_FILENAME@']
+    stdout: out
