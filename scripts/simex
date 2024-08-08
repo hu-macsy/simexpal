@@ -23,7 +23,6 @@ from simexpal.base import Status
 from simexpal.base import YmlLoader
 from itertools import zip_longest
 import yaml
-import json
 import warnings
 
 warnings.simplefilter(action='default', category=DeprecationWarning)  # do not ignore DeprecationWarnings
