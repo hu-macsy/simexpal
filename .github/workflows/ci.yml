@@ -15,9 +15,6 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Install ninja
-        run: |
-          python -m pip install ninja
       - name: Install simexpal
         run: |
           python -m pip install --upgrade pip

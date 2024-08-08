@@ -297,14 +297,14 @@ Below you can find the shortened directory structure of our
 `C++ example <https://github.com/hu-macsy/simexpal/tree/master/examples/sorting_cpp>`_ example. The
 repository directory has ``<build_name>`` as prefix and ``.repo`` as suffix. The clone, compilation and
 installation directory have ``<build_name>@<revision_name>`` as prefix and the first two have ``.clone``
-and ``.compile`` as suffix respectively. The installation directory does not have any suffix. The internal 
-cache that memorizes the internal state is the ``.simex.cache`` file, which is found at the level of the 
-``experiments.yml`` file. 
+and ``.compile`` as suffix respectively. The installation directory does not have any suffix. The internal
+simexpal files have the suffix ``.simexpal``.
 
 .. code-block:: bash
    :caption: Build directories for normal builds used by simexpal during the build process.
 
    /path/to/experiments.yml/directory
+   ├── CMakeLists.txt
    ├── builds
    │   ├── simexpal.repo                        # repository directory
    │   │   ├── internal simexpal
@@ -313,7 +313,10 @@ cache that memorizes the internal state is the ``.simex.cache`` file, which is f
    │   ├── simexpal@main                        # installation/prefix directory
    │   │   ├── bin
    │   │   │   └── quicksort                    # our executable
+   │   │   └── installed.simexpal               # internal simexpal file
    │   ├── simexpal@main.clone                  # clone directory
+   │   │   ├── checkedout.simexpal              # internal simexpal file
+   │   │   ├── regenerated.simexpal             # internal simexpal file
    │   │   ├── project
    │   │   ├── ...
    │   │   └── files/directories
@@ -321,8 +324,8 @@ cache that memorizes the internal state is the ``.simex.cache`` file, which is f
    │       ├── configuration and compilation
    │       ├── ...
    │       ├── files/directories
-   ├── .simex.cache                             # internal simexpal cache file
-   ├── CMakeLists.txt
+   │       ├── compiled.simexpal                # internal simexpal file
+   │       └── configured.simexpal              # internal simexpal file
    ├── experiments.yml
    └── quicksort.cpp
 
@@ -349,28 +352,32 @@ Below you can find the shortened directory structure of our
 (if ``recursive-clone`` was set to ``True``). The clone, compilation and installation directory have
 ``<build_name>@<revision_name>`` as prefix. Additionally, the compilation directory has ``.compile``
 as suffix. The clone directory is located in the ``/develop`` directory, whereas the compilation and
-installation directories are located in the ``/dev-builds`` directory. The internal cache that memorizes
-the internal state is the ``.simex.cache`` file, which is found at the level of the ``experiments.yml`` file. 
+installation directories are located in the ``/dev-builds`` directory. The internal simexpal files have
+the suffix ``.simexpal``.
 
 .. code-block:: bash
    :caption: Build directories for dev-builds used by simexpal during the build process.
 
    /path/to/experiments.yml/directory
+   ├── CMakeLists.txt
    ├── dev-builds
    │   ├── simexpal@main                        # installation/prefix directory
    │   │   ├── bin
    │   │   │   └── quicksort                    # our executable
+   │   │   └── installed.simexpal               # internal simexpal file
    │   └── simexpal@main.compile                # compilation directory
    │       ├── configuration and compilation
    │       ├── ...
    │       ├── files/directories
+   │       ├── compiled.simexpal                # internal simexpal file
+   │       └── configured.simexpal              # internal simexpal file
    ├── develop
    │   └── simexpal@main                        # clone directory
    │       ├── project
    │       ├── ...
    │       ├── files/directories
-   ├── .simex.cache                             # internal simexpal cache file
-   ├── CMakeLists.txt
+   │       ├── checkedout.simexpal              # internal simexpal file
+   │       └── regenerated.simexpal             # internal simexpal file
    ├── experiments.yml
    └── quicksort.cpp
 

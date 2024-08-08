@@ -1,11 +1,9 @@
 
 from enum import Enum, IntEnum
-import json
 import os.path
-import sys, subprocess
+import subprocess
 
 from . import util
-from . import base
 
 def make_builds(cfg, revision, infos, wanted_builds, wanted_phases):
 	order = compute_order(cfg, infos)
@@ -66,15 +64,6 @@ class Phase(IntEnum):
 	CONFIGURE = 3
 	COMPILE = 4
 	INSTALL = 5
-
-def mark_as_finished(basedir, buildname, type = None):
-	if type == None:
-		raise Exception("Wrong key, see util.CONSTANTS for valid keys")
-	with open(os.path.join(basedir, util.SIMEX_CACHE), 'r') as cachefile:
-		cache = json.load(cachefile)
-	cache[buildname][type] = True
-	with open(os.path.join(basedir, util.SIMEX_CACHE), 'w') as cachefile:
-		json.dump(cache, cachefile)
 
 def make_build_in_order(cfg, build, wanted_builds, wanted_phases):
 	if not build.revision.is_dev_build:
@@ -158,30 +147,28 @@ def make_build_in_order(cfg, build, wanted_builds, wanted_phases):
 	def skip_phase(phase):
 		return phase > max(wanted_phases)
 
-	base.init_cache_entry_for_dir(cfg.basedir, build.revision.name)
-
 	done_phases = set()
-	if build.revision.name in wanted_builds:
-		if (build.is_installed(build.revision.name) or skip_phase(Phase.INSTALL)) and Phase.INSTALL not in wanted_phases:
+	if build.name in wanted_builds:
+		if (build.is_installed() or skip_phase(Phase.INSTALL)) and Phase.INSTALL not in wanted_phases:
 			done_phases.add(Phase.INSTALL)
-		if (build.is_compiled(build.revision.name) or skip_phase(Phase.COMPILE)) and Phase.COMPILE not in wanted_phases:
+		if (build.is_compiled() or skip_phase(Phase.COMPILE)) and Phase.COMPILE not in wanted_phases:
 			done_phases.add(Phase.COMPILE)
-		if (build.is_configured(build.revision.name) or skip_phase(Phase.CONFIGURE)) and Phase.CONFIGURE not in wanted_phases:
+		if (build.is_configured() or skip_phase(Phase.CONFIGURE)) and Phase.CONFIGURE not in wanted_phases:
 			done_phases.add(Phase.CONFIGURE)
-		if (build.is_regenerated(build.revision.name) or skip_phase(Phase.REGENERATE)) and Phase.REGENERATE not in wanted_phases:
+		if (build.is_regenerated() or skip_phase(Phase.REGENERATE)) and Phase.REGENERATE not in wanted_phases:
 			done_phases.add(Phase.REGENERATE)
-		if (build.is_checked_out(build.revision.name) or skip_phase(Phase.CHECKOUT)) and Phase.CHECKOUT not in wanted_phases:
+		if (build.is_checked_out() or skip_phase(Phase.CHECKOUT)) and Phase.CHECKOUT not in wanted_phases:
 			done_phases.add(Phase.CHECKOUT)
 	else:
-		if build.is_installed(build.revision.name):
+		if build.is_installed():
 			done_phases.add(Phase.INSTALL)
-		if build.is_compiled(build.revision.name):
+		if build.is_compiled():
 			done_phases.add(Phase.COMPILE)
-		if build.is_configured(build.revision.name):
+		if build.is_configured():
 			done_phases.add(Phase.CONFIGURE)
-		if build.is_regenerated(build.revision.name):
+		if build.is_regenerated():
 			done_phases.add(Phase.REGENERATE)
-		if build.is_checked_out(build.revision.name):
+		if build.is_checked_out():
 			done_phases.add(Phase.CHECKOUT)
 
 	def want_phase(phase):
@@ -284,7 +271,7 @@ def make_build_in_order(cfg, build, wanted_builds, wanted_phases):
 				# Clone the git repository into the build.source_dir
 				subprocess.check_call(['git', 'clone', build.info.git_repo, build.source_dir])
 
-			mark_as_finished(cfg.basedir, build.revision.name, util.CHECKOUT)		
+			util.touch(os.path.join(checkout_dir, 'checkedout.simexpal'))
 
 			if build.info.recursive_clone:
 				# Clone submodules recursively
@@ -295,13 +282,18 @@ def make_build_in_order(cfg, build, wanted_builds, wanted_phases):
 		else:
 			print("simexpal: Skipping checkout-phase for VCS-less dev-build {}".format(build.name))
 
+	# Make sure that the build source directory exists for VCS-less dev-builds.
+	if build.info.git_repo is None and build.revision.is_dev_build and not os.path.isdir(build.source_dir):
+		raise RuntimeError(f"The source directory of the build '{build.name}' with revision '{build.revision.name}'"
+							f" does not exist.")
+
 	if want_phase(Phase.REGENERATE):
 		log_phase('regenerate')
 
 		regenerate_args = util.ensure_list_type(build.info.regenerate)
 		for step_yml in regenerate_args:
 			do_step(step_yml, default_workdir=checkout_dir)
-		mark_as_finished(cfg.basedir, build.revision.name, util.REGENERATED)
+		util.touch(os.path.join(checkout_dir, 'regenerated.simexpal'))
 		did_work = True
 
 	if want_phase(Phase.CONFIGURE):
@@ -314,7 +306,7 @@ def make_build_in_order(cfg, build, wanted_builds, wanted_phases):
 		configure_args = util.ensure_list_type(build.info.configure)
 		for step_yml in configure_args:
 			do_step(step_yml, default_workdir=build.compile_dir)
-		mark_as_finished(cfg.basedir, build.revision.name, util.CONFIGURED)
+		util.touch(os.path.join(build.compile_dir, 'configured.simexpal'))
 		did_work = True
 
 	if want_phase(Phase.COMPILE):
@@ -323,7 +315,7 @@ def make_build_in_order(cfg, build, wanted_builds, wanted_phases):
 		compile_args = util.ensure_list_type(build.info.compile)
 		for step_yml in compile_args:
 			do_step(step_yml, default_workdir=build.compile_dir)
-		mark_as_finished(cfg.basedir, build.revision.name, util.COMPILED)
+		util.touch(os.path.join(build.compile_dir, 'compiled.simexpal'))
 		did_work = True
 
 	if want_phase(Phase.INSTALL):
@@ -336,7 +328,7 @@ def make_build_in_order(cfg, build, wanted_builds, wanted_phases):
 		install_args = util.ensure_list_type(build.info.install)
 		for step_yml in install_args:
 			do_step(step_yml, default_workdir=build.compile_dir)
-		mark_as_finished(cfg.basedir, build.revision.name, util.INSTALLED)
+		util.touch(os.path.join(build.prefix_dir, 'installed.simexpal'))
 		did_work = True
 
 	if not did_work:

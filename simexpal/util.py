@@ -8,14 +8,6 @@ import yaml
 import json
 import tempfile
 
-### CONSTANTS ###
-INSTALLED = "installation_done"
-COMPILED = "compilation_done"
-CONFIGURED = "configuration_done"
-REGENERATED = "regeneration_done"
-CHECKOUT = "checkout_done"
-
-SIMEX_CACHE = "./.simex.cache"
 
 def expand_at_params(s, fn, listfn=None):
 	def subfn(m):
@@ -134,8 +126,8 @@ def validate_setup_file(basedir, setup_file, setup_file_schema_name):
 
 	validation_cache_dict = {}
 	try:
-		with open(os.path.join(basedir, SIMEX_CACHE), 'r') as cachefile:
-			validation_cache_dict = json.load(cachefile)["validation"]
+		with open(os.path.join(basedir, 'validation.cache'), 'r') as f:
+			validation_cache_dict = json.load(f)
 	except FileNotFoundError:
 		pass
 
@@ -189,12 +181,10 @@ def validate_setup_file(basedir, setup_file, setup_file_schema_name):
 			do_exit = True
 
 	if writeback_cache:
-		if os.path.isfile(os.path.join(basedir, SIMEX_CACHE)):
-			with open(os.path.join(basedir, SIMEX_CACHE), 'r') as cachefile:
-				cache = json.load(cachefile)
-			cache["validation"] = validation_cache_dict
-			with open(os.path.join(basedir, SIMEX_CACHE), 'w') as cachefile:
-				json.dump(cache, cachefile)
+		fd, path = tempfile.mkstemp(dir=basedir)
+		with os.fdopen(fd, 'w') as tmp:
+			json.dump(validation_cache_dict, tmp)
+		os.rename(path, 'validation.cache')
 
 	if do_exit:
 		sys.exit(1)

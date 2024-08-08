@@ -9,12 +9,9 @@ simexpal.egg-info/
 
 validation.cache
 
-*.simex.cache
+examples/*/validation.cache
+examples/*/status.cache
 examples/sorting_cpp/builds/*
 
 tests/builds/experiments_ymls/vcs_less/dev-builds/*
 tests/builds/experiments_ymls/vcs_less/develop/vcs-less@main/*
-tests/builds/experiments_ymls/build_examples/builds/*
-tests/builds/experiments_ymls/build_examples/dev-builds/*
-tests/builds/experiments_ymls/build_examples/develop/*
-tests/builds/experiments_ymls/build_examples/bin
