@@ -82,7 +82,7 @@ class Config:
 		self.basedir = basedir
 		self.yml = yml
 
-		self.status_cache_path = basedir + '/status.cache'
+		self.status_cache_path = basedir + util.SIMEX_CACHE
 		self.status_cache_dict = {}
 
 		self.slurm_queried = False
@@ -195,8 +195,8 @@ class Config:
 				self._exp_infos[exp_yml['name']] = ExperimentInfo(self, exp_yml)
 
 		try:
-			with open(self.status_cache_path, 'r') as f:
-				self.status_cache_dict = json.load(f)
+			with open(self.status_cache_path, 'r') as cachefile:
+				self.status_cache_dict = json.load(cachefile)["status"]
 		except FileNotFoundError:
 			pass
 
@@ -503,10 +503,11 @@ class Config:
 		return Status(self.queue_queried_jobs.get(jobid, Status.FAILED))
 
 	def writeback_status_cache(self):
-		fd, path = tempfile.mkstemp(dir=self.basedir)
-		with os.fdopen(fd, 'w') as tmp:
-			json.dump(self.status_cache_dict, tmp)
-		os.rename(path, self.status_cache_path)
+		with open(os.path.join(self.basedir, util.SIMEX_CACHE), 'r') as cachefile:
+			cache = json.load(cachefile)
+		cache["status"] = self.status_cache_dict
+		with open(os.path.join(self.basedir, util.SIMEX_CACHE), 'w') as cachefile:
+			json.dump(cache, cachefile)
 
 	# -----------------------------------------------------------------------------------
 	# Matrix expansion.
@@ -1011,24 +1012,25 @@ class Build:
 		rev = self._get_dev_build_suffix()
 		return os.path.join(self._cfg.basedir, 'develop', self.name + rev)
 
-	def is_checked_out(self):
-		if self.revision.is_dev_build:
-			return os.access(os.path.join(self.source_dir, 'checkedout.simexpal'), os.F_OK)
-		return os.access(os.path.join(self.clone_dir, 'checkedout.simexpal'), os.F_OK)
+	def is_checked_out(self, buildname):
+		with open(os.path.join(self._cfg.basedir, util.SIMEX_CACHE), 'r') as cachefile:
+			return json.load(cachefile)[buildname][util.CHECKOUT]
 
-	def is_regenerated(self):
-		if self.revision.is_dev_build:
-			return os.access(os.path.join(self.source_dir, 'regenerated.simexpal'), os.F_OK)
-		return os.access(os.path.join(self.clone_dir, 'regenerated.simexpal'), os.F_OK)
+	def is_regenerated(self, buildname):
+		with open(os.path.join(self._cfg.basedir, util.SIMEX_CACHE), 'r') as cachefile:
+			return json.load(cachefile)[buildname][util.REGENERATED]
+			
+	def is_configured(self, buildname):
+		with open(os.path.join(self._cfg.basedir, util.SIMEX_CACHE), 'r') as cachefile:
+			return json.load(cachefile)[buildname][util.CONFIGURED]
 
-	def is_configured(self):
-		return os.access(os.path.join(self.compile_dir, 'configured.simexpal'), os.F_OK)
+	def is_compiled(self, buildname):
+		with open(os.path.join(self._cfg.basedir, util.SIMEX_CACHE), 'r') as cachefile:
+			return json.load(cachefile)[buildname][util.COMPILED]
 
-	def is_compiled(self):
-		return os.access(os.path.join(self.compile_dir, 'compiled.simexpal'), os.F_OK)
-
-	def is_installed(self):
-		return os.access(os.path.join(self.prefix_dir, 'installed.simexpal'), os.F_OK)
+	def is_installed(self, buildname):
+		with open(os.path.join(self._cfg.basedir, util.SIMEX_CACHE), 'r') as cachefile:
+			return json.load(cachefile)[buildname][util.INSTALLED]
 
 	def purge(self, delete_source=False):
 		if not self.revision.is_dev_build:
@@ -1502,8 +1504,23 @@ class Run:
 			raise RuntimeError("The experiment '{}' with instance '{}' has not been started yet".format(
 				self.experiment.display_name, self.instance.shortname))
 
+def init_cache_for_basedir(basedir):
+	if not os.path.isfile(os.path.join(basedir,util.SIMEX_CACHE)):
+		with open(os.path.join(basedir,util.SIMEX_CACHE), "x") as cachefile:
+			json.dump({"status": {}, "validation": {}}, cachefile) 
+
+def init_cache_entry_for_build(basedir, buildname):
+	assert os.path.isfile(os.path.join(basedir, util.SIMEX_CACHE))
+	with open(os.path.join(basedir, util.SIMEX_CACHE), 'r') as cachefile:
+		cache = json.load(cachefile)
+	if not buildname in cache:
+		cache[buildname] = {util.CHECKOUT: False, util.REGENERATED: False, util.CONFIGURED: False, util.COMPILED: False, util.INSTALLED: False}
+		with open(os.path.join(basedir, util.SIMEX_CACHE), 'w') as cachefile:
+			json.dump(cache, cachefile)
+
 def config_for_dir(basedir=None):
 	if basedir is None:
 		basedir = '.'
+	init_cache_for_basedir(basedir)
 	yml = util.validate_setup_file(basedir, 'experiments.yml', 'experiments.json')
 	return Config(os.path.abspath(basedir), yml)
