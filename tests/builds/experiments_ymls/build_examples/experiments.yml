@@ -1,0 +1,62 @@
+# This file contains example builds for git and non-git cases, and develop and non-dev cases.
+builds:
+  - name: test-git-gdsb
+    git: https://github.com/hu-macsy/graph-ds-benchmark.git
+    recursive-clone: true
+    
+    regenerate:
+      - args: ['git', 'checkout', 'main']
+      - args: ['git', 'pull']
+    configure:
+      - args:
+        - 'cmake'
+        - '-GNinja'
+        # Experiments have been compiled using g++12.3. If you want to use your
+        # default c++ compiler, simply comment the following line.
+        # - '-DCMAKE_CXX_COMPILER=/opt/gcc-12.3@gcc8.5/bin/g++'
+        - '-DCMAKE_INSTALL_LIBDIR=lib'
+        - '-DCMAKE_INSTALL_PREFIX=@THIS_PREFIX_DIR@'
+        - '-DCMAKE_BUILD_TYPE=Release'
+        - '-DGDSB_MPI=Off'
+        - '@THIS_SOURCE_DIR@'
+        - '-Dgdsb_DIR=@PREFIX_DIR_FOR:test-git-gdsb@/lib/cmake/test-git-gdsb'
+    compile:
+      - args: ['ninja']
+    install:
+      - args: ['ninja', 'install']
+  
+  - name: test-cpp
+    configure:
+      - args:
+          - 'cmake'
+          - '-DCMAKE_INSTALL_PREFIX=@BASE_DIR@'
+          - '@BASE_DIR@'
+    compile:
+       - args:
+          - 'make'
+    install:
+      - args:
+          - 'make'
+          - 'install'
+
+  - name: test-py
+
+revisions:
+  - name: git-gdsb
+    build_version:
+      'test-git-gdsb': '027ee5048e8c00648185ee4321dab969a80396fe' #arbitrary commit hash to ensure determinism
+
+  - name: git-dev-gdsb
+    develop: true
+    build_version:
+      'test-git-gdsb': ''
+
+  - name: dev-cpp
+    develop: true
+    build_version: 
+      'test-cpp': ''
+
+  - name: dev-py
+    develop: true
+    build_version: 
+      'test-py': ''  
