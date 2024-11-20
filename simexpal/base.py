@@ -1126,6 +1126,10 @@ class ExperimentInfo:
 		return self._exp_yml.get('exclusive', None)
 
 	@property
+	def max_simultaneous(self):
+		return self._exp_yml.get('max_simultaneous', None)
+
+	@property
 	def slurm_args(self):
 		return self._exp_yml.get('slurm_args', [])
 
@@ -1234,6 +1238,10 @@ class Experiment:
 	@property
 	def is_exclusive(self):
 		return self.info.is_exclusive
+	
+	@property
+	def max_simultaneous(self):
+		return self.info.max_simultaneous
 
 	@property
 	def display_name(self):

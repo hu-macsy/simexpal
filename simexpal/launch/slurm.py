@@ -138,7 +138,11 @@ class SlurmLauncher(common.Launcher):
 				'-e', os.path.join(cfg.basedir, 'aux/_slurm/' + log_pattern + '.err')])
 
 		if use_array:
-			sbatch_args.append('--array=0-' + str(len(locked) - 1))
+			if experiment.max_simultaneous:
+				max_simultaneous = f"%{experiment.max_simultaneous}"
+			else:
+				max_simultaneous = ""
+			sbatch_args.append(f"--array=0-{len(locked) - 1}{max_simultaneous}")
 
 		# Add custom sbatch parameters of the user.
 		slurm_args = util.ensure_list_type(experiment.effective_slurm_args)
