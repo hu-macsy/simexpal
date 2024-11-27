@@ -58,7 +58,7 @@ builds:
 revisions:
   - name: git-gdsb
     build_version:
-      'test-git-gdsb': '3fe8b2e38d9de38b459e2e958df66577b77ccccf' #arbitrary commit hash to ensure determinism
+      'test-git-gdsb': '3fe8b2e38d9de38b459e2e958df66577b77ccccf' # fixed commit hash to ensure reproducibility
 
   - name: git-dev-gdsb
     develop: true
