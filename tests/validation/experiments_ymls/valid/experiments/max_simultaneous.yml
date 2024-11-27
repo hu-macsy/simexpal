@@ -1,0 +1,5 @@
+experiments:
+  - name: foo
+    args: ['foo.py']
+    stdout: out
+    max_simultaneous: 2

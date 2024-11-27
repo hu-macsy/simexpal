@@ -323,13 +323,14 @@ sbatch: ``--ntasks-per-node``, ``-c``, ``-N``
 When using a job scheduler like `Slurm <https://slurm.schedmd.com/overview.html>`_ it might be
 useful to run your software using different node/cpu settings.
 
-Currently, simexpal supports the following three ``sbatch`` parameters by using its own keywords in
+Currently, simexpal supports the following ``sbatch`` parameters by using its own keywords in
 the ``experiments.yml``:
 
-- ``procs_per_node``: number of tasks to invoke on each node (slurm: ``--ntasks-per-node=n``)
-- ``num_threads``:    number of cpus required per task (slurm: ``-c``, ``--cpus-per-task=ncpus``)
-- ``num_nodes``:      number of nodes on which to run (N = min[-max]) (slurm: ``-N``, ``--nodes=N``)
-- ``exclusive``:      boolean flag to run an experiment exclusively on specified computing resources (slurm: ``--exclusive``)
+- ``procs_per_node``:   number of tasks to invoke on each node (slurm: ``--ntasks-per-node=n``)
+- ``num_threads``:      number of cpus required per task (slurm: ``-c``, ``--cpus-per-task=ncpus``)
+- ``num_nodes``:        number of nodes on which to run (N = min[-max]) (slurm: ``-N``, ``--nodes=N``)
+- ``exclusive``:        boolean flag to run an experiment exclusively on specified computing resources (slurm: ``--exclusive``)
+- ``max_simultaneous``: limits the number of runs that are executed simultaneously (slurm: ``--array=X-Y%max_simultaneous``). Note that this setting is applied individually to each set of runs launched at once.
 
 .. code-block:: YAML
    :linenos:

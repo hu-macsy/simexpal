@@ -1,8 +1,8 @@
 
 import os
+import shutil
 import json
 import pytest
-import subprocess
 
 from simexpal import base
 from simexpal import build
@@ -38,11 +38,31 @@ def test_simex_builds():
             cache = json.load(cachefile)
             for cache_entry in cache_entries:
                 assert cache_entry in cache[build_name]
-    
-    test_instances = [('dev-cpp', 'test-cpp'), ('dev-py', 'test-py'), ('git-dev-gdsb', 'test-git-gdsb')]
+
+    test_instances = [(b.revision.name, b.name) for b in cfg.all_builds()]
 
     for rev_name, build_name in test_instances:
         revision = cfg.get_revision(rev_name)
         example_build = cfg.get_build(build_name, revision)
         build.make_builds(cfg, revision, [example_build.info], [build_name], wanted_phases)
-        check_cache_containment(wanted_cache_entries, example_build._cfg.basedir, build_name)    
+        check_cache_containment(wanted_cache_entries, example_build._cfg.basedir, build_name)
+
+# pytest runs this function first, then on yield runs all tests, then finally runs the code following 'yield' (as cleanup/finalize)
+@pytest.fixture(scope='session', autouse=True)
+def cleanup_build_files():
+    def try_delete(path):
+        try:
+            shutil.rmtree(path)
+        except FileNotFoundError:
+            pass
+    
+    yield 
+    print('removing', f"{file_dir}/experiments_ymls/build_examples/builds")
+    try_delete(f"{file_dir}/experiments_ymls/build_examples/builds")
+    try_delete(f"{file_dir}/experiments_ymls/build_examples/dev-builds")
+    try_delete(f"{file_dir}/experiments_ymls/build_examples/develop")
+    try_delete(f"{file_dir}/experiments_ymls/build_examples/bin")
+    try:
+        os.remove(f"{file_dir}/experiments_ymls/build_examples/.simex.cache")
+    except FileNotFoundError:
+        pass

@@ -15,6 +15,10 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
+      - name: Install libomp (macOS)
+        if: matrix.os == 'macos-latest'
+        run: |
+          brew install libomp
       - name: Install ninja
         run: |
           python -m pip install ninja

@@ -56,6 +56,10 @@
 				"slurm_args": {"$ref": "#/definitions/str_or_str_list"},
 				"exclusive": {
 					"type": "boolean"
+				},
+				"max_simultaneous": {
+					"type": "integer",
+					"minimum": 1
 				}
 			}
 		}
@@ -449,6 +453,7 @@
 							"procs_per_node": {},
 							"num_threads": {},
 							"exclusive": {},
+							"max_simultaneous": {},
 							"slurm_args": {}
 						},
 						"additionalProperties": false
