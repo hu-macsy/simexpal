@@ -1,0 +1,17 @@
+experiments:
+  - name: slow
+    args: [python, 'slow.py', '@EXTRA_ARGS@']
+    stdout: out
+
+instances:
+  - repo: local
+    items: 
+      - name: bar
+        files: []
+        extra_args: []
+
+variants:
+  - axis: 'foo'
+    items:
+      - name: '1'
+        extra_args: ['1']
