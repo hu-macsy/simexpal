@@ -33,14 +33,16 @@ jobs:
       - name: Run tests
         run: |
           pip install pytest==6.2.5
-          pytest
+          pytest -v
 
   build-and-test-macos:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Set up Python latest
+      - name: Set up Python 3.12
         uses: actions/setup-python@v5
+        with:
+          python-version: 3.12
       - name: Install libomp (macOS)
         run: |
           brew install libomp
@@ -54,7 +56,7 @@ jobs:
       - name: Run tests
         run: |
           pip install pytest==6.2.5
-          pytest -k "not slurm"
+          pytest -k "not slurm" -v
 
   # This job checks whether the current workflow is triggered by a new tag with the following form: INT.INT or INT.INT.INT (for example: 1.0, 1.0.1, ...)
   # The result is saved in a variable and used as a conditional variable when uploading packages.
