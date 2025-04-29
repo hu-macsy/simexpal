@@ -19,8 +19,8 @@ jobs:
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
     steps:
       - uses: actions/checkout@v4
-      - uses: koesterlab/setup-slurm-action@v1
-        if: matrix.os == 'ubuntu-latest'
+      - if: matrix.os == 'ubuntu-latest'
+        uses: koesterlab/setup-slurm-action@v1
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
         with:
