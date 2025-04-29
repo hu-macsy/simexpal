@@ -33,7 +33,7 @@ jobs:
       - name: Run tests
         run: |
           pip install pytest==6.2.5
-          pytest -v
+          pytest
 
   build-and-test-macos:
     runs-on: macos-latest
@@ -56,7 +56,7 @@ jobs:
       - name: Run tests
         run: |
           pip install pytest==6.2.5
-          pytest -k "not slurm" -v
+          pytest -k "not slurm"
 
   # This job checks whether the current workflow is triggered by a new tag with the following form: INT.INT or INT.INT.INT (for example: 1.0, 1.0.1, ...)
   # The result is saved in a variable and used as a conditional variable when uploading packages.
