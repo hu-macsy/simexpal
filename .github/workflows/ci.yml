@@ -3,12 +3,11 @@ name: Run Python Test
 on: [push, pull_request]
 
 jobs:
-  build-and-test:
+  build-and-test-ubuntu:
     strategy:
       matrix:
         python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
-        os: [ubuntu-latest, macos-latest]
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     services:
       mysql:
         image: mysql:8.0
@@ -19,15 +18,30 @@ jobs:
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
     steps:
       - uses: actions/checkout@v4
-      - name: install slurm (ubuntu)
-        if: matrix.os == 'ubuntu-latest'
-        uses: koesterlab/setup-slurm-action@v1
+      - uses: koesterlab/setup-slurm-action@v1
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
+      - name: Install ninja
+        run: |
+          python -m pip install ninja
+      - name: Install simexpal
+        run: |
+          python -m pip install --upgrade pip
+          pip install .
+      - name: Run tests
+        run: |
+          pip install pytest==6.2.5
+          pytest
+
+  build-and-test-macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python latest
+        uses: actions/setup-python@v5
       - name: Install libomp (macOS)
-        if: matrix.os == 'macos-latest'
         run: |
           brew install libomp
       - name: Install ninja
@@ -40,7 +54,7 @@ jobs:
       - name: Run tests
         run: |
           pip install pytest==6.2.5
-          pytest
+          pytest -k "not slurm"
 
   # This job checks whether the current workflow is triggered by a new tag with the following form: INT.INT or INT.INT.INT (for example: 1.0, 1.0.1, ...)
   # The result is saved in a variable and used as a conditional variable when uploading packages.
@@ -63,7 +77,7 @@ jobs:
     if: needs.check-release-tag.outputs.is-release == 'true' && github.repository == 'hu-macsy/simexpal'
     name: 'PyPi release upload'
     runs-on: ubuntu-20.04
-    needs: [build-and-test, check-release-tag]
+    needs: [build-and-test-ubuntu, check-release-tag]
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python 3.11
