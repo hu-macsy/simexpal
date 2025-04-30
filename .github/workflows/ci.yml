@@ -19,6 +19,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: koesterlab/setup-slurm-action@v1
+        timeout-minutes: 5
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
         with:
