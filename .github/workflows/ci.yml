@@ -8,25 +8,62 @@ jobs:
       matrix:
         python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
     runs-on: ubuntu-latest
-    services:
-      mysql:
-        image: mysql:8.0
-        env:
-          MYSQL_ROOT_PASSWORD: root
-        ports:
-          - "8888:3306"
-        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
     steps:
       - uses: actions/checkout@v4
-      - uses: koesterlab/setup-slurm-action@v1
-        timeout-minutes: 5
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Install ninja
+      - name: Install prerequisites
+        shell: bash -e {0}
         run: |
+          ansible-galaxy role install https://github.com/galaxyproject/ansible-slurm/archive/1.0.1.tar.gz
+          sudo apt-get update
           pip install ninja
+      - name: Setup ansible playbook for slurm
+        uses: 1arp/create-a-file-action@0.2
+        with:
+          file: slurm-playbook.yml
+          content: |
+            - name: Slurm all in One
+              hosts: localhost
+              roles:
+                - role: 1.0.1
+                  become: true
+              vars:
+                  slurm_upgrade: true
+                  slurm_roles: ['controller', 'exec']
+                  slurm_config_dir: /etc/slurm
+                  slurm_config:
+                      ClusterName: cluster
+                      SlurmctldLogFile: /var/log/slurm/slurmctld.log
+                      SlurmctldPidFile: /run/slurmctld.pid
+                      SlurmdLogFile: /var/log/slurm/slurmd.log
+                      SlurmdPidFile: /run/slurmd.pid
+                      SlurmdSpoolDir: /tmp/slurmd # the default /var/lib/slurm/slurmd does not work because of noexec mounting in github actions
+                      StateSaveLocation: /var/lib/slurm/slurmctld
+                      SelectType: select/cons_tres
+                  slurm_create_user: yes
+                  slurm_nodes:
+                      - name: localhost
+                        State: UNKNOWN
+                        Sockets: 1
+                        CoresPerSocket: 2
+                        RealMemory: 2000
+                  slurm_user:
+                      comment: "Slurm Workload Manager"
+                      gid: 1002
+                      group: slurm
+                      home: "/var/lib/slurm"
+                      name: slurm
+                      shell: "/bin/bash"
+                      uid: 1002
+      - name: Setup slurm
+        shell: bash -e {0}
+        run: |
+          mkdir -p /tmp/1002-runtime # work around podman issue (https://github.com/containers/podman/issues/13338)
+          echo XDG_RUNTIME_DIR=/tmp/1002-runtime >> $GITHUB_ENV
+          ansible-playbook slurm-playbook.yml || (journalctl -xe && exit 1)
       - name: Install simexpal
         run: |
           pip install .
