@@ -453,16 +453,17 @@ class Config:
 		if not self.slurm_queried:
 			# -h omits the header line.
 			# -r outputs one job array element per line.
-			output = subprocess.check_output(['squeue', '-h', '-r'])
+			# --format=%i,%t outputs jobid,status
+			output = subprocess.check_output(['squeue', '-h', '-r', '--format=%i,%t'])
 			output = output.decode().splitlines()
 
 			self.slurm_queried = True
 
 			if len(output) > 0:
-				output = [entry.split() for entry in output]
+				output = [entry.split(',') for entry in output]
 				for entry in output:
 					entry_jobid = entry[0]
-					entry_state = entry[4]
+					entry_state = entry[1]
 					if entry_state == 'PD':
 						status = Status.SUBMITTED
 					elif entry_state in ['R', 'CG']:
